@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import sendRoundResults from '../api/tuttiFrutti';
+import { Bot, PenLine, Hourglass, StopCircle, Timer, Trophy, Handshake, Skull } from 'lucide-react';
 
 const CATEGORIAS: Record<string, string[]> = {
   general: ['Jugador', 'Equipo', 'DT', 'Selección', 'Campeón Champions', 'Campeón Mundial', 'Jugador Argentino'],
@@ -93,9 +94,7 @@ export default function Game() {
     return () => iaTimeoutRef.current.forEach(clearTimeout);
   }, [finished]);
 
-  const revealIA = () => {
-    setIaRespuestas({ ...iaBuildRef.current });
-  };
+  const revealIA = () => { setIaRespuestas({ ...iaBuildRef.current }); };
 
   const handleBasta = () => {
     clearInterval(intervalRef.current!);
@@ -126,18 +125,11 @@ export default function Game() {
     };
 
     const payload = { letra, respuestas: mappedRespuestas };
-
     console.log('Enviando payload a /tutti-frutti:', payload);
 
     sendRoundResults(payload)
-      .then(res => {
-        console.log('Respuesta exitosa de /tutti-frutti:', res);
-        setResultado(res.data);
-      })
-      .catch(err => {
-        console.error('Error en /tutti-frutti:', err?.response ?? err.message ?? err);
-        setApiError('No se pudo conectar con el servidor. Intenta nuevamente más tarde.');
-      })
+      .then(res => { console.log('Respuesta exitosa de /tutti-frutti:', res); setResultado(res.data); })
+      .catch(err => { console.error('Error en /tutti-frutti:', err?.response ?? err.message ?? err); setApiError('No se pudo conectar con el servidor. Intenta nuevamente más tarde.'); })
       .finally(() => setIsLoading(false));
   }, [finished]);
 
@@ -244,6 +236,10 @@ export default function Game() {
           transition: all 0.2s ease;
           box-shadow: 0 0 24px rgba(239,68,68,0.3);
           text-transform: uppercase;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 8px;
         }
         .basta-btn:hover:not(:disabled) {
           box-shadow: 0 0 40px rgba(239,68,68,0.5);
@@ -256,9 +252,7 @@ export default function Game() {
           box-shadow: none;
         }
         .spinner {
-          width: 40px;
-          height: 40px;
-          border-radius: 50%;
+          width: 40px; height: 40px; border-radius: 50%;
           border: 4px solid rgba(56,189,248,0.12);
           border-top-color: #38bdf8;
           animation: spin 1s linear infinite;
@@ -283,7 +277,6 @@ export default function Game() {
           background: 'radial-gradient(ellipse 70% 50% at 50% 0%, #0e2a4a 0%, transparent 100%)',
         }}/>
 
-        {/* Scan line */}
         {phase === 'intro' && (
           <div style={{
             position: 'absolute', top: 0, left: 0, right: 0, height: '2px',
@@ -293,7 +286,6 @@ export default function Game() {
           }}/>
         )}
 
-        {/* Estrella */}
         <svg style={{
           position: 'absolute', top: '50%', left: '50%',
           transform: 'translate(-50%, -50%)',
@@ -309,7 +301,6 @@ export default function Game() {
           />
         </svg>
 
-        {/* Haces */}
         <div className={`beam-left${phase !== 'intro' ? ' settled' : ''}`} style={{
           position: 'absolute', top: '-10%', left: '5%',
           width: '3px', height: '110%',
@@ -327,7 +318,6 @@ export default function Game() {
           boxShadow: '0 0 25px rgba(56,189,248,0.4)',
         }}/>
 
-        {/* Cancha */}
         <svg style={{
           position: 'absolute', bottom: 0, left: 0, width: '100%', height: '20%',
           opacity: phase === 'ready' ? 0.06 : 0.14, transition: 'opacity 1s ease',
@@ -340,7 +330,6 @@ export default function Game() {
           ))}
         </svg>
 
-        {/* Partículas intro */}
         {phase === 'intro' && [...Array(12)].map((_, i) => (
           <div key={i} style={{
             position: 'absolute',
@@ -353,32 +342,21 @@ export default function Game() {
         ))}
       </div>
 
-      {/* CONTENIDO CENTRADO */}
+      {/* CONTENIDO */}
       <div style={{
         position: 'relative', zIndex: 1,
         minHeight: '100vh',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '20px',
-        fontFamily: "'Inter', sans-serif",
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        padding: '20px', fontFamily: "'Inter', sans-serif",
       }}>
         <div style={{
-          width: '100%',
-          maxWidth: '820px',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '10px',
+          width: '100%', maxWidth: '820px',
+          display: 'flex', flexDirection: 'column', gap: '10px',
           animation: 'fadeInUp 0.6s ease 1.8s both',
         }}>
 
           {/* HEADER */}
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-          }}>
-            {/* Info modo */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div>
               <p style={{
                 fontFamily: "'Barlow Condensed', sans-serif",
@@ -392,7 +370,6 @@ export default function Game() {
               }}>{tematica.replace('_', ' ')}</p>
             </div>
 
-            {/* LETRA */}
             <div style={{
               display: 'flex', flexDirection: 'column', alignItems: 'center',
               animation: 'letterPop 0.6s cubic-bezier(0.34,1.56,0.64,1) 2s both',
@@ -418,7 +395,6 @@ export default function Game() {
               }}>Letra</p>
             </div>
 
-            {/* TIMER */}
             <div style={{ textAlign: 'right' }}>
               <p style={{
                 fontFamily: "'Barlow Condensed', sans-serif",
@@ -457,8 +433,7 @@ export default function Game() {
               minWidth: `${60 + categorias.length * 100}px`,
               background: 'rgba(10,22,50,0.88)',
               border: '1px solid rgba(56,189,248,0.15)',
-              borderRadius: '14px',
-              overflow: 'hidden',
+              borderRadius: '14px', overflow: 'hidden',
               backdropFilter: 'blur(16px)',
               boxShadow: '0 0 40px rgba(2,8,23,0.8), inset 0 1px 0 rgba(56,189,248,0.1)',
             }}>
@@ -527,12 +502,13 @@ export default function Game() {
               }}>
                 <div style={{
                   padding: '0 8px', borderRight: '1px solid rgba(56,189,248,0.08)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px',
                 }}>
+                  <Bot size={12} strokeWidth={1.5} color="#ef4444" />
                   <span style={{
                     fontFamily: "'Barlow Condensed', sans-serif",
                     fontSize: '11px', fontWeight: 700, color: '#ef4444', letterSpacing: '1px',
-                  }}>IA 🤖</span>
+                  }}>IA</span>
                 </div>
                 {categorias.map((cat, i) => (
                   <div key={cat} style={{
@@ -553,9 +529,9 @@ export default function Game() {
                       )
                     ) : (
                       iaRespuestas[cat] ? (
-                        <span style={{ fontSize: '14px', opacity: 0.6 }}>✏️</span>
+                        <PenLine size={14} strokeWidth={1.5} color="rgba(56,189,248,0.6)" />
                       ) : (
-                        <span style={{ fontSize: '12px', opacity: 0.35 }}>⌛</span>
+                        <Hourglass size={12} strokeWidth={1.5} color="rgba(255,255,255,0.35)" />
                       )
                     )}
                   </div>
@@ -566,24 +542,21 @@ export default function Game() {
 
           {/* BASTA */}
           <button className="basta-btn" onClick={handleBasta} disabled={finished}>
-            🛑 ¡BASTA!
+            <StopCircle size={18} strokeWidth={2} />
+            ¡BASTA!
           </button>
 
           {/* RESULTADO */}
           {finished && (() => {
-            // Calcular puntaje del jugador desde el breakdown del backend
             const puntajeJugador = resultado?.breakdown
               ? Object.values(resultado.breakdown).reduce((acc: number, info: any) => acc + (info?.score ?? info?.points ?? 0), 0)
               : 0;
 
-            // Calcular puntaje de la IA: cada respuesta que la IA dio cuenta como válida (10 pts)
-            // Si coincide con la del jugador = 5 pts (respuesta repetida), si es única = 10 pts
             const puntajeIA = categorias.reduce((acc, cat) => {
               if (!iaRespuestas[cat]) return acc;
               const jugadorResp = (respuestas[cat] || '').trim().toLowerCase();
               const iaResp = iaRespuestas[cat].trim().toLowerCase();
               if (!iaResp || iaResp === '---') return acc;
-              // Si coinciden, ambos tienen respuesta repetida (5 pts), si no, la IA tiene única (10 pts)
               return acc + (jugadorResp === iaResp ? 5 : 10);
             }, 0);
 
@@ -599,11 +572,15 @@ export default function Game() {
                 animation: 'fadeInUp 0.4s ease forwards',
                 backdropFilter: 'blur(16px)',
               }}>
-                <p style={{
+                <div style={{
                   fontFamily: "'Barlow Condensed', sans-serif",
                   fontSize: '22px', fontWeight: 800,
                   color: '#f0f9ff', letterSpacing: '2px', margin: '0 0 10px',
-                }}>⏱️ ¡TIEMPO!</p>
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+                }}>
+                  <Timer size={20} strokeWidth={2} color="#38bdf8" />
+                  ¡TIEMPO!
+                </div>
 
                 {/* Marcador */}
                 <div style={{
@@ -616,7 +593,12 @@ export default function Game() {
                   </div>
                   <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '20px', color: 'rgba(255,255,255,0.2)', fontWeight: 700 }}>VS</div>
                   <div style={{ textAlign: 'center' }}>
-                    <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '10px', color: '#ef4444', letterSpacing: '2px', marginBottom: '4px' }}>IA 🤖</div>
+                    <div style={{
+                      fontFamily: "'Barlow Condensed', sans-serif", fontSize: '10px', color: '#ef4444', letterSpacing: '2px', marginBottom: '4px',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px',
+                    }}>
+                      <Bot size={12} strokeWidth={1.5} /> IA
+                    </div>
                     <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '40px', fontWeight: 900, color: '#ef4444', lineHeight: 1 }}>{puntajeIA}</div>
                   </div>
                 </div>
@@ -627,11 +609,12 @@ export default function Game() {
                   fontSize: '18px', fontWeight: 800, letterSpacing: '3px',
                   color: gano ? '#38bdf8' : empate ? '#fbbf24' : '#ef4444',
                   marginBottom: '14px',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
                 }}>
-                  {gano ? '🏆 ¡GANASTE!' : empate ? '🤝 ¡EMPATE!' : '💀 PERDISTE'}
+                  {gano ? <><Trophy size={20} strokeWidth={2} /> ¡GANASTE!</> : empate ? <><Handshake size={20} strokeWidth={2} /> ¡EMPATE!</> : <><Skull size={20} strokeWidth={2} /> PERDISTE</>}
                 </div>
 
-                {/* Detalle por categoría */}
+                {/* Detalle */}
                 <div style={{ minHeight: 40, marginBottom: '12px' }}>
                   {isLoading ? (
                     <div className="spinner" />

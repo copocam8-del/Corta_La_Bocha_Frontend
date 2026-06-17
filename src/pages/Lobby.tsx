@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Bot, Home, KeyRound, Globe, CircleDot } from 'lucide-react';
 
 export default function Lobby() {
   const [phase, setPhase] = useState<'intro' | 'settle' | 'ready'>('intro');
@@ -94,9 +95,11 @@ export default function Lobby() {
         }
 
         .mode-card-icon {
-          font-size: 28px;
           min-width: 40px;
-          text-align: center;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: #38bdf8;
         }
 
         .join-input {
@@ -259,7 +262,9 @@ export default function Lobby() {
           {/* Título */}
           <div style={{ textAlign: 'center', marginBottom: '28px', animation: 'titleEnter 0.8s ease 1.5s both' }}>
             <div style={{ position: 'relative', display: 'inline-block', marginBottom: '12px' }}>
-              <div style={{ fontSize: '44px', lineHeight: 1 }}>⚽</div>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#38bdf8' }}>
+                <CircleDot size={44} strokeWidth={1.5} />
+              </div>
               <div style={{
                 position: 'absolute', inset: '-8px', borderRadius: '50%',
                 border: '1px solid rgba(56,189,248,0.3)',
@@ -295,7 +300,7 @@ export default function Lobby() {
               {/* Solo */}
               <p className="section-label">Solo</p>
               <button className="mode-card" onClick={() => navigate('/game-setup')}>
-                <span className="mode-card-icon">🤖</span>
+                <span className="mode-card-icon"><Bot size={28} strokeWidth={1.5} /></span>
                 <div>
                   <div style={{ fontWeight: 600, fontSize: '14px' }}>Contra la IA</div>
                   <div style={{ fontSize: '12px', color: 'rgba(148,163,184,0.5)', marginTop: '2px' }}>Jugá solo contra la inteligencia artificial</div>
@@ -304,8 +309,8 @@ export default function Lobby() {
 
               {/* Con amigos */}
               <p className="section-label" style={{ marginTop: '8px' }}>Con amigos</p>
-              <button className="mode-card" onClick={() => alert('Próximamente 🚧')}>
-                <span className="mode-card-icon">🏠</span>
+              <button className="mode-card" onClick={() => alert('Próximamente')}>
+                <span className="mode-card-icon"><Home size={28} strokeWidth={1.5} /></span>
                 <div>
                   <div style={{ fontWeight: 600, fontSize: '14px' }}>Crear sala privada</div>
                   <div style={{ fontSize: '12px', color: 'rgba(148,163,184,0.5)', marginTop: '2px' }}>Creá una sala e invitá a tus amigos con un código</div>
@@ -313,7 +318,7 @@ export default function Lobby() {
               </button>
 
               <button className="mode-card" onClick={() => setShowJoinInput(!showJoinInput)}>
-                <span className="mode-card-icon">🔑</span>
+                <span className="mode-card-icon"><KeyRound size={28} strokeWidth={1.5} /></span>
                 <div>
                   <div style={{ fontWeight: 600, fontSize: '14px' }}>Unirse con código</div>
                   <div style={{ fontSize: '12px', color: 'rgba(148,163,184,0.5)', marginTop: '2px' }}>Ingresá el código de una sala privada</div>
@@ -330,7 +335,7 @@ export default function Lobby() {
                     onChange={e => setRoomCode(e.target.value.toUpperCase())}
                     maxLength={6}
                   />
-                  <button className="join-btn" disabled={roomCode.length < 4} onClick={() => alert('Próximamente 🚧')}>
+                  <button className="join-btn" disabled={roomCode.length < 4} onClick={() => alert('Próximamente')}>
                     UNIRSE A LA SALA
                   </button>
                 </div>
@@ -338,8 +343,8 @@ export default function Lobby() {
 
               {/* Online */}
               <p className="section-label" style={{ marginTop: '8px' }}>Online</p>
-              <button className="mode-card" onClick={() => alert('Próximamente 🚧')}>
-                <span className="mode-card-icon">🌍</span>
+              <button className="mode-card" onClick={() => alert('Próximamente')}>
+                <span className="mode-card-icon"><Globe size={28} strokeWidth={1.5} /></span>
                 <div>
                   <div style={{ fontWeight: 600, fontSize: '14px' }}>Partida pública</div>
                   <div style={{ fontSize: '12px', color: 'rgba(148,163,184,0.5)', marginTop: '2px' }}>Jugá contra alguien al azar en todo el mundo</div>

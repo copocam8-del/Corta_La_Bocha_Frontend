@@ -1,19 +1,20 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { CircleDot, Flag, Globe, Star, Trophy, Smile, Meh, Angry, Flame, Timer } from 'lucide-react';
 
 const TEMATICAS = [
-  { id: 'general', nombre: 'General', emoji: '⚽' },
-  { id: 'liga_argentina', nombre: 'Liga Argentina', emoji: '🇦🇷' },
-  { id: 'mundial', nombre: 'Mundial', emoji: '🌍' },
-  { id: 'champions', nombre: 'Champions League', emoji: '⭐' },
-  { id: 'libertadores', nombre: 'Copa Libertadores', emoji: '🏆' },
+  { id: 'general', nombre: 'General', icon: <CircleDot size={16} strokeWidth={1.5} /> },
+  { id: 'liga_argentina', nombre: 'Liga Argentina', icon: <Flag size={16} strokeWidth={1.5} /> },
+  { id: 'mundial', nombre: 'Mundial', icon: <Globe size={16} strokeWidth={1.5} /> },
+  { id: 'champions', nombre: 'Champions League', icon: <Star size={16} strokeWidth={1.5} /> },
+  { id: 'libertadores', nombre: 'Copa Libertadores', icon: <Trophy size={16} strokeWidth={1.5} /> },
 ];
 
 const DIFICULTADES = [
-  { id: 'facil', nombre: 'Fácil', emoji: '😊', descripcion: 'La IA responde lento y comete errores' },
-  { id: 'medio', nombre: 'Medio', emoji: '😐', descripcion: 'Buen nivel y velocidad equilibrada' },
-  { id: 'dificil', nombre: 'Difícil', emoji: '😤', descripcion: 'La IA es precisa y rápida' },
-  { id: 'experto', nombre: 'Experto', emoji: '🔥', descripcion: 'La IA es casi imbatible' },
+  { id: 'facil', nombre: 'Fácil', icon: <Smile size={20} strokeWidth={1.5} />, descripcion: 'La IA responde lento y comete errores' },
+  { id: 'medio', nombre: 'Medio', icon: <Meh size={20} strokeWidth={1.5} />, descripcion: 'Buen nivel y velocidad equilibrada' },
+  { id: 'dificil', nombre: 'Difícil', icon: <Angry size={20} strokeWidth={1.5} />, descripcion: 'La IA es precisa y rápida' },
+  { id: 'experto', nombre: 'Experto', icon: <Flame size={20} strokeWidth={1.5} />, descripcion: 'La IA es casi imbatible' },
 ];
 
 const TIEMPOS = [
@@ -133,6 +134,10 @@ export default function GameSetup() {
           transition: background-position 0.4s, transform 0.15s, box-shadow 0.2s;
           box-shadow: 0 0 20px rgba(56,189,248,0.25);
           text-transform: uppercase;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 8px;
         }
         .play-btn:hover:not(:disabled) {
           background-position: right center;
@@ -154,6 +159,13 @@ export default function GameSetup() {
           color: rgba(56,189,248,0.6);
           text-transform: uppercase;
           margin-bottom: 10px;
+        }
+
+        .lucide-icon {
+          color: #38bdf8;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
         }
       `}</style>
 
@@ -266,7 +278,9 @@ export default function GameSetup() {
           {/* Título */}
           <div style={{ textAlign: 'center', marginBottom: '28px', animation: 'titleEnter 0.8s ease 1.5s both' }}>
             <div style={{ position: 'relative', display: 'inline-block', marginBottom: '12px' }}>
-              <div style={{ fontSize: '44px', lineHeight: 1 }}>⚽</div>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#38bdf8' }}>
+                <CircleDot size={44} strokeWidth={1.5} />
+              </div>
               <div style={{
                 position: 'absolute', inset: '-8px', borderRadius: '50%',
                 border: '1px solid rgba(56,189,248,0.3)',
@@ -304,8 +318,9 @@ export default function GameSetup() {
                 <p className="section-label">Temática</p>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                   {TEMATICAS.map(t => (
-                    <div key={t.id} className={`option-card${tematica === t.id ? ' selected' : ''}`} onClick={() => setTematica(t.id)}>
-                      <span style={{ marginRight: '10px' }}>{t.emoji}</span>
+                    <div key={t.id} className={`option-card${tematica === t.id ? ' selected' : ''}`} onClick={() => setTematica(t.id)}
+                      style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <span className="lucide-icon">{t.icon}</span>
                       <span style={{ fontSize: '13px', fontWeight: tematica === t.id ? 600 : 400 }}>{t.nombre}</span>
                     </div>
                   ))}
@@ -318,7 +333,7 @@ export default function GameSetup() {
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
                   {DIFICULTADES.map(d => (
                     <div key={d.id} className={`option-card${dificultad === d.id ? ' selected' : ''}`} onClick={() => setDificultad(d.id)}>
-                      <div style={{ fontSize: '20px', marginBottom: '4px' }}>{d.emoji}</div>
+                      <div className="lucide-icon" style={{ marginBottom: '4px' }}>{d.icon}</div>
                       <div style={{ fontSize: '13px', fontWeight: 600 }}>{d.nombre}</div>
                       <div style={{ fontSize: '10px', color: 'rgba(148,163,184,0.5)', marginTop: '2px' }}>{d.descripcion}</div>
                     </div>
@@ -331,8 +346,10 @@ export default function GameSetup() {
                 <p className="section-label">Tiempo por ronda</p>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
                   {TIEMPOS.map(t => (
-                    <div key={t.id} className={`option-card${tiempo === t.id ? ' selected' : ''}`} onClick={() => setTiempo(t.id)}>
-                      <span style={{ fontSize: '13px', fontWeight: 600 }}>⏱️ {t.nombre}</span>
+                    <div key={t.id} className={`option-card${tiempo === t.id ? ' selected' : ''}`} onClick={() => setTiempo(t.id)}
+                      style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span className="lucide-icon"><Timer size={14} strokeWidth={1.5} /></span>
+                      <span style={{ fontSize: '13px', fontWeight: 600 }}>{t.nombre}</span>
                     </div>
                   ))}
                 </div>
@@ -340,7 +357,8 @@ export default function GameSetup() {
 
               {/* Botón */}
               <button className="play-btn" onClick={handleStart} disabled={!tematica || !dificultad}>
-                ⚽ ¡JUGAR!
+                <CircleDot size={18} strokeWidth={2} />
+                ¡JUGAR!
               </button>
 
             </div>
