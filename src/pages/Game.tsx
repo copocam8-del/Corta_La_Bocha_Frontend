@@ -44,6 +44,7 @@ export default function Game() {
   const [timeLeft, setTimeLeft] = useState(tiempo || 60);
   const [respuestas, setRespuestas] = useState<Record<string, string>>({});
   const [iaRespuestas, setIaRespuestas] = useState<Record<string, string>>({});
+  const iaBuildRef = useRef<Record<string, string>>({});
   const [finished, setFinished] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
@@ -65,7 +66,13 @@ export default function Game() {
     if (finished) return;
     intervalRef.current = setInterval(() => {
       setTimeLeft(t => {
-        if (t <= 1) { clearInterval(intervalRef.current!); setFinished(true); return 0; }
+        if (t <= 1) {
+          clearInterval(intervalRef.current!);
+          iaTimeoutRef.current.forEach(clearTimeout);
+          setIaRespuestas({ ...iaBuildRef.current });
+          setFinished(true);
+          return 0;
+        }
         return t - 1;
       });
     }, 1000);
@@ -78,7 +85,7 @@ export default function Game() {
     categorias.forEach((cat, i) => {
       const t = setTimeout(() => {
         if (Math.random() > config.errores) {
-          setIaRespuestas(prev => ({ ...prev, [cat]: iaPool[i] || '---' }));
+          iaBuildRef.current = { ...iaBuildRef.current, [cat]: iaPool[i] || '---' };
         }
       }, config.delay + i * 1500);
       iaTimeoutRef.current.push(t);
@@ -86,9 +93,14 @@ export default function Game() {
     return () => iaTimeoutRef.current.forEach(clearTimeout);
   }, [finished]);
 
+  const revealIA = () => {
+    setIaRespuestas({ ...iaBuildRef.current });
+  };
+
   const handleBasta = () => {
     clearInterval(intervalRef.current!);
     iaTimeoutRef.current.forEach(clearTimeout);
+    revealIA();
     setFinished(true);
   };
 
@@ -528,15 +540,23 @@ export default function Game() {
                     height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center',
                     padding: '4px',
                   }}>
-                    {iaRespuestas[cat] ? (
-                      <span style={{
-                        fontFamily: "'Barlow Condensed', sans-serif",
-                        fontSize: '11px', fontWeight: 700,
-                        color: '#ef4444', textTransform: 'uppercase',
-                        animation: 'iaType 0.3s ease forwards',
-                      }}>{iaRespuestas[cat]}</span>
+                    {finished ? (
+                      iaRespuestas[cat] ? (
+                        <span style={{
+                          fontFamily: "'Barlow Condensed', sans-serif",
+                          fontSize: '11px', fontWeight: 700,
+                          color: '#ef4444', textTransform: 'uppercase',
+                          animation: 'iaType 0.4s ease forwards',
+                        }}>{iaRespuestas[cat]}</span>
+                      ) : (
+                        <span style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '11px', color: 'rgba(255,255,255,0.2)' }}>—</span>
+                      )
                     ) : (
-                      <span style={{ fontSize: '12px', opacity: 0.35 }}>{finished ? '' : '⌛'}</span>
+                      iaRespuestas[cat] ? (
+                        <span style={{ fontSize: '14px', opacity: 0.6 }}>✏️</span>
+                      ) : (
+                        <span style={{ fontSize: '12px', opacity: 0.35 }}>⌛</span>
+                      )
                     )}
                   </div>
                 ))}
@@ -550,60 +570,102 @@ export default function Game() {
           </button>
 
           {/* RESULTADO */}
-          {finished && (
-            <div style={{
-              background: 'rgba(10,22,50,0.92)',
-              border: '1px solid rgba(56,189,248,0.2)',
-              borderRadius: '12px', padding: '18px',
-              textAlign: 'center',
-              animation: 'fadeInUp 0.4s ease forwards',
-              backdropFilter: 'blur(16px)',
-            }}>
-              <p style={{
-                fontFamily: "'Barlow Condensed', sans-serif",
-                fontSize: '22px', fontWeight: 800,
-                color: '#f0f9ff', letterSpacing: '2px', margin: '0 0 6px',
-              }}>⏱️ ¡TIEMPO!</p>
-              <div style={{ minHeight: 56, margin: '0 0 12px' }}>
-                {isLoading ? (
-                  <div className="spinner" />
-                ) : apiError ? (
-                  <p style={{ color: 'rgba(239,68,68,0.95)', fontSize: '13px', margin: 0 }}>
-                    {apiError}
-                  </p>
-                ) : resultado ? (
-                  <div style={{ textAlign: 'left' }}>
-                    {resultado.breakdown ? (
-                      Object.entries(resultado.breakdown).map(([cat, info]) => (
+          {finished && (() => {
+            // Calcular puntaje del jugador desde el breakdown del backend
+            const puntajeJugador = resultado?.breakdown
+              ? Object.values(resultado.breakdown).reduce((acc: number, info: any) => acc + (info?.score ?? info?.points ?? 0), 0)
+              : 0;
+
+            // Calcular puntaje de la IA: cada respuesta que la IA dio cuenta como válida (10 pts)
+            // Si coincide con la del jugador = 5 pts (respuesta repetida), si es única = 10 pts
+            const puntajeIA = categorias.reduce((acc, cat) => {
+              if (!iaRespuestas[cat]) return acc;
+              const jugadorResp = (respuestas[cat] || '').trim().toLowerCase();
+              const iaResp = iaRespuestas[cat].trim().toLowerCase();
+              if (!iaResp || iaResp === '---') return acc;
+              // Si coinciden, ambos tienen respuesta repetida (5 pts), si no, la IA tiene única (10 pts)
+              return acc + (jugadorResp === iaResp ? 5 : 10);
+            }, 0);
+
+            const gano = puntajeJugador > puntajeIA;
+            const empate = puntajeJugador === puntajeIA;
+
+            return (
+              <div style={{
+                background: 'rgba(10,22,50,0.92)',
+                border: `1px solid ${gano ? 'rgba(56,189,248,0.35)' : empate ? 'rgba(251,191,36,0.35)' : 'rgba(239,68,68,0.35)'}`,
+                borderRadius: '12px', padding: '18px',
+                textAlign: 'center',
+                animation: 'fadeInUp 0.4s ease forwards',
+                backdropFilter: 'blur(16px)',
+              }}>
+                <p style={{
+                  fontFamily: "'Barlow Condensed', sans-serif",
+                  fontSize: '22px', fontWeight: 800,
+                  color: '#f0f9ff', letterSpacing: '2px', margin: '0 0 10px',
+                }}>⏱️ ¡TIEMPO!</p>
+
+                {/* Marcador */}
+                <div style={{
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  gap: '16px', marginBottom: '12px',
+                }}>
+                  <div style={{ textAlign: 'center' }}>
+                    <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '10px', color: '#38bdf8', letterSpacing: '2px', marginBottom: '4px' }}>VOS</div>
+                    <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '40px', fontWeight: 900, color: '#38bdf8', lineHeight: 1 }}>{puntajeJugador}</div>
+                  </div>
+                  <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '20px', color: 'rgba(255,255,255,0.2)', fontWeight: 700 }}>VS</div>
+                  <div style={{ textAlign: 'center' }}>
+                    <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '10px', color: '#ef4444', letterSpacing: '2px', marginBottom: '4px' }}>IA 🤖</div>
+                    <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '40px', fontWeight: 900, color: '#ef4444', lineHeight: 1 }}>{puntajeIA}</div>
+                  </div>
+                </div>
+
+                {/* Resultado */}
+                <div style={{
+                  fontFamily: "'Barlow Condensed', sans-serif",
+                  fontSize: '18px', fontWeight: 800, letterSpacing: '3px',
+                  color: gano ? '#38bdf8' : empate ? '#fbbf24' : '#ef4444',
+                  marginBottom: '14px',
+                }}>
+                  {gano ? '🏆 ¡GANASTE!' : empate ? '🤝 ¡EMPATE!' : '💀 PERDISTE'}
+                </div>
+
+                {/* Detalle por categoría */}
+                <div style={{ minHeight: 40, marginBottom: '12px' }}>
+                  {isLoading ? (
+                    <div className="spinner" />
+                  ) : apiError ? (
+                    <p style={{ color: 'rgba(239,68,68,0.95)', fontSize: '13px', margin: 0 }}>{apiError}</p>
+                  ) : resultado?.breakdown ? (
+                    <div style={{ textAlign: 'left' }}>
+                      {Object.entries(resultado.breakdown).map(([cat, info]: [string, any]) => (
                         <div key={cat} className="result-item">
                           <div>
                             <div className="cat">{cat}</div>
                             {info?.reason && <div className="result-reason">{info.reason}</div>}
                           </div>
-                          <div className="score">{info?.score ?? info?.points ?? 0}</div>
+                          <div className="score" style={{ color: (info?.score ?? info?.points ?? 0) > 0 ? '#38bdf8' : 'rgba(255,255,255,0.3)' }}>
+                            +{info?.score ?? info?.points ?? 0}
+                          </div>
                         </div>
-                      ))
-                    ) : (
-                      <pre style={{ color: 'rgba(148,163,184,0.6)', whiteSpace: 'pre-wrap' }}>{JSON.stringify(resultado, null, 2)}</pre>
-                    )}
-                  </div>
-                ) : (
-                  <p style={{ color: 'rgba(148,163,184,0.5)', fontSize: '12px', margin: '0 0 14px' }}>
-                    Próximamente verás los resultados y puntaje aquí
-                  </p>
-                )}
+                      ))}
+                    </div>
+                  ) : null}
+                </div>
+
+                <button onClick={() => navigate('/lobby')} style={{
+                  background: 'linear-gradient(90deg, #0284c7, #38bdf8)',
+                  color: '#fff', border: 'none', borderRadius: '8px',
+                  padding: '10px 24px', cursor: 'pointer',
+                  fontFamily: "'Barlow Condensed', sans-serif",
+                  fontSize: '14px', fontWeight: 800, letterSpacing: '2px',
+                }}>
+                  VOLVER AL LOBBY
+                </button>
               </div>
-              <button onClick={() => navigate('/lobby')} style={{
-                background: 'linear-gradient(90deg, #0284c7, #38bdf8)',
-                color: '#fff', border: 'none', borderRadius: '8px',
-                padding: '10px 24px', cursor: 'pointer',
-                fontFamily: "'Barlow Condensed', sans-serif",
-                fontSize: '14px', fontWeight: 800, letterSpacing: '2px',
-              }}>
-                VOLVER AL LOBBY
-              </button>
-            </div>
-          )}
+            );
+          })()}
         </div>
       </div>
     </>
