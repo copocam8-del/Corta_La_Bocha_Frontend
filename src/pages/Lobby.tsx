@@ -13,7 +13,6 @@ export default function Lobby() {
     return () => clearTimeout(t);
   }, []);
 
-  // motas de luz flotando sobre la cancha
   const sparks = useMemo(
     () =>
       Array.from({ length: 16 }).map((_, i) => ({
@@ -193,13 +192,12 @@ export default function Lobby() {
         fontFamily: "'Inter', sans-serif",
       }}>
 
-        {/* CANCHA: pasto con franjas de corte + líneas blancas/neón, con leve movimiento de cámara */}
+        {/* CANCHA */}
         <div style={{
           position: 'absolute', inset: '-3%',
           animation: 'kenBurns 24s ease-in-out infinite alternate',
           pointerEvents: 'none',
         }}>
-          {/* franjas de pasto cortado */}
           <div style={{
             position: 'absolute', inset: 0,
             background: `repeating-linear-gradient(
@@ -209,7 +207,6 @@ export default function Lobby() {
             )`,
           }}/>
 
-          {/* tinte verde neón nocturno sobre el pasto (luces de estadio) */}
           <div style={{
             position: 'absolute', inset: 0,
             background: `
@@ -220,7 +217,6 @@ export default function Lobby() {
             mixBlendMode: 'screen',
           }}/>
 
-          {/* líneas de cancha con glow neón */}
           <svg
             viewBox="0 0 1600 900"
             preserveAspectRatio="xMidYMid slice"
@@ -251,7 +247,6 @@ export default function Lobby() {
             </g>
           </svg>
 
-          {/* halos de reflector */}
           <div style={{
             position: 'absolute', top: '-8%', left: '4%',
             width: '34%', height: '34%', borderRadius: '50%',
@@ -265,7 +260,6 @@ export default function Lobby() {
             animation: 'floodPulse 5s ease-in-out 1s infinite',
           }}/>
 
-          {/* viñeta para legibilidad */}
           <div style={{
             position: 'absolute', inset: 0,
             background: 'radial-gradient(ellipse 70% 70% at 50% 48%, transparent 35%, rgba(0,4,2,0.78) 100%)',
@@ -360,7 +354,9 @@ export default function Lobby() {
 
             {/* Con amigos */}
             <p className="section-label" style={{ marginTop: '8px' }}>Con amigos</p>
-            <button className="mode-card" onClick={() => alert('Próximamente')}>
+
+            {/* ← CAMBIO 1: navega a /create-room */}
+            <button className="mode-card" onClick={() => navigate('/create-room')}>
               <span className="mode-card-icon"><Home size={28} strokeWidth={1.5} /></span>
               <div>
                 <div style={{ fontWeight: 600, fontSize: '14px' }}>Crear sala privada</div>
@@ -376,7 +372,6 @@ export default function Lobby() {
               </div>
             </button>
 
-            {/* Input código */}
             {showJoinInput && (
               <div style={{ animation: 'slideDown 0.2s ease forwards', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 <input
@@ -386,7 +381,12 @@ export default function Lobby() {
                   onChange={e => setRoomCode(e.target.value.toUpperCase())}
                   maxLength={6}
                 />
-                <button className="join-btn" disabled={roomCode.length < 4} onClick={() => alert('Próximamente')}>
+                {/* ← CAMBIO 2: navega a /room/:code */}
+                <button
+                  className="join-btn"
+                  disabled={roomCode.length < 4}
+                  onClick={() => navigate(`/room/${roomCode}`, { state: { isHost: false, code: roomCode } })}
+                >
                   Unirse a la sala
                 </button>
               </div>
