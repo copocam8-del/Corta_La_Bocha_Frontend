@@ -5,6 +5,10 @@ import Dashboard from './pages/Dashboard';
 import GameSetup from './pages/GameSetup';
 import Lobby from './pages/Lobby';
 import Game from './pages/Game';
+import CreateRoom from './pages/CreateRoom';
+import RoomCode from './pages/RoomCode';
+import Room from './pages/Room';
+import GameMulti from './pages/GameMulti';
 
 export default function App() {
   return (
@@ -17,6 +21,10 @@ export default function App() {
         <Route path="/game-setup" element={<GameSetup />} />
         <Route path="/lobby" element={<Lobby />} />
         <Route path="/game" element={<Game />} />
+        <Route path="/create-room" element={<CreateRoom />} />
+        <Route path="/room-code" element={<RoomCode />} />
+        <Route path="/room/:code" element={<Room />} />
+        <Route path="/game-multi" element={<GameMulti />} />
       </Routes>
     </BrowserRouter>
   );
