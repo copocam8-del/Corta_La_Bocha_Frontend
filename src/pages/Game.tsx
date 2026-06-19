@@ -109,11 +109,16 @@ export default function Game() {
     setIsLoading(true);
     setApiError(null);
 
-    const mapValue = (variants: string[]) => {
-      for (const v of variants) if (respuestas[v]) return respuestas[v];
-      return '';
+    // Payload en el formato exacto que espera el backend
+    const payload = {
+      roundLetter: letra,
+      answers: categorias.map(cat => ({
+        category: cat,
+        answer: respuestas[cat]?.trim() || null,
+      })),
     };
 
+<<<<<<< Updated upstream
     const mappedRespuestas = {
       jugador: mapValue(['Jugador', 'Jugador Arg', 'Jugador Argentino']),
       equipo: mapValue(['Equipo', 'Equipo Arg']),
@@ -130,6 +135,19 @@ export default function Game() {
     sendRoundResults(payload)
       .then(res => { console.log('Respuesta exitosa de /tutti-frutti:', res); setResultado(res.data); })
       .catch(err => { console.error('Error en /tutti-frutti:', err?.response ?? err.message ?? err); setApiError('No se pudo conectar con el servidor. Intenta nuevamente más tarde.'); })
+=======
+    console.log('Enviando payload a /tutti-frutti/validate-round:', payload);
+
+    sendRoundResults(payload)
+      .then(res => {
+        console.log('Respuesta exitosa:', res.data);
+        setResultado(res.data);
+      })
+      .catch(err => {
+        console.error('Error en /tutti-frutti/validate-round:', err?.response ?? err.message ?? err);
+        setApiError('No se pudo conectar con el servidor. Intenta nuevamente más tarde.');
+      })
+>>>>>>> Stashed changes
       .finally(() => setIsLoading(false));
   }, [finished]);
 
@@ -548,15 +566,24 @@ export default function Game() {
 
           {/* RESULTADO */}
           {finished && (() => {
+<<<<<<< Updated upstream
             const puntajeJugador = resultado?.breakdown
               ? Object.values(resultado.breakdown).reduce((acc: number, info: any) => acc + (info?.score ?? info?.points ?? 0), 0)
               : 0;
 
+=======
+            // El backend devuelve totalPoints directamente
+            const puntajeJugador = resultado?.totalPoints ?? 0;
+
+            // Puntaje de la IA: 10 pts por respuesta única, 5 si coincide con el jugador
+>>>>>>> Stashed changes
             const puntajeIA = categorias.reduce((acc, cat) => {
-              if (!iaRespuestas[cat]) return acc;
-              const jugadorResp = (respuestas[cat] || '').trim().toLowerCase();
-              const iaResp = iaRespuestas[cat].trim().toLowerCase();
+              const iaResp = (iaBuildRef.current[cat] || '').trim().toLowerCase();
               if (!iaResp || iaResp === '---') return acc;
+<<<<<<< Updated upstream
+=======
+              const jugadorResp = (respuestas[cat] || '').trim().toLowerCase();
+>>>>>>> Stashed changes
               return acc + (jugadorResp === iaResp ? 5 : 10);
             }, 0);
 
@@ -589,7 +616,9 @@ export default function Game() {
                 }}>
                   <div style={{ textAlign: 'center' }}>
                     <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '10px', color: '#38bdf8', letterSpacing: '2px', marginBottom: '4px' }}>VOS</div>
-                    <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '40px', fontWeight: 900, color: '#38bdf8', lineHeight: 1 }}>{puntajeJugador}</div>
+                    <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '40px', fontWeight: 900, color: '#38bdf8', lineHeight: 1 }}>
+                      {isLoading ? '...' : puntajeJugador}
+                    </div>
                   </div>
                   <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '20px', color: 'rgba(255,255,255,0.2)', fontWeight: 700 }}>VS</div>
                   <div style={{ textAlign: 'center' }}>
@@ -603,6 +632,7 @@ export default function Game() {
                   </div>
                 </div>
 
+<<<<<<< Updated upstream
                 {/* Resultado */}
                 <div style={{
                   fontFamily: "'Barlow Condensed', sans-serif",
@@ -613,6 +643,19 @@ export default function Game() {
                 }}>
                   {gano ? <><Trophy size={20} strokeWidth={2} /> ¡GANASTE!</> : empate ? <><Handshake size={20} strokeWidth={2} /> ¡EMPATE!</> : <><Skull size={20} strokeWidth={2} /> PERDISTE</>}
                 </div>
+=======
+                {/* Ganador — solo se muestra cuando ya llegó la respuesta del backend */}
+                {!isLoading && !apiError && (
+                  <div style={{
+                    fontFamily: "'Barlow Condensed', sans-serif",
+                    fontSize: '18px', fontWeight: 800, letterSpacing: '3px',
+                    color: gano ? '#38bdf8' : empate ? '#fbbf24' : '#ef4444',
+                    marginBottom: '14px',
+                  }}>
+                    {gano ? '🏆 ¡GANASTE!' : empate ? '🤝 ¡EMPATE!' : '💀 PERDISTE'}
+                  </div>
+                )}
+>>>>>>> Stashed changes
 
                 {/* Detalle */}
                 <div style={{ minHeight: 40, marginBottom: '12px' }}>
@@ -620,16 +663,16 @@ export default function Game() {
                     <div className="spinner" />
                   ) : apiError ? (
                     <p style={{ color: 'rgba(239,68,68,0.95)', fontSize: '13px', margin: 0 }}>{apiError}</p>
-                  ) : resultado?.breakdown ? (
+                  ) : resultado?.results ? (
                     <div style={{ textAlign: 'left' }}>
-                      {Object.entries(resultado.breakdown).map(([cat, info]: [string, any]) => (
-                        <div key={cat} className="result-item">
+                      {resultado.results.map((item: any) => (
+                        <div key={item.category} className="result-item">
                           <div>
-                            <div className="cat">{cat}</div>
-                            {info?.reason && <div className="result-reason">{info.reason}</div>}
+                            <div className="cat">{item.category}: <span style={{ fontWeight: 400, textTransform: 'none' }}>{item.userAnswer || '—'}</span></div>
+                            {item.reason && <div className="result-reason">{item.reason}</div>}
                           </div>
-                          <div className="score" style={{ color: (info?.score ?? info?.points ?? 0) > 0 ? '#38bdf8' : 'rgba(255,255,255,0.3)' }}>
-                            +{info?.score ?? info?.points ?? 0}
+                          <div className="score" style={{ color: item.points > 0 ? '#38bdf8' : 'rgba(255,255,255,0.3)' }}>
+                            +{item.points}
                           </div>
                         </div>
                       ))}
