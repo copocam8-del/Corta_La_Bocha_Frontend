@@ -9,6 +9,10 @@ import CreateRoom from './pages/CreateRoom';
 import RoomCode from './pages/RoomCode';
 import Room from './pages/Room';
 import GameMulti from './pages/GameMulti';
+import PublicSetup from './pages/PublicSetup';
+import PublicQueue from './pages/PublicQueue';
+// CAMBIO ACÁ: Cambiamos './components/GlobalRanking' por './pages/GlobalRanking'
+import GlobalRanking from './pages/GlobalRanking'; 
 
 export default function App() {
   return (
@@ -25,6 +29,10 @@ export default function App() {
         <Route path="/room-code" element={<RoomCode />} />
         <Route path="/room/:code" element={<Room />} />
         <Route path="/game-multi" element={<GameMulti />} />
+        <Route path="/public-setup" element={<PublicSetup />} />
+        <Route path="/public-queue" element={<PublicQueue />} />
+        <Route path="/global-ranking" element={<GlobalRanking />} />
+        <Route path="/ranking" element={<GlobalRanking />} />
       </Routes>
     </BrowserRouter>
   );

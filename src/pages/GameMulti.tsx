@@ -328,74 +328,90 @@ export default function GameMulti() {
           animation: entered ? 'riseIn 0.6s ease both' : 'none',
         }}>
 
-          {/* HEADER */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            {/* Meta */}
-            <div>
-              <p style={{
-                fontFamily: "'Oswald', sans-serif", fontSize: '10px', letterSpacing: '3px',
-                color: 'rgba(57,255,140,0.55)', textTransform: 'uppercase', margin: 0,
-              }}>Sala {code} · {dificultad}</p>
-              <p style={{
-                fontFamily: "'Oswald', sans-serif", fontSize: '13px',
-                color: 'rgba(255,255,255,0.4)', margin: '2px 0 0',
-                textTransform: 'uppercase', letterSpacing: '1px',
-              }}>{tematica?.replace('_', ' ')}</p>
-              {/* Jugadores en sala */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '4px' }}>
-                <Users size={11} strokeWidth={1.5} color="rgba(124,255,178,0.5)"/>
-                <span style={{
-                  fontFamily: "'Oswald', sans-serif", fontSize: '10px',
-                  color: 'rgba(124,255,178,0.5)', letterSpacing: '1px',
-                }}>{players?.length || 1} jugadores</span>
-              </div>
-            </div>
-
-            {/* Letra */}
+          {/* HEADER REORGANIZADO */}
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px', width: '100%' }}>
+            
+            {/* Letra: Arriba de todo y bien centrada */}
             <div style={{
               display: 'flex', flexDirection: 'column', alignItems: 'center',
               animation: entered ? 'letterPop 0.6s cubic-bezier(0.34,1.56,0.64,1) 0.3s both' : 'none',
             }}>
               <div style={{
-                width: '62px', height: '62px',
+                width: '68px', height: '68px',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 background: 'rgba(4,20,11,0.85)',
                 border: '2px solid rgba(57,255,140,0.55)', borderRadius: '12px',
                 boxShadow: '0 0 24px rgba(57,255,140,0.2), inset 0 1px 0 rgba(57,255,140,0.1)',
               }}>
                 <span style={{
-                  fontFamily: "'Oswald', sans-serif", fontSize: '44px', fontWeight: 700,
-                  color: '#eafff2', lineHeight: 1,
+                  fontFamily: "'Oswald', sans-serif",
+                  fontWeight: 700,
+                  fontSize: '38px',
+                  lineHeight: '68px',
+                  height: '68px',
+                  width: '100%',
+                  color: '#eafff2',
                   animation: 'titleGlow 2.6s ease-in-out infinite',
-                }}>{letra}</span>
+                  display: 'block',
+                  textAlign: 'center',
+                  textTransform: 'uppercase',
+                }}>
+                  {letra}
+                </span>
               </div>
               <p style={{
-                fontFamily: "'Oswald', sans-serif", fontSize: '8px', letterSpacing: '2px',
-                color: 'rgba(57,255,140,0.45)', marginTop: '3px', textTransform: 'uppercase',
+                fontFamily: "'Oswald', sans-serif", fontSize: '9px', letterSpacing: '2px',
+                color: 'rgba(57,255,140,0.45)', marginTop: '4px', textTransform: 'uppercase',
+                whiteSpace: 'nowrap',
               }}>Letra</p>
             </div>
 
-            {/* Timer */}
-            <div style={{ textAlign: 'right' }}>
-              <p style={{
-                fontFamily: "'Oswald', sans-serif", fontSize: '10px', letterSpacing: '2px',
-                color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', margin: 0,
-              }}>Tiempo</p>
-              <p style={{
-                fontFamily: "'Oswald', sans-serif", fontSize: '38px', fontWeight: 700,
-                margin: 0, lineHeight: 1, color: timerColor,
-                animation: timeLeft <= 10 ? 'timerWarn 0.5s ease infinite' : 'none',
-                textShadow: `0 0 18px ${timerColor}`,
-              }}>{timeLeft}</p>
-              <p style={{
-                fontFamily: "'Oswald', sans-serif", fontSize: '9px',
-                color: 'rgba(255,255,255,0.25)', margin: 0,
-              }}>seg</p>
+            {/* Datos y Timer en una fila debajo de la letra */}
+            <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', width: '100%' }}>
+              {/* Meta */}
+              <div>
+                <p style={{
+                  fontFamily: "'Oswald', sans-serif", fontSize: '11px', letterSpacing: '3px',
+                  color: 'rgba(57,255,140,0.55)', textTransform: 'uppercase', margin: 0,
+                }}>Sala {code} · {dificultad}</p>
+                <p style={{
+                  fontFamily: "'Oswald', sans-serif", fontSize: '14px',
+                  color: 'rgba(255,255,255,0.4)', margin: '2px 0 0',
+                  textTransform: 'uppercase', letterSpacing: '1px',
+                }}>{tematica?.replace('_', ' ')}</p>
+                {/* Jugadores en sala */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '4px' }}>
+                  <Users size={11} strokeWidth={1.5} color="rgba(124,255,178,0.5)"/>
+                  <span style={{
+                    fontFamily: "'Oswald', sans-serif", fontSize: '10px',
+                    color: 'rgba(124,255,178,0.5)', letterSpacing: '1px',
+                  }}>{players?.length || 1} jugadores</span>
+                </div>
+              </div>
+
+              {/* Timer */}
+              <div style={{ textAlign: 'right' }}>
+                <p style={{
+                  fontFamily: "'Oswald', sans-serif", fontSize: '10px', letterSpacing: '2px',
+                  color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', margin: 0,
+                }}>Tiempo</p>
+                <p style={{
+                  fontFamily: "'Oswald', sans-serif", fontSize: '38px', fontWeight: 700,
+                  margin: 0, lineHeight: 1, color: timerColor,
+                  animation: timeLeft <= 10 ? 'timerWarn 0.5s ease infinite' : 'none',
+                  textShadow: `0 0 18px ${timerColor}`,
+                }}>{timeLeft}</p>
+                <p style={{
+                  fontFamily: "'Oswald', sans-serif", fontSize: '9px',
+                  color: 'rgba(255,255,255,0.25)', margin: 0,
+                }}>seg</p>
+              </div>
             </div>
+
           </div>
 
           {/* Barra de tiempo */}
-          <div style={{ height: '3px', background: 'rgba(57,255,140,0.1)', borderRadius: '2px', overflow: 'hidden' }}>
+          <div style={{ height: '3px', background: 'rgba(57,255,140,0.1)', borderRadius: '2px', overflow: 'hidden', marginBottom: '16px', marginTop: '8px' }}>
             <div style={{
               height: '100%', width: `${timerPct}%`, background: timerColor,
               transition: 'width 1s linear, background 0.5s ease',
@@ -403,8 +419,8 @@ export default function GameMulti() {
             }}/>
           </div>
 
-          {/* GRILLA */}
-          <div style={{ overflowX: 'auto' }}>
+          {/* GRILLA (con un pequeño margen superior para despegarse del header) */}
+          <div style={{ overflowX: 'auto', marginTop: '12px' }}>
             <div className="game-card" style={{
               minWidth: `${60 + categorias.length * 105}px`,
               background: 'rgba(4,20,11,0.72)',
@@ -428,6 +444,11 @@ export default function GameMulti() {
                     borderRight: i < categorias.length - 1 ? '1px solid rgba(57,255,140,0.1)' : 'none',
                     textAlign: 'center',
                   }}>
+                    <span style={{
+                      fontFamily: "'Oswald', sans-serif", fontSize: '9px', fontWeight: 600,
+                      color: 'rgba(124,255,178,0.7)', letterSpacing: '1.5px',
+                      textTransform: 'uppercase', lineHeight: 1.2, display: 'block',
+                    }}>/</span>
                     <span style={{
                       fontFamily: "'Oswald', sans-serif", fontSize: '9px', fontWeight: 600,
                       color: 'rgba(124,255,178,0.7)', letterSpacing: '1.5px',
@@ -554,6 +575,11 @@ export default function GameMulti() {
                       </div>
 
                       {/* Puntos */}
+                      <span style={{
+                        fontFamily: "'Oswald', sans-serif", fontSize: '18px', fontWeight: 700,
+                        color: i === 0 ? '#fbbf24' : '#39ff8c',
+                        textShadow: i === 0 ? '0 0 12px rgba(251,191,36,0.5)' : 'none',
+                      }}>/</span>
                       <span style={{
                         fontFamily: "'Oswald', sans-serif", fontSize: '18px', fontWeight: 700,
                         color: i === 0 ? '#fbbf24' : '#39ff8c',

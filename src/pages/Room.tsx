@@ -24,6 +24,8 @@ const DIFICULTADES = [
 ];
 const TIEMPOS = [30, 45, 60, 90, 120];
 
+const MAX_PLAYERS = 15;
+
 // ─── Component ────────────────────────────────────────────────────────────────
 export default function Room() {
   const navigate  = useNavigate();
@@ -58,6 +60,7 @@ export default function Room() {
     const t = setTimeout(() => {
       setPlayers(prev => {
         if (prev.find(p => p.id === '4')) return prev;
+        if (prev.length >= MAX_PLAYERS) return prev;
         return [...prev, { id: '4', name: 'Lucas', isHost: false, points: 0, ready: true }];
       });
     }, 3000);
@@ -84,6 +87,7 @@ export default function Room() {
   };
 
   const canStart = players.length >= 2;
+  const isFull   = players.length >= MAX_PLAYERS;
 
   const handleJugar = () => {
     navigate('/game-multi', {
@@ -348,7 +352,7 @@ export default function Room() {
             }}>
               <p className="section-label" style={{ marginBottom: 0 }}>
                 <Users size={12} style={{ display: 'inline', verticalAlign: 'middle', marginRight: '6px' }}/>
-                Jugadores ({players.length}/10)
+                Jugadores ({players.length}/{MAX_PLAYERS})
               </p>
               {!canStart && (
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -359,6 +363,12 @@ export default function Room() {
                   }}>Esperando...</span>
                 </div>
               )}
+              {isFull && (
+                <span style={{
+                  fontFamily: "'Oswald', sans-serif", fontSize: '10px',
+                  color: '#fbbf24', letterSpacing: '1px', textTransform: 'uppercase',
+                }}>¡Sala llena!</span>
+              )}
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
@@ -368,9 +378,7 @@ export default function Room() {
                     {p.name.charAt(0).toUpperCase()}
                   </div>
                   <div style={{ flex: 1 }}>
-                    <div style={{
-                      display: 'flex', alignItems: 'center', gap: '6px',
-                    }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                       <span style={{
                         fontFamily: "'Oswald', sans-serif", fontSize: '14px', fontWeight: 600,
                         color: '#eafff2', letterSpacing: '0.5px',
@@ -402,7 +410,6 @@ export default function Room() {
               boxShadow: '0 30px 60px -20px rgba(0,0,0,0.75)',
               display: 'flex', flexDirection: 'column', gap: '14px',
             }}>
-              {/* Temática */}
               <div>
                 <p className="section-label">
                   <Globe size={11} style={{ display: 'inline', verticalAlign: 'middle', marginRight: '6px' }}/>
@@ -418,7 +425,6 @@ export default function Room() {
                 </div>
               </div>
 
-              {/* Dificultad */}
               <div>
                 <p className="section-label">
                   <Swords size={11} style={{ display: 'inline', verticalAlign: 'middle', marginRight: '6px' }}/>
@@ -434,7 +440,6 @@ export default function Room() {
                 </div>
               </div>
 
-              {/* Tiempo */}
               <div>
                 <p className="section-label">
                   <Clock size={11} style={{ display: 'inline', verticalAlign: 'middle', marginRight: '6px' }}/>

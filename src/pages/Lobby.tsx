@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Bot, Home, KeyRound, Globe } from 'lucide-react';
+import { Bot, Home, KeyRound, Globe, Trophy } from 'lucide-react';
 
 export default function Lobby() {
   const [entered, setEntered] = useState(false);
@@ -42,12 +42,12 @@ export default function Lobby() {
         }
         @keyframes neonPulse {
           0%, 100% {
-            box-shadow: 0 0 18px rgba(57,255,140,0.35), 0 0 40px rgba(57,255,140,0.15), inset 0 0 0 rgba(0,0,0,0);
-            border-color: rgba(57,255,140,0.45);
+            box-shadow: 0 0 14px rgba(57,255,140,0.25), 0 0 30px rgba(57,255,140,0.1), inset 0 0 0 rgba(0,0,0,0);
+            border-color: rgba(57,255,140,0.35);
           }
           50% {
-            box-shadow: 0 0 28px rgba(57,255,140,0.6), 0 0 60px rgba(57,255,140,0.3), inset 0 0 0 rgba(0,0,0,0);
-            border-color: rgba(57,255,140,0.85);
+            box-shadow: 0 0 22px rgba(57,255,140,0.45), 0 0 45px rgba(57,255,140,0.2), inset 0 0 0 rgba(0,0,0,0);
+            border-color: rgba(57,255,140,0.75);
           }
         }
         @keyframes lineGlow {
@@ -64,7 +64,7 @@ export default function Lobby() {
           100% { transform: translate(var(--dx), -160px); opacity: 0; }
         }
         @keyframes riseIn {
-          0%   { opacity: 0; transform: translateY(22px); }
+          0%   { opacity: 0; transform: translateY(15px); }
           100% { opacity: 1; transform: translateY(0); }
         }
         @keyframes popIn {
@@ -72,15 +72,15 @@ export default function Lobby() {
           100% { opacity: 1; transform: scale(1) rotate(0deg); }
         }
         @keyframes fadeIn {
-          from { opacity: 0; transform: translateY(6px); }
+          from { opacity: 0; transform: translateY(4px); }
           to   { opacity: 1; transform: translateY(0); }
         }
         @keyframes titleGlow {
-          0%, 100% { text-shadow: 0 0 16px rgba(57,255,140,0.45), 0 0 36px rgba(57,255,140,0.2); }
-          50%      { text-shadow: 0 0 24px rgba(57,255,140,0.75), 0 0 54px rgba(57,255,140,0.4); }
+          0%, 100% { text-shadow: 0 0 12px rgba(57,255,140,0.35), 0 0 26px rgba(57,255,140,0.15); }
+          50%      { text-shadow: 0 0 18px rgba(57,255,140,0.6), 0 0 40px rgba(57,255,140,0.3); }
         }
         @keyframes slideDown {
-          0%   { opacity: 0; transform: translateY(-10px); }
+          0%   { opacity: 0; transform: translateY(-8px); }
           100% { opacity: 1; transform: translateY(0); }
         }
 
@@ -96,29 +96,29 @@ export default function Lobby() {
         }
 
         .mode-card {
-          border: 1px solid rgba(57,255,140,0.2);
-          background: rgba(57,255,140,0.03);
-          border-radius: 12px;
-          padding: 18px 20px;
+          border: 1px solid rgba(57,255,140,0.15);
+          background: rgba(57,255,140,0.02);
+          border-radius: 10px;
+          padding: 10px 14px;
           cursor: pointer;
           transition: all 0.2s ease;
           color: #ecfff3;
           font-family: 'Inter', sans-serif;
           display: flex;
           align-items: center;
-          gap: 16px;
+          gap: 12px;
           width: 100%;
           text-align: left;
         }
         .mode-card:hover {
-          border-color: rgba(57,255,140,0.6);
-          background: rgba(57,255,140,0.08);
+          border-color: rgba(57,255,140,0.5);
+          background: rgba(57,255,140,0.06);
           transform: translateX(4px);
-          box-shadow: 0 0 20px rgba(57,255,140,0.15);
+          box-shadow: 0 0 15px rgba(57,255,140,0.12);
         }
 
         .mode-card-icon {
-          min-width: 40px;
+          min-width: 32px;
           display: flex;
           align-items: center;
           justify-content: center;
@@ -130,9 +130,9 @@ export default function Lobby() {
           border: 1px solid rgba(57,255,140,0.35);
           color: #ecfff3;
           width: 100%;
-          padding: 12px 16px;
-          border-radius: 8px;
-          font-size: 16px;
+          padding: 10px 12px;
+          border-radius: 6px;
+          font-size: 15px;
           font-family: 'Oswald', sans-serif;
           font-weight: 600;
           letter-spacing: 4px;
@@ -144,11 +144,11 @@ export default function Lobby() {
         .join-input::placeholder {
           color: rgba(190,255,210,0.3);
           letter-spacing: 2px;
-          font-size: 13px;
+          font-size: 12px;
         }
         .join-input:focus {
           border-color: #39ff8c;
-          box-shadow: 0 0 0 3px rgba(57,255,140,0.15), 0 0 18px rgba(57,255,140,0.3);
+          box-shadow: 0 0 0 3px rgba(57,255,140,0.12), 0 0 14px rgba(57,255,140,0.25);
         }
 
         .join-btn {
@@ -156,29 +156,29 @@ export default function Lobby() {
           color: #04210f;
           font-family: 'Inter', sans-serif;
           font-weight: 600;
-          font-size: 14px;
+          font-size: 13px;
           letter-spacing: 1px;
-          padding: 12px;
-          border-radius: 8px;
+          padding: 10px;
+          border-radius: 6px;
           border: none;
           cursor: pointer;
           width: 100%;
           transition: all 0.2s ease;
-          box-shadow: 0 0 18px rgba(57,255,140,0.4);
+          box-shadow: 0 0 14px rgba(57,255,140,0.3);
         }
         .join-btn:hover:not(:disabled) {
           filter: brightness(1.1);
-          box-shadow: 0 0 26px rgba(57,255,140,0.6);
+          box-shadow: 0 0 20px rgba(57,255,140,0.5);
         }
         .join-btn:disabled { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.2); cursor: not-allowed; box-shadow: none; }
 
         .section-label {
           font-family: 'Oswald', sans-serif;
-          font-size: 11px;
-          letter-spacing: 3px;
-          color: rgba(124,255,178,0.6);
+          font-size: 10px;
+          letter-spacing: 2px;
+          color: rgba(124,255,178,0.55);
           text-transform: uppercase;
-          margin-bottom: 8px;
+          margin-bottom: 4px;
         }
       `}</style>
 
@@ -187,7 +187,7 @@ export default function Lobby() {
         position: 'relative',
         overflow: 'hidden',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        padding: '24px',
+        padding: '12px 24px',
         background: '#010805',
         fontFamily: "'Inter', sans-serif",
       }}>
@@ -281,32 +281,32 @@ export default function Lobby() {
         ))}
 
         {/* CONTENIDO */}
-        <div style={{ width: '100%', maxWidth: '420px', position: 'relative', zIndex: 2 }}>
+        <div style={{ width: '100%', maxWidth: '400px', position: 'relative', zIndex: 2 }}>
 
           <div style={{
-            textAlign: 'center', marginBottom: '26px',
+            textAlign: 'center', marginBottom: '14px',
             opacity: entered ? 1 : 0,
             animation: entered ? 'riseIn 0.6s ease both' : 'none',
           }}>
             <p style={{
               fontSize: '11px', letterSpacing: '3px', fontWeight: 500,
-              color: '#7CFFB2', textTransform: 'uppercase', marginBottom: '12px',
-            }}>Temporada 2025</p>
+              color: '#7CFFB2', textTransform: 'uppercase', marginBottom: '6px',
+            }}>Temporada 2026</p>
 
             <div
               className="ball-logo"
               style={{
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                width: '60px', height: '60px',
-                margin: '0 auto 14px',
+                width: '46px', height: '46px',
+                margin: '0 auto 8px',
                 opacity: entered ? 1 : 0,
                 animation: entered
                   ? 'popIn 0.5s cubic-bezier(0.34,1.56,0.64,1) 0.15s both, spin 14s linear infinite'
                   : 'none',
-                filter: 'drop-shadow(0 0 16px rgba(57,255,140,0.65))',
+                filter: 'drop-shadow(0 0 12px rgba(57,255,140,0.55))',
               }}
             >
-              <svg viewBox="0 0 64 64" width="60" height="60" style={{ display: 'block' }}>
+              <svg viewBox="0 0 64 64" width="46" height="46" style={{ display: 'block' }}>
                 <circle cx="32" cy="32" r="29" fill="rgba(57,255,140,0.12)" stroke="#a8ffcb" strokeWidth="2.5"/>
                 <polygon points="32,19 44.4,28 39.6,42.5 24.4,42.5 19.6,28" fill="#a8ffcb"/>
                 <line x1="32" y1="19" x2="32" y2="5" stroke="#a8ffcb" strokeWidth="2"/>
@@ -319,61 +319,60 @@ export default function Lobby() {
 
             <h1 className="neon-title" style={{
               fontFamily: "'Oswald', sans-serif",
-              fontSize: '30px', fontWeight: 700,
-              letterSpacing: '1px', margin: '0 0 6px',
+              fontSize: '26px', fontWeight: 700,
+              letterSpacing: '1px', margin: '0 0 4px',
               color: '#eafff2', textTransform: 'uppercase',
             }}>Jugar</h1>
             <p style={{
-              fontSize: '13px', color: 'rgba(180,255,205,0.75)', margin: 0,
+              fontSize: '12px', color: 'rgba(180,255,205,0.75)', margin: 0,
             }}>¿Cómo querés jugar?</p>
           </div>
 
           <div className="lobby-card" style={{
-            background: 'rgba(4,20,11,0.62)',
+            background: 'rgba(4,20,11,0.65)',
             backdropFilter: 'blur(18px)',
             WebkitBackdropFilter: 'blur(18px)',
-            border: '1px solid rgba(57,255,140,0.3)',
-            borderTop: '2px solid rgba(57,255,140,0.7)',
-            borderRadius: '16px',
-            padding: '24px',
-            boxShadow: '0 30px 60px -20px rgba(0,0,0,0.75)',
+            border: '1px solid rgba(57,255,140,0.25)',
+            borderTop: '2px solid rgba(57,255,140,0.65)',
+            borderRadius: '14px',
+            padding: '16px 20px',
+            boxShadow: '0 25px 50px -15px rgba(0,0,0,0.75)',
             opacity: entered ? 1 : 0,
             animation: entered ? 'riseIn 0.6s ease 0.1s both' : 'none',
-            display: 'flex', flexDirection: 'column', gap: '10px',
+            display: 'flex', flexDirection: 'column', gap: '8px',
           }}>
 
             {/* Solo */}
             <p className="section-label">Solo</p>
             <button className="mode-card" onClick={() => navigate('/game-setup')}>
-              <span className="mode-card-icon"><Bot size={28} strokeWidth={1.5} /></span>
+              <span className="mode-card-icon"><Bot size={24} strokeWidth={1.5} /></span>
               <div>
-                <div style={{ fontWeight: 600, fontSize: '14px' }}>Contra la IA</div>
-                <div style={{ fontSize: '12px', color: 'rgba(180,255,205,0.5)', marginTop: '2px' }}>Jugá solo contra la inteligencia artificial</div>
+                <div style={{ fontWeight: 600, fontSize: '13px' }}>Contra la IA</div>
+                <div style={{ fontSize: '11px', color: 'rgba(180,255,205,0.5)', marginTop: '1px' }}>Jugá solo contra la inteligencia artificial</div>
               </div>
             </button>
 
             {/* Con amigos */}
-            <p className="section-label" style={{ marginTop: '8px' }}>Con amigos</p>
+            <p className="section-label" style={{ marginTop: '4px' }}>Con amigos</p>
 
-            {/* ← CAMBIO 1: navega a /create-room */}
             <button className="mode-card" onClick={() => navigate('/create-room')}>
-              <span className="mode-card-icon"><Home size={28} strokeWidth={1.5} /></span>
+              <span className="mode-card-icon"><Home size={24} strokeWidth={1.5} /></span>
               <div>
-                <div style={{ fontWeight: 600, fontSize: '14px' }}>Crear sala privada</div>
-                <div style={{ fontSize: '12px', color: 'rgba(180,255,205,0.5)', marginTop: '2px' }}>Creá una sala e invitá a tus amigos con un código</div>
+                <div style={{ fontWeight: 600, fontSize: '13px' }}>Crear sala privada</div>
+                <div style={{ fontSize: '11px', color: 'rgba(180,255,205,0.5)', marginTop: '1px' }}>Creá una sala e invitá a tus amigos con un código</div>
               </div>
             </button>
 
             <button className="mode-card" onClick={() => setShowJoinInput(!showJoinInput)}>
-              <span className="mode-card-icon"><KeyRound size={28} strokeWidth={1.5} /></span>
+              <span className="mode-card-icon"><KeyRound size={24} strokeWidth={1.5} /></span>
               <div>
-                <div style={{ fontWeight: 600, fontSize: '14px' }}>Unirse con código</div>
-                <div style={{ fontSize: '12px', color: 'rgba(180,255,205,0.5)', marginTop: '2px' }}>Ingresá el código de una sala privada</div>
+                <div style={{ fontWeight: 600, fontSize: '13px' }}>Unirse con código</div>
+                <div style={{ fontSize: '11px', color: 'rgba(180,255,205,0.5)', marginTop: '1px' }}>Ingresá el código de una sala privada</div>
               </div>
             </button>
 
             {showJoinInput && (
-              <div style={{ animation: 'slideDown 0.2s ease forwards', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <div style={{ animation: 'slideDown 0.2s ease forwards', display: 'flex', flexDirection: 'column', gap: '6px' }}>
                 <input
                   className="join-input"
                   placeholder="ABC123"
@@ -381,7 +380,6 @@ export default function Lobby() {
                   onChange={e => setRoomCode(e.target.value.toUpperCase())}
                   maxLength={6}
                 />
-                {/* ← CAMBIO 2: navega a /room/:code */}
                 <button
                   className="join-btn"
                   disabled={roomCode.length < 4}
@@ -393,12 +391,22 @@ export default function Lobby() {
             )}
 
             {/* Online */}
-            <p className="section-label" style={{ marginTop: '8px' }}>Online</p>
-            <button className="mode-card" onClick={() => alert('Próximamente')}>
-              <span className="mode-card-icon"><Globe size={28} strokeWidth={1.5} /></span>
+            <p className="section-label" style={{ marginTop: '4px' }}>Online</p>
+            <button className="mode-card" onClick={() => navigate('/public-setup')}>
+              <span className="mode-card-icon"><Globe size={24} strokeWidth={1.5} /></span>
               <div>
-                <div style={{ fontWeight: 600, fontSize: '14px' }}>Partida pública</div>
-                <div style={{ fontSize: '12px', color: 'rgba(180,255,205,0.5)', marginTop: '2px' }}>Jugá contra alguien al azar en todo el mundo</div>
+                <div style={{ fontWeight: 600, fontSize: '13px' }}>Partida pública</div>
+                <div style={{ fontSize: '11px', color: 'rgba(180,255,205,0.5)', marginTop: '1px' }}>Jugá contra alguien al azar en todo el mundo</div>
+              </div>
+            </button>
+
+            {/* Estadísticas */}
+            <p className="section-label" style={{ marginTop: '4px' }}>Estadísticas</p>
+            <button className="mode-card" onClick={() => navigate('/ranking')}>
+              <span className="mode-card-icon"><Trophy size={24} strokeWidth={1.5} /></span>
+              <div>
+                <div style={{ fontWeight: 600, fontSize: '13px' }}>Ranking Global</div>
+                <div style={{ fontSize: '11px', color: 'rgba(180,255,205,0.5)', marginTop: '1px' }}>Mirá las posiciones de los mejores directores técnicos</div>
               </div>
             </button>
 
@@ -406,7 +414,7 @@ export default function Lobby() {
 
           <p onClick={() => navigate('/dashboard')} style={{
             textAlign: 'center', color: 'rgba(180,255,205,0.4)',
-            fontSize: '12px', marginTop: '16px', cursor: 'pointer',
+            fontSize: '11px', marginTop: '12px', cursor: 'pointer',
             fontFamily: "'Inter', sans-serif",
             opacity: entered ? 1 : 0,
             animation: entered ? 'fadeIn 0.6s ease 0.4s both' : 'none',
