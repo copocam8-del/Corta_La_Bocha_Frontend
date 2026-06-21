@@ -11,7 +11,6 @@ import Room from './pages/Room';
 import GameMulti from './pages/GameMulti';
 import PublicSetup from './pages/PublicSetup';
 import PublicQueue from './pages/PublicQueue';
-// CAMBIO ACÁ: Cambiamos './components/GlobalRanking' por './pages/GlobalRanking'
 import GlobalRanking from './pages/GlobalRanking'; 
 
 export default function App() {
