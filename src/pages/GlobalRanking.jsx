@@ -154,7 +154,7 @@ export default function GlobalRanking() {
             background: 'rgba(160,255,200,0.8)', boxShadow: '0 0 6px rgba(57,255,140,0.6)',
             animation: `drift ${s.duration}s ease-out ${s.delay}s infinite`,
             '--dx': `${s.dx}px`, pointerEvents: 'none',
-          }}/>
+          } as React.CSSProperties}/>
         ))}
       </div>
 

@@ -48,8 +48,8 @@ export default function GameMulti() {
   const [letra]    = useState(getLetra);
   const [timeLeft, setTimeLeft] = useState(tiempo || 60);
   const [respuestas, setRespuestas] = useState<Record<string, string>>({});
-  const [finished,  setFinished]  = useState(false);
-  const [entered,   setEntered]   = useState(false);
+  const [finished,   setFinished]  = useState(false);
+  const [entered,    setEntered]   = useState(false);
   const [scoreboard, setScoreboard] = useState<any[]>([]);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const sentRef     = useRef(false);
@@ -115,7 +115,10 @@ export default function GameMulti() {
     }));
 
     const all = [me, ...others].sort((a, b) => b.points - a.points);
-    setScoreboard(all);
+    const uniqueAll = all.filter((player, index, self) =>
+      index === self.findIndex((p) => p.id === player.id)
+    );
+    setScoreboard(uniqueAll);
   }, [finished]);
 
   const handleBasta = () => {
@@ -419,39 +422,37 @@ export default function GameMulti() {
             }}/>
           </div>
 
-          {/* GRILLA (con un pequeño margen superior para despegarse del header) */}
+          {/* GRILLA */}
           <div style={{ overflowX: 'auto', marginTop: '12px' }}>
             <div className="game-card" style={{
               minWidth: `${60 + categorias.length * 105}px`,
-              background: 'rgba(4,20,11,0.72)',
-              border: '1px solid rgba(57,255,140,0.25)',
-              borderTop: '2px solid rgba(57,255,140,0.6)',
+              background: 'rgba(3, 16, 9, 0.88)',
+              border: '1px solid rgba(57,255,140,0.3)',
+              borderTop: '2px solid rgba(57,255,140,0.7)',
               borderRadius: '14px', overflow: 'hidden',
-              backdropFilter: 'blur(18px)', WebkitBackdropFilter: 'blur(18px)',
-              boxShadow: '0 30px 60px -20px rgba(0,0,0,0.75)',
+              backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
+              boxShadow: '0 30px 60px -20px rgba(0,0,0,0.85)',
             }}>
               {/* Headers */}
               <div style={{
                 display: 'grid',
                 gridTemplateColumns: `62px repeat(${categorias.length}, 1fr)`,
-                borderBottom: '1px solid rgba(57,255,140,0.15)',
-                background: 'rgba(57,255,140,0.03)',
+                borderBottom: '1px solid rgba(57,255,140,0.2)',
+                background: 'rgba(57,255,140,0.05)',
               }}>
-                <div style={{ padding: '10px', borderRight: '1px solid rgba(57,255,140,0.1)' }}/>
+                <div style={{ padding: '10px', borderRight: '1px solid rgba(57,255,140,0.15)' }}/>
                 {categorias.map((cat, i) => (
                   <div key={cat} style={{
-                    padding: '10px 4px',
-                    borderRight: i < categorias.length - 1 ? '1px solid rgba(57,255,140,0.1)' : 'none',
+                    padding: '12px 4px',
+                    borderRight: i < categorias.length - 1 ? '1px solid rgba(57,255,140,0.15)' : 'none',
                     textAlign: 'center',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
                   }}>
                     <span style={{
-                      fontFamily: "'Oswald', sans-serif", fontSize: '9px', fontWeight: 600,
-                      color: 'rgba(124,255,178,0.7)', letterSpacing: '1.5px',
-                      textTransform: 'uppercase', lineHeight: 1.2, display: 'block',
-                    }}>/</span>
-                    <span style={{
-                      fontFamily: "'Oswald', sans-serif", fontSize: '9px', fontWeight: 600,
-                      color: 'rgba(124,255,178,0.7)', letterSpacing: '1.5px',
+                      fontFamily: "'Oswald', sans-serif", fontSize: '10px', fontWeight: 600,
+                      color: '#7CFFB2', letterSpacing: '1.5px',
                       textTransform: 'uppercase', lineHeight: 1.2, display: 'block',
                     }}>{cat}</span>
                   </div>
@@ -464,8 +465,9 @@ export default function GameMulti() {
                 gridTemplateColumns: `62px repeat(${categorias.length}, 1fr)`,
               }}>
                 <div style={{
-                  padding: '0 8px', borderRight: '1px solid rgba(57,255,140,0.1)',
+                  padding: '0 8px', borderRight: '1px solid rgba(57,255,140,0.15)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  background: 'rgba(57,255,140,0.03)'
                 }}>
                   <span style={{
                     fontFamily: "'Oswald', sans-serif", fontSize: '12px',
@@ -474,8 +476,8 @@ export default function GameMulti() {
                 </div>
                 {categorias.map((cat, i) => (
                   <div key={cat} style={{
-                    borderRight: i < categorias.length - 1 ? '1px solid rgba(57,255,140,0.08)' : 'none',
-                    height: '42px', display: 'flex', alignItems: 'center',
+                    borderRight: i < categorias.length - 1 ? '1px solid rgba(57,255,140,0.12)' : 'none',
+                    height: '46px', display: 'flex', alignItems: 'center',
                   }}>
                     <input
                       className="grid-input"
@@ -575,11 +577,6 @@ export default function GameMulti() {
                       </div>
 
                       {/* Puntos */}
-                      <span style={{
-                        fontFamily: "'Oswald', sans-serif", fontSize: '18px', fontWeight: 700,
-                        color: i === 0 ? '#fbbf24' : '#39ff8c',
-                        textShadow: i === 0 ? '0 0 12px rgba(251,191,36,0.5)' : 'none',
-                      }}>/</span>
                       <span style={{
                         fontFamily: "'Oswald', sans-serif", fontSize: '18px', fontWeight: 700,
                         color: i === 0 ? '#fbbf24' : '#39ff8c',
