@@ -1,8 +1,17 @@
 import axios from 'axios';
 
-export async function sendRoundResults(payload: any) {
-  // Envío directo al backend local de NestJS
-  const url = 'http://localhost:3000/tutti-frutti';
+export interface CategoryAnswer {
+  category: string;
+  answer: string | null;
+}
+
+export interface ValidateRoundPayload {
+  roundLetter: string;
+  answers: CategoryAnswer[];
+}
+
+export async function sendRoundResults(payload: ValidateRoundPayload) {
+  const url = 'http://localhost:3000/tutti-frutti/validate-round';
   return axios.post(url, payload, { timeout: 15000 });
 }
 

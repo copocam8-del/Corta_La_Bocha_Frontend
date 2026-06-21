@@ -121,22 +121,13 @@ export default function Game() {
     setIsLoading(true);
     setApiError(null);
 
-    const mapValue = (variants: string[]) => {
-      for (const v of variants) if (respuestas[v]) return respuestas[v];
-      return '';
+    const payload = {
+      roundLetter: letra,
+      answers: categorias.map(cat => ({
+        category: cat,
+        answer: respuestas[cat]?.trim() || null,
+      })),
     };
-
-    const mappedRespuestas = {
-      jugador: mapValue(['Jugador', 'Jugador Arg', 'Jugador Argentino']),
-      equipo: mapValue(['Equipo', 'Equipo Arg']),
-      dt: mapValue(['DT', 'DT Arg']),
-      seleccion: mapValue(['Selección', 'Selección Campeona']),
-      campeonChampions: mapValue(['Campeón Champions', 'Equipo Campeón']),
-      campeonMundial: mapValue(['Campeón Mundial', 'Selección Campeona']),
-      jugadorArgentino: mapValue(['Jugador Argentino', 'Jugador Arg']),
-    };
-
-    const payload = { letra, respuestas: mappedRespuestas };
     sendRoundResults(payload)
       .then(res => { setResultado(res.data); })
       .catch(err => { setApiError('No se pudo conectar con el servidor. Intenta nuevamente más tarde.'); })
@@ -583,9 +574,7 @@ export default function Game() {
 
           {/* RESULTADO */}
           {finished && (() => {
-            const puntajeJugador = resultado?.breakdown
-              ? Object.values(resultado.breakdown).reduce((acc: number, info: any) => acc + (info?.score ?? info?.points ?? 0), 0)
-              : 0;
+            const puntajeJugador = resultado?.totalPoints ?? 0;
 
             const puntajeIA = categorias.reduce((acc, cat) => {
               if (!iaRespuestas[cat]) return acc;
@@ -639,7 +628,7 @@ export default function Game() {
                       fontFamily: "'Oswald', sans-serif", fontSize: '44px', fontWeight: 700,
                       color: '#39ff8c', lineHeight: 1,
                       textShadow: '0 0 20px rgba(57,255,140,0.6)',
-                    }}>{puntajeJugador}</div>
+                    }}>{isLoading ? '...' : puntajeJugador}</div>
                   </div>
                   <div style={{
                     fontFamily: "'Oswald', sans-serif", fontSize: '18px',
@@ -685,15 +674,15 @@ export default function Game() {
                     <div className="spinner" />
                   ) : apiError ? (
                     <p style={{ color: 'rgba(239,68,68,0.9)', fontSize: '13px', margin: 0, textAlign: 'center' }}>{apiError}</p>
-                  ) : resultado?.breakdown ? (
-                    Object.entries(resultado.breakdown).map(([cat, info]: [string, any]) => (
-                      <div key={cat} className="result-item">
+                  ) : resultado?.results ? (
+                    resultado.results.map((item: any) => (
+                      <div key={item.category} className="result-item">
                         <div>
-                          <div className="cat">{cat}</div>
-                          {info?.reason && <div className="result-reason">{info.reason}</div>}
+                          <div className="cat">{item.category}: <span style={{ fontWeight: 400, textTransform: 'none', letterSpacing: 0 }}>{item.userAnswer || '—'}</span></div>
+                          {item.reason && <div className="result-reason">{item.reason}</div>}
                         </div>
-                        <div className="score" style={{ color: (info?.score ?? info?.points ?? 0) > 0 ? '#39ff8c' : 'rgba(255,255,255,0.25)' }}>
-                          +{info?.score ?? info?.points ?? 0}
+                        <div className="score" style={{ color: item.points > 0 ? '#39ff8c' : 'rgba(255,255,255,0.25)' }}>
+                          +{item.points}
                         </div>
                       </div>
                     ))
