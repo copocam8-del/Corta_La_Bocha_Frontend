@@ -13,7 +13,7 @@ export default function PublicQueue() {
   const location = useLocation();
   const { tematica, dificultad, tiempo, cantidad, min, max } = (location.state || {}) as {
     tematica: string; dificultad: string; tiempo: number;
-    cantidad: string; min: number; max: number;
+    min: number; max: number;
   };
 
   const [entered,   setEntered]   = useState(false);

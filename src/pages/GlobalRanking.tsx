@@ -40,7 +40,7 @@ export default function GlobalRanking() {
   const podio = MOCK_RANKING.slice(0, 3);
   const restoDelTop = MOCK_RANKING.slice(3);
 
-  const getMedalColor = (pos) => {
+  const getMedalColor = (pos: number) => {
     if (pos === 1) return '#fbbf24'; 
     if (pos === 2) return '#cbd5e1'; 
     return '#b45309'; 

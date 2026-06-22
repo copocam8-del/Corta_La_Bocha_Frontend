@@ -130,7 +130,7 @@ export default function Game() {
     };
     sendRoundResults(payload)
       .then(res => { setResultado(res.data); })
-      .catch(err => { setApiError('No se pudo conectar con el servidor. Intenta nuevamente más tarde.'); })
+      .catch(() => { setApiError('No se pudo conectar con el servidor. Intenta nuevamente más tarde.'); })
       .finally(() => setIsLoading(false));
   }, [finished]);
 
