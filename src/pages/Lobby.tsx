@@ -1,16 +1,33 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Bot, Home, KeyRound, Globe, Trophy } from 'lucide-react';
+import api from '../api/axios';
 
 export default function Lobby() {
   const [entered, setEntered] = useState(false);
   const [showJoinInput, setShowJoinInput] = useState(false);
   const [roomCode, setRoomCode] = useState('');
+  const [userInfo, setUserInfo] = useState<{ name: string; username: string; avatarUrl: string | null } | null>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
     const t = setTimeout(() => setEntered(true), 80);
     return () => clearTimeout(t);
+  }, []);
+
+  useEffect(() => {
+    api
+      .get('/users/me')
+      .then((res) => {
+        const data = res.data;
+        const name = [data.first_name, data.last_name].filter(Boolean).join(' ') || data.username;
+        setUserInfo({
+          name,
+          username: data.username,
+          avatarUrl: data.profile?.avatar_url || null,
+        });
+      })
+      .catch(() => {});
   }, []);
 
   const sparks = useMemo(
@@ -83,6 +100,10 @@ export default function Lobby() {
           0%   { opacity: 0; transform: translateY(-8px); }
           100% { opacity: 1; transform: translateY(0); }
         }
+        @keyframes cornerPop {
+          0%   { opacity: 0; transform: scale(0.7) translateY(-6px); }
+          100% { opacity: 1; transform: scale(1) translateY(0); }
+        }
 
         .ball-logo {
           animation: spin 14s linear infinite;
@@ -123,6 +144,53 @@ export default function Lobby() {
           align-items: center;
           justify-content: center;
           color: #39ff8c;
+        }
+
+        .profile-corner {
+          position: absolute;
+          top: 16px;
+          right: 18px;
+          z-index: 5;
+          background: rgba(4,20,11,0.55);
+          backdrop-filter: blur(10px);
+          WebkitBackdropFilter: blur(10px);
+          border: 1px solid rgba(57,255,140,0.3);
+          border-radius: 999px;
+          padding: 5px 12px 5px 5px;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          transition: all 0.2s ease;
+        }
+        .profile-corner:hover {
+          border-color: rgba(57,255,140,0.7);
+          box-shadow: 0 0 16px rgba(57,255,140,0.3);
+          transform: translateY(-1px);
+        }
+        .profile-corner-label {
+          font-family: 'Inter', sans-serif;
+          font-size: 11px;
+          font-weight: 600;
+          color: #ecfff3;
+          letter-spacing: 0.3px;
+        }
+        .profile-avatar {
+          width: 32px;
+          height: 32px;
+          min-width: 32px;
+          border-radius: 50%;
+          border: 1.5px solid rgba(57,255,140,0.55);
+          background: rgba(57,255,140,0.12);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: #39ff8c;
+          font-family: 'Oswald', sans-serif;
+          font-weight: 700;
+          font-size: 13px;
+          overflow: hidden;
+          flex-shrink: 0;
         }
 
         .join-input {
@@ -280,6 +348,29 @@ export default function Lobby() {
           } as React.CSSProperties}/>
         ))}
 
+        {/* PERFIL - esquina superior derecha */}
+        <button
+          className="profile-corner"
+          onClick={() => navigate('/profile')}
+          style={{
+            opacity: entered ? 1 : 0,
+            animation: entered ? 'cornerPop 0.5s cubic-bezier(0.34,1.56,0.64,1) 0.2s both' : 'none',
+          }}
+        >
+          <span className="profile-avatar">
+            {userInfo?.avatarUrl ? (
+              <img
+                src={userInfo.avatarUrl}
+                alt={userInfo.username}
+                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+              />
+            ) : (
+              (userInfo?.name?.charAt(0) || '?').toUpperCase()
+            )}
+          </span>
+          <span className="profile-corner-label">Mi perfil</span>
+        </button>
+
         {/* CONTENIDO */}
         <div style={{ width: '100%', maxWidth: '400px', position: 'relative', zIndex: 2 }}>
 
@@ -411,14 +502,6 @@ export default function Lobby() {
             </button>
 
           </div>
-
-          <p onClick={() => navigate('/dashboard')} style={{
-            textAlign: 'center', color: 'rgba(180,255,205,0.4)',
-            fontSize: '11px', marginTop: '12px', cursor: 'pointer',
-            fontFamily: "'Inter', sans-serif",
-            opacity: entered ? 1 : 0,
-            animation: entered ? 'fadeIn 0.6s ease 0.4s both' : 'none',
-          }}>← Volver al Dashboard</p>
         </div>
       </div>
     </>

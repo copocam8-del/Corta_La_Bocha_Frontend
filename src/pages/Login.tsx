@@ -36,7 +36,9 @@ export default function Login() {
     try {
       const res = await api.post('/auth/login', { email, password });
       localStorage.setItem('token', res.data.access_token);
-      navigate('/dashboard');
+      if (res.data.username) localStorage.setItem('username', res.data.username);
+      if (res.data.name) localStorage.setItem('name', res.data.name);
+      navigate('/welcome');
     } catch {
       setError('Email o contraseña incorrectos');
     } finally {
