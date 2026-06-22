@@ -11,7 +11,7 @@ function randomBetween(a: number, b: number) {
 export default function PublicQueue() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { tematica, dificultad, tiempo, cantidad, min, max } = (location.state || {}) as {
+ const { tematica, dificultad, tiempo, min, max } = (location.state || {}) as {
     tematica: string; dificultad: string; tiempo: number;
     min: number; max: number;
   };
