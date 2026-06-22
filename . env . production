@@ -1,0 +1,2 @@
+VITE_API_URL=https://corta-la-bocha-backend.onrender.com
+VITE_WS_URL=wss://corta-la-bocha-backend.onrender.com

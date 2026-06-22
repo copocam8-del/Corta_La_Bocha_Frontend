@@ -11,7 +11,7 @@ export interface ValidateRoundPayload {
 }
 
 export async function sendRoundResults(payload: ValidateRoundPayload) {
-  const url = 'http://localhost:3000/tutti-frutti/validate-round';
+  const url = `${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/tutti-frutti/validate-round`;
   return axios.post(url, payload, { timeout: 15000 });
 }
 
