@@ -10,6 +10,7 @@ import {
   Trophy,
   Flame,
   Pencil,
+  LogOut,
 } from 'lucide-react';
 
 interface ProfileData {
@@ -46,7 +47,12 @@ export default function Profile() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
-  const navigate = useNavigate();
+    const navigate = useNavigate();
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    navigate('/login');
+  };
 
   useEffect(() => {
     const t = setTimeout(() => setEntered(true), 80);
@@ -418,6 +424,20 @@ export default function Profile() {
         >
           <ArrowLeft size={15} strokeWidth={2} />
           Lobby
+        </button>
+
+                <button
+          className="back-corner"
+          onClick={handleLogout}
+          style={{
+            opacity: entered ? 1 : 0,
+            animation: entered ? 'riseIn 0.5s ease 0.1s both' : 'none',
+            left: 'auto',
+            right: '18px',
+          }}
+        >
+          <LogOut size={15} strokeWidth={2} />
+          Cerrar sesión
         </button>
 
         {/* CONTENIDO */}
