@@ -48,8 +48,17 @@ export default function Register() {
     try {
       await api.post('/auth/register', form);
       navigate('/login');
-    } catch {
-      setError('Error al registrarse. El email puede estar en uso.');
+    } catch (err: any) {
+      if (err.response) {
+        // El backend respondió con un error (409 email/usuario duplicado, 400 validación, 500...)
+        const msg = err.response.data?.message;
+        setError(Array.isArray(msg) ? msg.join(', ') : (msg || `Error del servidor (${err.response.status})`));
+      } else if (err.request) {
+        // La request salió pero no hubo respuesta: backend caído, dormido (Render free tier) o bloqueado por CORS
+        setError('No se pudo conectar con el servidor. Puede estar iniciando (Render free tier tarda ~30-60s en despertar): probá de nuevo en unos segundos.');
+      } else {
+        setError('Ocurrió un error inesperado.');
+      }
     } finally {
       setLoading(false);
     }
