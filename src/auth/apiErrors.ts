@@ -26,6 +26,10 @@ export function parseAuthError(err: unknown): ParsedApiError {
     return { fieldErrors, message: '' };
   }
 
+  if (status === 429) {
+    return { fieldErrors: {}, message: 'Demasiados intentos. Esperá un minuto y probá de nuevo.' };
+  }
+
   if (status === 401) return { fieldErrors: {}, message: 'Email o contraseña incorrectos' };
 
   if (status === 409) {

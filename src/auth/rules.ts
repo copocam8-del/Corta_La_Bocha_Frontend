@@ -56,8 +56,10 @@ export function validateRegister(form: RegisterForm, today = new Date()): FieldE
   if (!form.name.trim()) errors.name = 'Ingresá tu nombre';
   if (!form.lastName.trim()) errors.lastName = 'Ingresá tu apellido';
 
-  if (!username) errors.username = 'Elegí un nombre de usuario';
-  else if (username.length < USERNAME_MIN || username.length > USERNAME_MAX)
+  // El usuario es opcional: si queda vacío, el backend genera uno a partir del nombre
+  if (!username) {
+    // sin error
+  } else if (username.length < USERNAME_MIN || username.length > USERNAME_MAX)
     errors.username = `El nombre de usuario debe tener entre ${USERNAME_MIN} y ${USERNAME_MAX} caracteres`;
   else if (!USERNAME_REGEX.test(username))
     errors.username = 'El nombre de usuario sólo puede tener letras, números y _';

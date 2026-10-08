@@ -70,7 +70,7 @@ export default function Register() {
         username: form.username.trim(),
         email: form.email.trim(),
       });
-      navigate('/login');
+      navigate('/login?registered=1');
     } catch (err) {
       // 400 → errores por campo, 409 → email/usuario repetido, sin respuesta → backend dormido (Render) o CORS
       const parsed = parseAuthError(err);
@@ -425,11 +425,10 @@ export default function Register() {
                   className="field"
                   name="username"
                   autoComplete="username"
-                  placeholder="Nombre de usuario"
+                  placeholder="Nombre de usuario (opcional)"
                   value={form.username}
                   onChange={handleChange}
                   {...errorProps('username')}
-                  required
                 />
                 <span className="field-icon"><User size={16} strokeWidth={1.5} /></span>
               </div>

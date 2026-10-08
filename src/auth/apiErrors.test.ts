@@ -35,6 +35,12 @@ describe('parseAuthError', () => {
     });
   });
 
+  it('429: demasiados intentos', () => {
+    expect(parseAuthError(respuesta(429, { message: 'x' })).message).toBe(
+      'Demasiados intentos. Esperá un minuto y probá de nuevo.',
+    );
+  });
+
   it('500: mensaje genérico en español, sin detalles técnicos', () => {
     expect(parseAuthError(respuesta(500, { message: 'Internal server error' })).message).toBe(
       'El servidor tuvo un problema. Probá de nuevo en un rato.',

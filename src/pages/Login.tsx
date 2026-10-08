@@ -17,6 +17,8 @@ export default function Login() {
   // ProtectedRoute y axios mandan acá con ?expired=1 cuando el token venció
   const [searchParams] = useSearchParams();
   const sessionExpired = searchParams.get('expired') === '1';
+  // Register manda acá con ?registered=1 después de crear la cuenta
+  const justRegistered = searchParams.get('registered') === '1';
 
   useEffect(() => {
     const t = setTimeout(() => setEntered(true), 80);
@@ -351,6 +353,18 @@ export default function Login() {
               color: 'rgba(220,255,235,0.9)', marginBottom: '18px',
             }}>Iniciar sesión</p>
 
+            {justRegistered && !error && (
+              <div role="status" style={{
+                background: 'rgba(57,255,140,0.1)',
+                border: '1px solid rgba(57,255,140,0.35)',
+                color: '#bbf7d0',
+                padding: '10px 14px', borderRadius: '8px',
+                fontSize: '12px', textAlign: 'center',
+                marginBottom: '14px',
+                animation: 'fadeIn 0.3s ease',
+              }}>¡Cuenta creada! Ya podés iniciar sesión.</div>
+            )}
+
             {sessionExpired && !error && (
               <div role="status" style={{
                 background: 'rgba(250,204,21,0.1)',
@@ -407,12 +421,6 @@ export default function Login() {
                 <span className="field-icon"><Lock size={16} strokeWidth={1.5} /></span>
               </div>
               <FieldError id="login-password-error" message={fieldErrors.password} />
-
-              <div style={{ textAlign: 'right', marginTop: '-2px', marginBottom: '4px' }}>
-                <span style={{ fontSize: '11px', color: 'rgba(124,255,178,0.85)', cursor: 'pointer' }}>
-                  ¿Olvidaste tu contraseña?
-                </span>
-              </div>
 
               <button type="submit" className="submit-btn" disabled={loading}>
                 {loading ? 'Entrando...' : (<>Entrar <ArrowRight size={16} strokeWidth={2} /></>)}

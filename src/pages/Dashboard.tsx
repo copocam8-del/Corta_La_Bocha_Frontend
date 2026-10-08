@@ -1,25 +1,28 @@
 import { useEffect, useState } from 'react';
 import api from '../api/axios';
 import { useNavigate, Link } from 'react-router-dom';
+import { clearSession } from '../auth/session';
 
-interface User {
+// Datos públicos que devuelve GET /users (sin email, fecha de nacimiento ni nombre real)
+interface PublicUser {
   id: string;
-  name: string;
-  email: string;
+  username: string;
+  country: string | null;
+  profile: { total_points: number; matches_played: number } | null;
 }
 
 export default function Dashboard() {
-  const [users, setUsers] = useState<User[]>([]);
+  const [users, setUsers] = useState<PublicUser[]>([]);
   const navigate = useNavigate();
 
   useEffect(() => {
-    api.get('/users').then((res) => setUsers(res.data)).catch(() => {
+    api.get<PublicUser[]>('/users').then((res) => setUsers(res.data)).catch(() => {
       navigate('/login');
     });
-  }, []);
+  }, [navigate]);
 
   const handleLogout = () => {
-    localStorage.removeItem('token');
+    clearSession();
     navigate('/login');
   };
 
@@ -38,15 +41,19 @@ export default function Dashboard() {
           </div>
         </div>
         <div className="bg-white rounded-xl shadow-md p-6">
-          <h2 className="text-lg font-semibold mb-4">Usuarios registrados</h2>
+          <h2 className="text-lg font-semibold mb-4">Jugadores registrados</h2>
+          {users.length === 0 && <p className="text-gray-500">Todavía no hay jugadores.</p>}
           {users.map((user) => (
             <div key={user.id} className="border-b py-3 flex justify-between">
-              <span className="font-medium">{user.name}</span>
-              <span className="text-gray-500">{user.email}</span>
+              <span className="font-medium">
+                {user.username}
+                {user.country && <span className="text-gray-400 font-normal"> · {user.country}</span>}
+              </span>
+              <span className="text-gray-500">{user.profile?.total_points ?? 0} pts</span>
             </div>
           ))}
         </div>
       </div>
     </div>
   );
-} 
+}
