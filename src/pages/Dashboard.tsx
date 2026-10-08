@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import api from '../api/axios';
 import { useNavigate, Link } from 'react-router-dom';
+import LegalFooter from '../components/LegalFooter';
 
 interface User {
   id: string;
@@ -46,6 +47,7 @@ export default function Dashboard() {
             </div>
           ))}
         </div>
+        <LegalFooter variant="light" />
       </div>
     </div>
   );

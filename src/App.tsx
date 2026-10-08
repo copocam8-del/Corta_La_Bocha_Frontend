@@ -15,6 +15,9 @@ import PublicSetup from './pages/PublicSetup';
 import PublicQueue from './pages/PublicQueue';
 import GlobalRanking from './pages/GlobalRanking';
 import ProtectedRoute from './components/ProtectedRoute';
+import Privacidad from './pages/legal/Privacidad';
+import Terminos from './pages/legal/Terminos';
+import Cookies from './pages/legal/Cookies';
 
 export default function App() {
   return (
@@ -23,6 +26,10 @@ export default function App() {
         <Route path="/" element={<Navigate to="/login" />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        {/* Páginas legales: públicas, sin necesidad de iniciar sesión */}
+        <Route path="/privacidad" element={<Privacidad />} />
+        <Route path="/terminos" element={<Terminos />} />
+        <Route path="/cookies" element={<Cookies />} />
         <Route
           path="/welcome"
           element={

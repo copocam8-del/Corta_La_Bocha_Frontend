@@ -3,6 +3,7 @@ import api from '../api/axios';
 import { useNavigate, Link } from 'react-router-dom';
 import { User, Mail, Lock, Calendar, Globe2, ArrowRight, ShieldCheck } from 'lucide-react';
 import FieldError from '../components/FieldError';
+import LegalFooter from '../components/LegalFooter';
 import { maxBirthDate, validateRegister, PASSWORD_MIN, PASSWORD_MAX, type FieldErrors, type RegisterForm } from '../auth/rules';
 import { parseAuthError } from '../auth/apiErrors';
 
@@ -19,6 +20,8 @@ export default function Register() {
   });
   const [error, setError] = useState('');
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
+  // Consentimiento expreso para el tratamiento de datos (Ley 25.326)
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [loading, setLoading] = useState(false);
   const [entered, setEntered] = useState(false);
   const navigate = useNavigate();
@@ -58,6 +61,7 @@ export default function Register() {
     e.preventDefault();
     setError('');
     const clientErrors = validateRegister(form);
+    if (!acceptedTerms) clientErrors.terms = 'Tenés que aceptar los términos y la política de privacidad';
     setFieldErrors(clientErrors);
     if (Object.keys(clientErrors).length) return;
 
@@ -499,6 +503,30 @@ export default function Register() {
               </div>
               <FieldError id="register-password-error" message={fieldErrors.password} />
 
+              <label style={{
+                display: 'flex', alignItems: 'flex-start', gap: '8px', marginTop: '4px',
+                fontSize: '12px', lineHeight: 1.45, color: 'rgba(200,255,220,0.8)', cursor: 'pointer',
+              }}>
+                <input
+                  type="checkbox"
+                  checked={acceptedTerms}
+                  onChange={(e) => {
+                    setAcceptedTerms(e.target.checked);
+                    if (fieldErrors.terms) setFieldErrors({ ...fieldErrors, terms: '' });
+                  }}
+                  aria-invalid={!!fieldErrors.terms}
+                  aria-describedby="register-terms-error"
+                  style={{ marginTop: '2px', accentColor: '#39ff8c' }}
+                />
+                <span>
+                  Acepto los{' '}
+                  <Link to="/terminos" target="_blank" style={{ color: '#7CFFB2' }}>Términos y condiciones</Link>
+                  {' '}y la{' '}
+                  <Link to="/privacidad" target="_blank" style={{ color: '#7CFFB2' }}>Política de privacidad</Link>
+                </span>
+              </label>
+              <FieldError id="register-terms-error" message={fieldErrors.terms} />
+
               <button type="submit" className="submit-btn" disabled={loading} style={{ marginTop: '6px' }}>
                 {loading ? 'Creando cuenta...' : (<>¡A jugar! <ArrowRight size={16} strokeWidth={2} /></>)}
               </button>
@@ -526,6 +554,7 @@ export default function Register() {
             <ShieldCheck size={13} strokeWidth={1.8} />
             Datos protegidos
           </div>
+          <LegalFooter />
         </div>
       </div>
     </>
