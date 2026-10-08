@@ -1,61 +1,37 @@
-import { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import sendRoundResults from '../api/tuttiFrutti';
-import { Bot, PenLine, Hourglass, StopCircle, Timer, Trophy, Handshake, Skull } from 'lucide-react';
+import { Bot, PenLine, Hourglass, StopCircle, Timer, Trophy, Handshake, Skull, Flame } from 'lucide-react';
+import { finishQuickMatch, startQuickMatch, type QuickMatch, type QuickMatchResult } from '../api/soloMatch';
 
-const CATEGORIAS: Record<string, string[]> = {
-  general: ['Jugador', 'Equipo', 'DT', 'Selección', 'Campeón Champions', 'Campeón Mundial', 'Jugador Argentino'],
-  liga_argentina: ['Jugador Arg', 'Equipo Arg', 'DT Arg', 'Estadio', 'Apodo Club', 'Jugador Histórico', 'Clásico'],
-  mundial: ['Jugador', 'DT', 'Selección', 'Goleador', 'País Sede', 'Selección Campeona'],
-  champions: ['Jugador', 'DT', 'Equipo', 'Goleador', 'Equipo Campeón', 'Jugador Promesa', 'Clásico'],
-  libertadores: ['Jugador', 'DT', 'Equipo', 'Goleador', 'Jugador Histórico', 'Equipo Campeón', 'Clásico'],
-};
-
-const IA_RESPUESTAS: Record<string, string[]> = {
-  A: ['Agüero', 'Ajax', 'Ancelotti', 'Argentina', 'Abidal', 'Ayala', 'Aimar'],
-  B: ['Benzema', 'Barcelona', 'Bielsa', 'Brasil', 'Busquets', 'Batistuta', 'Banega'],
-  C: ['Cristiano', 'Chelsea', 'Capello', 'Colombia', 'Casillas', 'Caniggia', 'Crespo'],
-  D: ['Di María', 'Dortmund', 'Del Bosque', 'Dinamarca', 'Drogba', 'D\'Alessandro', 'Díaz'],
-  M: ['Messi', 'Manchester', 'Mourinho', 'México', 'Maldini', 'Maradona', 'Mascherano'],
-  R: ['Ronaldo', 'Real Madrid', 'Rijkaard', 'Rumania', 'Ramos', 'Redondo', 'Riquelme'],
-  S: ['Suárez', 'Sevilla', 'Scolari', 'Serbia', 'Schmeichel', 'Simeone', 'Saviola'],
-  T: ['Tevez', 'Tottenham', 'Tuchel', 'Tunisia', 'Terry', 'Trezeguet', 'Tapia'],
-  V: ['Vinicius', 'Valencia', 'Valdano', 'Venezuela', 'Vidal', 'Verón', 'Vargas'],
-};
-
-const LETRAS = 'ABCDEFLMNOPRSTV'.split('');
-function getLetra() { return LETRAS[Math.floor(Math.random() * LETRAS.length)]; }
-
-const DIFICULTAD_CONFIG = {
-  facil:   { delay: 15000, errores: 0.4 },
-  medio:   { delay: 8000,  errores: 0.2 },
-  dificil: { delay: 4000,  errores: 0.1 },
-  experto: { delay: 2000,  errores: 0 },
-};
+// La partida se decide en el servidor: él sortea la letra, arma las respuestas de la máquina
+// (según la dificultad) y al final valida tus respuestas, calcula el resultado y actualiza
+// tus estadísticas. Acá sólo se muestra el juego.
 
 export default function Game() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { tematica, dificultad, tiempo } = (location.state || {}) as {
+  const { tematica, dificultad, tiempo: tiempoElegido } = (location.state || {}) as {
     tematica: string; dificultad: string; tiempo: number;
   };
+  const tiempo = tiempoElegido || 60;
 
-  const categorias = CATEGORIAS[tematica] || CATEGORIAS.general;
-  const [letra] = useState(getLetra);
-  const [timeLeft, setTimeLeft] = useState(tiempo || 60);
+  const [match, setMatch] = useState<QuickMatch | null>(null);
+  const [startError, setStartError] = useState<string | null>(null);
+  const [timeLeft, setTimeLeft] = useState(tiempo);
   const [respuestas, setRespuestas] = useState<Record<string, string>>({});
   const [iaRespuestas, setIaRespuestas] = useState<Record<string, string>>({});
   const iaBuildRef = useRef<Record<string, string>>({});
   const [finished, setFinished] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
-  const [resultado, setResultado] = useState<any>(null);
+  const [resultado, setResultado] = useState<QuickMatchResult | null>(null);
   const [entered, setEntered] = useState(false);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const iaTimeoutRef = useRef<ReturnType<typeof setTimeout>[]>([]);
-  const sentRef = useRef(false);
+  const startedRef = useRef(false);
 
-  const config = DIFICULTAD_CONFIG[dificultad as keyof typeof DIFICULTAD_CONFIG] || DIFICULTAD_CONFIG.medio;
+  const letra = match?.letter ?? '';
+  const categorias = match?.categories ?? [];
 
   const sparks = useMemo(
     () =>
@@ -75,8 +51,18 @@ export default function Game() {
     return () => clearTimeout(t);
   }, []);
 
+  // 1) Pedirle la partida al servidor (una sola vez, aunque React monte dos veces en desarrollo)
   useEffect(() => {
-    if (finished) return;
+    if (!tematica || startedRef.current) return;
+    startedRef.current = true;
+    startQuickMatch({ tematica, dificultad, tiempo })
+      .then(setMatch)
+      .catch(() => setStartError('No se pudo empezar la partida. Revisá tu conexión y probá de nuevo.'));
+  }, [tematica, dificultad, tiempo]);
+
+  // 2) Cronómetro: arranca cuando llega la partida
+  useEffect(() => {
+    if (!match || finished) return;
     intervalRef.current = setInterval(() => {
       setTimeLeft(t => {
         if (t <= 1) {
@@ -90,49 +76,56 @@ export default function Game() {
       });
     }, 1000);
     return () => clearInterval(intervalRef.current!);
-  }, [finished]);
+  }, [match, finished]);
 
+  // 3) La máquina "escribe" según el plan que mandó el servidor
   useEffect(() => {
-    if (finished) return;
-    const iaPool = IA_RESPUESTAS[letra] || categorias.map(() => '---');
-    categorias.forEach((cat, i) => {
-      const t = setTimeout(() => {
-        if (Math.random() > config.errores) {
-          iaBuildRef.current = { ...iaBuildRef.current, [cat]: iaPool[i] || '---' };
-        }
-      }, config.delay + i * 1500);
-      iaTimeoutRef.current.push(t);
-    });
-    return () => iaTimeoutRef.current.forEach(clearTimeout);
-  }, [finished]);
-
-  const revealIA = () => { setIaRespuestas({ ...iaBuildRef.current }); };
+    if (!match || finished) return;
+    const timeouts = match.aiPlan
+      .filter(item => item.answer)
+      .map(item => setTimeout(() => {
+        iaBuildRef.current = { ...iaBuildRef.current, [item.category]: item.answer! };
+      }, item.delayMs));
+    iaTimeoutRef.current = timeouts;
+    return () => timeouts.forEach(clearTimeout);
+  }, [match, finished]);
 
   const handleBasta = () => {
     clearInterval(intervalRef.current!);
     iaTimeoutRef.current.forEach(clearTimeout);
-    revealIA();
+    setIaRespuestas({ ...iaBuildRef.current });
     setFinished(true);
   };
 
+  // 4) Al terminar, el servidor valida y decide el resultado oficial
+  const enviarResultado = useCallback(() => {
+    if (!match) return;
+    setIsLoading(true);
+    setApiError(null);
+    finishQuickMatch(
+      match.matchId,
+      match.categories.map(cat => ({ category: cat, answer: respuestas[cat]?.trim() || null })),
+    )
+      .then(res => {
+        setResultado(res);
+        // Las respuestas de la máquina que cuentan son las que calculó el servidor
+        setIaRespuestas(res.aiAnswers);
+      })
+      .catch(err => {
+        const status = err?.response?.status;
+        setApiError(status === 409
+          ? 'Esta partida ya se había terminado.'
+          : 'No se pudo conectar con el servidor. Probá de nuevo.');
+      })
+      .finally(() => setIsLoading(false));
+  }, [match, respuestas]);
+
+  const sentRef = useRef(false);
   useEffect(() => {
     if (!finished || sentRef.current) return;
     sentRef.current = true;
-    setIsLoading(true);
-    setApiError(null);
-
-    const payload = {
-      roundLetter: letra,
-      answers: categorias.map(cat => ({
-        category: cat,
-        answer: respuestas[cat]?.trim() || null,
-      })),
-    };
-    sendRoundResults(payload)
-      .then(res => { setResultado(res.data); })
-      .catch(() => { setApiError('No se pudo conectar con el servidor. Intenta nuevamente más tarde.'); })
-      .finally(() => setIsLoading(false));
-  }, [finished]);
+    enviarResultado();
+  }, [finished, enviarResultado]);
 
   const handleChange = (cat: string, val: string) => {
     if (finished) return;
@@ -143,6 +136,28 @@ export default function Game() {
   const timerColor = timeLeft > 30 ? '#39ff8c' : timeLeft > 10 ? '#fbbf24' : '#ef4444';
 
   if (!tematica) { navigate('/lobby'); return null; }
+
+  if (!match) {
+    return (
+      <div style={{
+        minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+        gap: '14px', padding: '24px', background: '#010805', color: '#ecfff3', fontFamily: "'Inter', sans-serif",
+        textAlign: 'center',
+      }}>
+        {startError ? (
+          <>
+            <p style={{ color: '#fca5a5', fontSize: '14px' }}>{startError}</p>
+            <button onClick={() => navigate('/lobby')} style={{
+              background: 'linear-gradient(135deg, #0fae5d, #39ff8c)', color: '#04210f', border: 'none',
+              borderRadius: '8px', padding: '10px 22px', fontWeight: 700, cursor: 'pointer',
+            }}>Volver al Lobby</button>
+          </>
+        ) : (
+          <p style={{ color: 'rgba(180,255,205,0.75)', fontSize: '14px' }}>Preparando la partida...</p>
+        )}
+      </div>
+    );
+  }
 
   return (
     <>
@@ -574,18 +589,10 @@ export default function Game() {
 
           {/* RESULTADO */}
           {finished && (() => {
-            const puntajeJugador = resultado?.totalPoints ?? 0;
-
-            const puntajeIA = categorias.reduce((acc, cat) => {
-              if (!iaRespuestas[cat]) return acc;
-              const jugadorResp = (respuestas[cat] || '').trim().toLowerCase();
-              const iaResp = iaRespuestas[cat].trim().toLowerCase();
-              if (!iaResp || iaResp === '---') return acc;
-              return acc + (jugadorResp === iaResp ? 5 : 10);
-            }, 0);
-
-            const gano = puntajeJugador > puntajeIA;
-            const empate = puntajeJugador === puntajeIA;
+            const puntajeJugador = resultado?.playerPoints ?? 0;
+            const puntajeIA = resultado?.aiPoints ?? 0;
+            const gano = resultado?.outcome === 'win';
+            const empate = !resultado || resultado.outcome === 'draw';
 
             const resultColor = gano ? '#39ff8c' : empate ? '#fbbf24' : '#ef4444';
             const resultBorder = gano ? 'rgba(57,255,140,0.35)' : empate ? 'rgba(251,191,36,0.35)' : 'rgba(239,68,68,0.35)';
@@ -646,12 +653,12 @@ export default function Game() {
                       fontFamily: "'Oswald', sans-serif", fontSize: '44px', fontWeight: 700,
                       color: '#ef4444', lineHeight: 1,
                       textShadow: '0 0 20px rgba(239,68,68,0.5)',
-                    }}>{puntajeIA}</div>
+                    }}>{isLoading ? '...' : puntajeIA}</div>
                   </div>
                 </div>
 
-                {/* Badge resultado */}
-                <div style={{
+                {/* Badge resultado (sólo cuando el servidor respondió) */}
+                {resultado && <div style={{
                   fontFamily: "'Oswald', sans-serif",
                   fontSize: '17px', fontWeight: 700, letterSpacing: '3px',
                   color: resultColor,
@@ -666,16 +673,31 @@ export default function Game() {
                     ? <><Handshake size={20} strokeWidth={2} /> ¡Empate!</>
                     : <><Skull size={20} strokeWidth={2} /> Perdiste</>
                   }
-                </div>
+                </div>}
+
+                {resultado && resultado.stats.currentStreak > 1 && (
+                  <p style={{
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
+                    color: '#fdba74', fontSize: '13px', margin: '-6px 0 14px',
+                  }}>
+                    <Flame size={15} /> ¡Racha de {resultado.stats.currentStreak} victorias!
+                  </p>
+                )}
 
                 {/* Detalle por categoría */}
                 <div style={{ minHeight: 40, marginBottom: '14px', textAlign: 'left' }}>
                   {isLoading ? (
                     <div className="spinner" />
                   ) : apiError ? (
-                    <p style={{ color: 'rgba(239,68,68,0.9)', fontSize: '13px', margin: 0, textAlign: 'center' }}>{apiError}</p>
+                    <div style={{ textAlign: 'center' }}>
+                      <p style={{ color: 'rgba(239,68,68,0.9)', fontSize: '13px', margin: '0 0 10px' }}>{apiError}</p>
+                      <button onClick={enviarResultado} style={{
+                        background: 'transparent', color: '#7CFFB2', border: '1px solid rgba(57,255,140,0.4)',
+                        borderRadius: '8px', padding: '7px 16px', cursor: 'pointer', fontSize: '12px',
+                      }}>Reintentar</button>
+                    </div>
                   ) : resultado?.results ? (
-                    resultado.results.map((item: any) => (
+                    resultado.results.map((item) => (
                       <div key={item.category} className="result-item">
                         <div>
                           <div className="cat">{item.category}: <span style={{ fontWeight: 400, textTransform: 'none', letterSpacing: 0 }}>{item.userAnswer || '—'}</span></div>

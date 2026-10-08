@@ -23,6 +23,18 @@ export function getTokenExpiration(token: string): number | null {
   }
 }
 
+// Id del usuario logueado (campo "sub" del JWT). Sólo para mostrar cosas como "vos" en el ranking.
+export function getTokenUserId(token: string | null = getToken()): string | null {
+  if (!token) return null;
+  try {
+    const payload = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+    const { sub } = JSON.parse(atob(payload));
+    return typeof sub === 'string' ? sub : null;
+  } catch {
+    return null;
+  }
+}
+
 // Un token que no se puede leer o que no tiene "exp" se considera vencido
 export function isTokenExpired(token: string, now = Date.now()): boolean {
   const exp = getTokenExpiration(token);

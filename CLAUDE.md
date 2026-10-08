@@ -52,6 +52,16 @@ src/
   Si cambia una regla, hay que cambiarla en los dos repos (backend: `src/auth/dto/auth-rules.ts`).
 - Todos los mensajes que ve el usuario van en español.
 
+## Perfil, partidas y ranking
+
+- Partida solo (`pages/Game.tsx`): la decide el servidor. `api/soloMatch.ts` llama a
+  `POST /solo-matches/quick` (letra, categorías y plan de la máquina) y a `.../finish` (resultado oficial y
+  estadísticas). El frontend **no** calcula puntajes ni quién ganó.
+- Perfil (`pages/Profile.tsx`): avatar del set propio (`profile/avatarData.ts`, mismos ids que el backend),
+  equipo/selección/jugador favorito, bio, estadísticas y puesto en el ranking (`api/profile.ts`).
+- Ranking (`pages/GlobalRanking.tsx`): datos reales de `GET /users/ranking`.
+- **El multijugador (Room, GameMulti, PublicQueue) todavía es una simulación local**: no usa el backend.
+
 ## Variables de entorno
 
 - `VITE_API_URL`: URL del backend (default `http://localhost:3000`)
