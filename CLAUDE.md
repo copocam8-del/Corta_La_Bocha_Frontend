@@ -61,6 +61,9 @@ src/
   equipo/selección/jugador favorito, bio, estadísticas y puesto en el ranking (`api/profile.ts`).
 - Ranking (`pages/GlobalRanking.tsx`): datos reales de `GET /users/ranking`.
 - **El multijugador (Room, GameMulti, PublicQueue) todavía es una simulación local**: no usa el backend.
+- Logros: `GET /users/me/achievements` (nombre y descripción vienen del backend). Íconos por id en
+  `profile/achievementIcons.ts`; grilla en `profile/AchievementsGrid.tsx` (bloqueados en gris). La partida solo
+  muestra "¡Logro desbloqueado!" con los `newAchievements` que devuelve el backend.
 
 ## Variables de entorno
 

@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Bot, PenLine, Hourglass, StopCircle, Timer, Trophy, Handshake, Skull, Flame } from 'lucide-react';
 import { finishQuickMatch, startQuickMatch, type QuickMatch, type QuickMatchResult } from '../api/soloMatch';
+import { achievementIcon } from '../profile/achievementIcons';
 
 // La partida se decide en el servidor: él sortea la letra, arma las respuestas de la máquina
 // (según la dificultad) y al final valida tus respuestas, calcula el resultado y actualiza
@@ -674,6 +675,33 @@ export default function Game() {
                     : <><Skull size={20} strokeWidth={2} /> Perdiste</>
                   }
                 </div>}
+
+                {resultado && resultado.newAchievements.length > 0 && (
+                  <div role="status" style={{
+                    margin: '0 0 14px', padding: '10px 12px', borderRadius: '10px',
+                    background: 'rgba(250,204,21,0.1)', border: '1px solid rgba(250,204,21,0.45)',
+                    animation: 'fadeInUp 0.5s ease forwards',
+                  }}>
+                    <p style={{
+                      fontFamily: "'Oswald', sans-serif", fontSize: '12px', letterSpacing: '2px',
+                      color: '#fde047', textTransform: 'uppercase', margin: '0 0 6px',
+                    }}>
+                      {resultado.newAchievements.length === 1 ? '¡Logro desbloqueado!' : '¡Logros desbloqueados!'}
+                    </p>
+                    {resultado.newAchievements.map(a => {
+                      const Icon = achievementIcon(a.id);
+                      return (
+                        <p key={a.id} style={{
+                          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
+                          fontSize: '13px', color: '#fef9c3', margin: '2px 0',
+                        }}>
+                          <Icon size={15} color="#fde047" /> <strong>{a.name}</strong>
+                          <span style={{ color: 'rgba(254,249,195,0.7)' }}>· {a.description}</span>
+                        </p>
+                      );
+                    })}
+                  </div>
+                )}
 
                 {resultado && resultado.stats.currentStreak > 1 && (
                   <p style={{

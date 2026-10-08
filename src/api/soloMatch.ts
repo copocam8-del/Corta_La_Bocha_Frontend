@@ -1,4 +1,5 @@
 import api from './axios';
+import type { NewAchievement } from './achievements';
 
 // Partida rápida contra la máquina. El servidor sortea la letra, arma las respuestas de la
 // máquina y, al terminar, decide el resultado y actualiza las estadísticas.
@@ -33,6 +34,7 @@ export interface QuickMatchResult {
   aiAnswers: Record<string, string>;
   aiPoints: number;
   outcome: 'win' | 'draw' | 'loss';
+  newAchievements: NewAchievement[];
   stats: {
     matchesPlayed: number;
     matchesWon: number;

@@ -21,6 +21,8 @@ import { parseAuthError } from '../auth/apiErrors';
 import type { FieldErrors } from '../auth/rules';
 import FieldError from '../components/FieldError';
 import { Avatar, AvatarPicker } from '../profile/avatars';
+import AchievementsGrid from '../profile/AchievementsGrid';
+import { getMyAchievements, type Achievement } from '../api/achievements';
 import {
   getMyProfile,
   getMyRanking,
@@ -39,6 +41,7 @@ export default function Profile() {
   const [entered, setEntered] = useState(false);
   const [profile, setProfile] = useState<MyProfile | null>(null);
   const [ranking, setRanking] = useState<MyRanking | null>(null);
+  const [achievements, setAchievements] = useState<Achievement[] | null>(null);
   const [editing, setEditing] = useState(false);
   const [username, setUsername] = useState('');
   const [bio, setBio] = useState('');
@@ -81,6 +84,7 @@ export default function Profile() {
       .catch(() => navigate('/login'));
     // El ranking es un extra: si falla, el perfil se muestra igual
     getMyRanking().then(setRanking).catch(() => setRanking(null));
+    getMyAchievements().then(setAchievements).catch(() => setAchievements(null));
   }, [navigate]);
 
   const sparks = useMemo(
@@ -572,6 +576,20 @@ export default function Profile() {
                   </div>
                 )}
               </div>
+
+              {/* Logros */}
+              {achievements && (
+                <div className="profile-card" style={{
+                  opacity: entered ? 1 : 0,
+                  animation: entered ? 'riseIn 0.6s ease 0.14s both' : 'none',
+                  marginBottom: '14px',
+                }}>
+                  <p className="section-label">
+                    Logros · {achievements.filter(a => a.unlocked).length}/{achievements.length}
+                  </p>
+                  <AchievementsGrid achievements={achievements} />
+                </div>
+              )}
 
               {/* Editar perfil */}
               <div className="profile-card" style={{
