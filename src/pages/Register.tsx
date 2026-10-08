@@ -2,6 +2,9 @@ import { useState, useEffect, useMemo } from 'react';
 import api from '../api/axios';
 import { useNavigate, Link } from 'react-router-dom';
 import { User, Mail, Lock, Calendar, Globe2, ArrowRight, ShieldCheck } from 'lucide-react';
+import FieldError from '../components/FieldError';
+import { maxBirthDate, validateRegister, PASSWORD_MIN, PASSWORD_MAX, type FieldErrors, type RegisterForm } from '../auth/rules';
+import { parseAuthError } from '../auth/apiErrors';
 
 const PAISES = [
   "Argentina", "Brasil", "Uruguay", "España", "Francia",
@@ -10,11 +13,12 @@ const PAISES = [
 ];
 
 export default function Register() {
-  const [form, setForm] = useState({
+  const [form, setForm] = useState<RegisterForm>({
     name: '', lastName: '', username: '',
     birthDate: '', country: '', email: '', password: ''
   });
   const [error, setError] = useState('');
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [loading, setLoading] = useState(false);
   const [entered, setEntered] = useState(false);
   const navigate = useNavigate();
@@ -40,25 +44,38 @@ export default function Register() {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
+    // al corregir un campo sacamos su error
+    if (fieldErrors[e.target.name]) setFieldErrors({ ...fieldErrors, [e.target.name]: '' });
   };
+
+  // props comunes para marcar un input con error y asociarlo a su mensaje (accesibilidad)
+  const errorProps = (field: string) => ({
+    'aria-invalid': !!fieldErrors[field],
+    'aria-describedby': `register-${field}-error`,
+  });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError('');
+    const clientErrors = validateRegister(form);
+    setFieldErrors(clientErrors);
+    if (Object.keys(clientErrors).length) return;
+
     setLoading(true);
     try {
-      await api.post('/auth/register', form);
+      await api.post('/auth/register', {
+        ...form,
+        name: form.name.trim(),
+        lastName: form.lastName.trim(),
+        username: form.username.trim(),
+        email: form.email.trim(),
+      });
       navigate('/login');
-    } catch (err: any) {
-      if (err.response) {
-        // El backend respondió con un error (409 email/usuario duplicado, 400 validación, 500...)
-        const msg = err.response.data?.message;
-        setError(Array.isArray(msg) ? msg.join(', ') : (msg || `Error del servidor (${err.response.status})`));
-      } else if (err.request) {
-        // La request salió pero no hubo respuesta: backend caído, dormido (Render free tier) o bloqueado por CORS
-        setError('No se pudo conectar con el servidor. Puede estar iniciando (Render free tier tarda ~30-60s en despertar): probá de nuevo en unos segundos.');
-      } else {
-        setError('Ocurrió un error inesperado.');
-      }
+    } catch (err) {
+      // 400 → errores por campo, 409 → email/usuario repetido, sin respuesta → backend dormido (Render) o CORS
+      const parsed = parseAuthError(err);
+      setFieldErrors(parsed.fieldErrors);
+      setError(parsed.message);
     } finally {
       setLoading(false);
     }
@@ -147,6 +164,7 @@ export default function Register() {
           transition: color 0.2s;
         }
         .field:focus ~ .field-icon { color: #39ff8c; }
+        .field[aria-invalid="true"] { border-color: rgba(239,68,68,0.7); }
 
         .submit-btn {
           width: 100%;
@@ -366,29 +384,39 @@ export default function Register() {
               }}>{error}</div>
             )}
 
-            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            <form onSubmit={handleSubmit} noValidate style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-                <div className="field-wrap">
-                  <input
-                    className="field"
-                    name="name"
-                    placeholder="Nombre"
-                    value={form.name}
-                    onChange={handleChange}
-                    required
-                  />
-                  <span className="field-icon"><User size={16} strokeWidth={1.5} /></span>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  <div className="field-wrap">
+                    <input
+                      className="field"
+                      name="name"
+                      placeholder="Nombre"
+                      autoComplete="given-name"
+                      value={form.name}
+                      onChange={handleChange}
+                      {...errorProps('name')}
+                      required
+                    />
+                    <span className="field-icon"><User size={16} strokeWidth={1.5} /></span>
+                  </div>
+                  <FieldError id="register-name-error" message={fieldErrors.name} />
                 </div>
-                <div className="field-wrap">
-                  <input
-                    className="field"
-                    name="lastName"
-                    placeholder="Apellido"
-                    value={form.lastName}
-                    onChange={handleChange}
-                    required
-                  />
-                  <span className="field-icon"><User size={16} strokeWidth={1.5} /></span>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  <div className="field-wrap">
+                    <input
+                      className="field"
+                      name="lastName"
+                      placeholder="Apellido"
+                      autoComplete="family-name"
+                      value={form.lastName}
+                      onChange={handleChange}
+                      {...errorProps('lastName')}
+                      required
+                    />
+                    <span className="field-icon"><User size={16} strokeWidth={1.5} /></span>
+                  </div>
+                  <FieldError id="register-lastName-error" message={fieldErrors.lastName} />
                 </div>
               </div>
 
@@ -396,26 +424,32 @@ export default function Register() {
                 <input
                   className="field"
                   name="username"
+                  autoComplete="username"
                   placeholder="Nombre de usuario"
                   value={form.username}
                   onChange={handleChange}
+                  {...errorProps('username')}
                   required
                 />
                 <span className="field-icon"><User size={16} strokeWidth={1.5} /></span>
               </div>
+              <FieldError id="register-username-error" message={fieldErrors.username} />
 
               <div className="field-wrap">
                 <input
                   className="field"
                   name="birthDate"
                   type="date"
+                  max={maxBirthDate()}
                   value={form.birthDate}
                   onChange={handleChange}
+                  {...errorProps('birthDate')}
                   required
                   style={{ colorScheme: 'dark' }}
                 />
                 <span className="field-icon"><Calendar size={16} strokeWidth={1.5} /></span>
               </div>
+              <FieldError id="register-birthDate-error" message={fieldErrors.birthDate} />
 
               <div className="field-wrap">
                 <select
@@ -423,6 +457,7 @@ export default function Register() {
                   name="country"
                   value={form.country}
                   onChange={handleChange}
+                  {...errorProps('country')}
                   required
                 >
                   <option value="">Seleccioná tu país</option>
@@ -430,32 +465,39 @@ export default function Register() {
                 </select>
                 <span className="field-icon"><Globe2 size={16} strokeWidth={1.5} /></span>
               </div>
+              <FieldError id="register-country-error" message={fieldErrors.country} />
 
               <div className="field-wrap">
                 <input
                   className="field"
                   name="email"
                   type="email"
+                  autoComplete="email"
                   placeholder="Email"
                   value={form.email}
                   onChange={handleChange}
+                  {...errorProps('email')}
                   required
                 />
                 <span className="field-icon"><Mail size={16} strokeWidth={1.5} /></span>
               </div>
+              <FieldError id="register-email-error" message={fieldErrors.email} />
 
               <div className="field-wrap">
                 <input
                   className="field"
                   name="password"
                   type="password"
-                  placeholder="Contraseña"
+                  placeholder={`Contraseña (${PASSWORD_MIN} a ${PASSWORD_MAX} caracteres)`}
+                  autoComplete="new-password"
                   value={form.password}
                   onChange={handleChange}
+                  {...errorProps('password')}
                   required
                 />
                 <span className="field-icon"><Lock size={16} strokeWidth={1.5} /></span>
               </div>
+              <FieldError id="register-password-error" message={fieldErrors.password} />
 
               <button type="submit" className="submit-btn" disabled={loading} style={{ marginTop: '6px' }}>
                 {loading ? 'Creando cuenta...' : (<>¡A jugar! <ArrowRight size={16} strokeWidth={2} /></>)}

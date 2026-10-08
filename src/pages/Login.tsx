@@ -1,15 +1,22 @@
 import { useState, useEffect, useMemo } from 'react';
 import api from '../api/axios';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { Mail, Lock, ArrowRight, ShieldCheck } from 'lucide-react';
+import FieldError from '../components/FieldError';
+import { validateLogin, type FieldErrors } from '../auth/rules';
+import { parseAuthError } from '../auth/apiErrors';
 
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [loading, setLoading] = useState(false);
   const [entered, setEntered] = useState(false);
   const navigate = useNavigate();
+  // ProtectedRoute y axios mandan acá con ?expired=1 cuando el token venció
+  const [searchParams] = useSearchParams();
+  const sessionExpired = searchParams.get('expired') === '1';
 
   useEffect(() => {
     const t = setTimeout(() => setEntered(true), 80);
@@ -32,28 +39,23 @@ export default function Login() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError('');
+    const clientErrors = validateLogin({ email, password });
+    setFieldErrors(clientErrors);
+    if (Object.keys(clientErrors).length) return;
+
     setLoading(true);
     try {
-      const res = await api.post('/auth/login', { email, password });
+      const res = await api.post('/auth/login', { email: email.trim(), password });
       localStorage.setItem('token', res.data.access_token);
       if (res.data.username) localStorage.setItem('username', res.data.username);
       if (res.data.name) localStorage.setItem('name', res.data.name);
       navigate('/welcome');
-    } catch (err: any) {
-      if (err.response) {
-        // El backend respondió con un error (401, 400, 500...)
-        if (err.response.status === 401) {
-          setError('Email o contraseña incorrectos');
-        } else {
-          const msg = err.response.data?.message;
-          setError(Array.isArray(msg) ? msg.join(', ') : (msg || `Error del servidor (${err.response.status})`));
-        }
-      } else if (err.request) {
-        // La request salió pero no hubo respuesta: backend caído, dormido (Render free tier) o bloqueado por CORS
-        setError('No se pudo conectar con el servidor. Puede estar iniciando (Render free tier tarda ~30-60s en despertar): probá de nuevo en unos segundos.');
-      } else {
-        setError('Ocurrió un error inesperado.');
-      }
+    } catch (err) {
+      // 400 → errores por campo, 401 → credenciales, sin respuesta → backend dormido (Render) o CORS
+      const parsed = parseAuthError(err);
+      setFieldErrors(parsed.fieldErrors);
+      setError(parsed.message);
     } finally {
       setLoading(false);
     }
@@ -141,6 +143,7 @@ export default function Login() {
           transition: color 0.2s;
         }
         .field:focus ~ .field-icon { color: #39ff8c; }
+        .field[aria-invalid="true"] { border-color: rgba(239,68,68,0.7); }
 
         .submit-btn {
           width: 100%;
@@ -348,6 +351,18 @@ export default function Login() {
               color: 'rgba(220,255,235,0.9)', marginBottom: '18px',
             }}>Iniciar sesión</p>
 
+            {sessionExpired && !error && (
+              <div role="status" style={{
+                background: 'rgba(250,204,21,0.1)',
+                border: '1px solid rgba(250,204,21,0.35)',
+                color: '#fde68a',
+                padding: '10px 14px', borderRadius: '8px',
+                fontSize: '12px', textAlign: 'center',
+                marginBottom: '14px',
+                animation: 'fadeIn 0.3s ease',
+              }}>Tu sesión venció. Volvé a iniciar sesión.</div>
+            )}
+
             {error && (
               <div style={{
                 background: 'rgba(239,68,68,0.1)',
@@ -360,30 +375,38 @@ export default function Login() {
               }}>{error}</div>
             )}
 
-            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            <form onSubmit={handleSubmit} noValidate style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
               <div className="field-wrap">
                 <input
                   className="field"
                   type="email"
                   placeholder="Email"
+                  autoComplete="email"
                   value={email}
                   onChange={e => setEmail(e.target.value)}
+                  aria-invalid={!!fieldErrors.email}
+                  aria-describedby="login-email-error"
                   required
                 />
                 <span className="field-icon"><Mail size={16} strokeWidth={1.5} /></span>
               </div>
+              <FieldError id="login-email-error" message={fieldErrors.email} />
 
               <div className="field-wrap">
                 <input
                   className="field"
                   type="password"
                   placeholder="Contraseña"
+                  autoComplete="current-password"
                   value={password}
                   onChange={e => setPassword(e.target.value)}
+                  aria-invalid={!!fieldErrors.password}
+                  aria-describedby="login-password-error"
                   required
                 />
                 <span className="field-icon"><Lock size={16} strokeWidth={1.5} /></span>
               </div>
+              <FieldError id="login-password-error" message={fieldErrors.password} />
 
               <div style={{ textAlign: 'right', marginTop: '-2px', marginBottom: '4px' }}>
                 <span style={{ fontSize: '11px', color: 'rgba(124,255,178,0.85)', cursor: 'pointer' }}>
