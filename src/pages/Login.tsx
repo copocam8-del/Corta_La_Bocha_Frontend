@@ -3,6 +3,8 @@ import api from '../api/axios';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { Mail, Lock, ArrowRight, ShieldCheck } from 'lucide-react';
 import FieldError from '../components/FieldError';
+import GoogleButton from '../components/GoogleButton';
+import { saveSession } from '../auth/session';
 import { validateLogin, type FieldErrors } from '../auth/rules';
 import { parseAuthError } from '../auth/apiErrors';
 
@@ -47,9 +49,7 @@ export default function Login() {
     setLoading(true);
     try {
       const res = await api.post('/auth/login', { email: email.trim(), password });
-      localStorage.setItem('token', res.data.access_token);
-      if (res.data.username) localStorage.setItem('username', res.data.username);
-      if (res.data.name) localStorage.setItem('name', res.data.name);
+      saveSession(res.data);
       navigate('/welcome');
     } catch (err) {
       // 400 → errores por campo, 401 → credenciales, sin respuesta → backend dormido (Render) o CORS
@@ -418,6 +418,9 @@ export default function Login() {
                 {loading ? 'Entrando...' : (<>Entrar <ArrowRight size={16} strokeWidth={2} /></>)}
               </button>
             </form>
+
+            {/* Sólo aparece si VITE_GOOGLE_CLIENT_ID está configurado */}
+            <div style={{ marginTop: '12px' }}><GoogleButton mode="signin" /></div>
 
             <div style={{ height: '1px', background: 'rgba(57,255,140,0.18)', margin: '20px 0 14px' }}/>
 

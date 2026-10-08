@@ -52,10 +52,17 @@ src/
   Si cambia una regla, hay que cambiarla en los dos repos (backend: `src/auth/dto/auth-rules.ts`).
 - Todos los mensajes que ve el usuario van en español.
 
+## Login con Google
+
+- `components/GoogleButton.tsx` (en Login y Register) usa Google Identity Services (`auth/googleIdentity.ts`) y
+  manda el `credential` a `POST /auth/google`. **Si `VITE_GOOGLE_CLIENT_ID` no está definido, el botón no se
+  muestra.** La sesión se guarda con `saveSession()` igual que en el login normal.
+
 ## Variables de entorno
 
 - `VITE_API_URL`: URL del backend (default `http://localhost:3000`)
 - `VITE_WS_URL`: URL de WebSocket
+- `VITE_GOOGLE_CLIENT_ID`: Client ID de Google (opcional). Ver `.env.example`.
 - `.env.production` tiene las URLs de Render (son públicas, no secretos).
 
 ## Reglas para trabajar
