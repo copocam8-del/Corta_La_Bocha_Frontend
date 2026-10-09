@@ -39,7 +39,6 @@ export default function LegalLayout({ title, children }: { title: string; childr
   return (
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Inter:wght@300;400;500;600&display=swap');
         .legal-body p, .legal-body li { font-size: 14px; line-height: 1.65; color: rgba(225,255,236,0.86); }
         .legal-body p { margin: 0 0 10px; }
         .legal-body ul { margin: 0 0 10px; padding-left: 20px; }
