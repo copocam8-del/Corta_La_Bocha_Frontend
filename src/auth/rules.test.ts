@@ -18,11 +18,16 @@ describe('validateRegister', () => {
     expect(validateRegister(valido, hoy)).toEqual({});
   });
 
-  it('marca cada campo vacío con su propio mensaje', () => {
+  it('marca cada campo obligatorio vacío con su propio mensaje', () => {
     const vacio = { name: '', lastName: '', username: '', birthDate: '', country: '', email: '', password: '' };
     expect(Object.keys(validateRegister(vacio, hoy)).sort()).toEqual(
-      ['birthDate', 'country', 'email', 'lastName', 'name', 'password', 'username'],
+      ['birthDate', 'country', 'email', 'lastName', 'name', 'password'],
     );
+  });
+
+  it('el nombre de usuario es opcional (el backend genera uno)', () => {
+    expect(validateRegister({ ...valido, username: '' }, hoy)).toEqual({});
+    expect(validateRegister({ ...valido, username: '   ' }, hoy)).toEqual({});
   });
 
   it.each([

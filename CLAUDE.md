@@ -51,6 +51,10 @@ src/
 - Las reglas de `src/auth/rules.ts` sólo sirven para avisar antes de enviar; **el backend decide**.
   Si cambia una regla, hay que cambiarla en los dos repos (backend: `src/auth/dto/auth-rules.ts`).
 - Todos los mensajes que ve el usuario van en español.
+- El nombre de usuario en el registro es opcional: si queda vacío, el backend genera uno.
+- `GET /users` y `GET /users/:id` devuelven sólo datos públicos (usuario, país, perfil de juego).
+  Email, fecha de nacimiento y nombre real sólo vienen en `GET /users/me`.
+- Para cerrar sesión usar `clearSession()` (borra token, username y name), no `removeItem('token')`.
 
 ## Variables de entorno
 
