@@ -6,6 +6,13 @@ export function getToken(): string | null {
   return localStorage.getItem('token');
 }
 
+// Guarda la respuesta de un login exitoso (POST /auth/login o /auth/google)
+export function saveSession(data: { access_token: string; username?: string | null; name?: string | null }) {
+  localStorage.setItem('token', data.access_token);
+  if (data.username) localStorage.setItem('username', data.username);
+  if (data.name) localStorage.setItem('name', data.name);
+}
+
 export function clearSession() {
   SESSION_KEYS.forEach((k) => localStorage.removeItem(k));
 }

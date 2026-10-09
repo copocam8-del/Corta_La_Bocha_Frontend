@@ -4,6 +4,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { User, Mail, Lock, Calendar, Globe2, ArrowRight, ShieldCheck } from 'lucide-react';
 import FieldError from '../components/FieldError';
 import LegalFooter from '../components/LegalFooter';
+import GoogleButton from '../components/GoogleButton';
 import { maxBirthDate, validateRegister, PASSWORD_MIN, PASSWORD_MAX, type FieldErrors, type RegisterForm } from '../auth/rules';
 import { parseAuthError } from '../auth/apiErrors';
 
@@ -530,6 +531,9 @@ export default function Register() {
                 {loading ? 'Creando cuenta...' : (<>¡A jugar! <ArrowRight size={16} strokeWidth={2} /></>)}
               </button>
             </form>
+
+            {/* Sólo aparece si VITE_GOOGLE_CLIENT_ID está configurado */}
+            <div style={{ marginTop: '12px' }}><GoogleButton mode="signup" /></div>
 
             <div style={{ height: '1px', background: 'rgba(57,255,140,0.18)', margin: '20px 0 14px' }}/>
 
