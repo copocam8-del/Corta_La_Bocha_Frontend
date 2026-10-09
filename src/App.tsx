@@ -56,15 +56,15 @@ export default function App() {
         />
         <Route path="/game-setup" element={<GameSetup />} />
         <Route path="/lobby" element={<Lobby />} />
-        <Route path="/game" element={<Game />} />
+        <Route path="/game" element={<ProtectedRoute><Game /></ProtectedRoute>} />
         <Route path="/create-room" element={<CreateRoom />} />
         <Route path="/room-code" element={<RoomCode />} />
         <Route path="/room/:code" element={<Room />} />
         <Route path="/game-multi" element={<GameMulti />} />
         <Route path="/public-setup" element={<PublicSetup />} />
         <Route path="/public-queue" element={<PublicQueue />} />
-        <Route path="/global-ranking" element={<GlobalRanking />} />
-        <Route path="/ranking" element={<GlobalRanking />} />
+        <Route path="/global-ranking" element={<ProtectedRoute><GlobalRanking /></ProtectedRoute>} />
+        <Route path="/ranking" element={<ProtectedRoute><GlobalRanking /></ProtectedRoute>} />
       </Routes>
     </BrowserRouter>
   );

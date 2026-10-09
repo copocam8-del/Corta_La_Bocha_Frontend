@@ -1,19 +1,27 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Trophy, Medal, ArrowLeft, Shield, Star } from 'lucide-react';
+import { getRanking, winRate, type RankingRow } from '../api/profile';
+import { getTokenUserId } from '../auth/session';
 
-const MOCK_RANKING = [
-  { id: 1, name: 'BatiGol_9', points: 15420, matches: 142, winRate: '68%' },
-  { id: 2, name: 'Cami_Dev', points: 14850, matches: 120, winRate: '72%' },
-  { id: 3, name: 'Nico_Flex', points: 13900, matches: 135, winRate: '59%' },
-  { id: 4, name: 'ReyArturo', points: 12100, matches: 110, winRate: '55%' },
-  { id: 5, name: 'Pulga10', points: 11850, matches: 95, winRate: '80%' },
-  { id: 6, name: 'Chino_Z', points: 10400, matches: 102, winRate: '51%' },
-  { id: 7, name: 'Dibu_23', points: 9950, matches: 88, winRate: '64%' },
-  { id: 8, name: 'Fideo_Malco', points: 9200, matches: 84, winRate: '60%' },
-  { id: 9, name: 'Caruso_In', points: 8500, matches: 90, winRate: '42%' },
-  { id: 10, name: 'Scaloneta_Fan', points: 8100, matches: 72, winRate: '58%' },
-];
+interface RankingPlayer {
+  id: number; // posición
+  userId: string;
+  name: string;
+  points: number;
+  matches: number;
+  winRate: string;
+}
+
+// Adapta lo que devuelve GET /users/ranking a lo que dibuja esta pantalla
+const toPlayer = (r: RankingRow): RankingPlayer => ({
+  id: r.position,
+  userId: r.userId,
+  name: r.username,
+  points: r.totalPoints,
+  matches: r.matchesPlayed,
+  winRate: `${winRate(r.matchesPlayed, r.matchesWon)}%`,
+});
 
 export default function GlobalRanking() {
   const navigate = useNavigate();
@@ -37,8 +45,18 @@ export default function GlobalRanking() {
     []
   );
 
-  const podio = MOCK_RANKING.slice(0, 3);
-  const restoDelTop = MOCK_RANKING.slice(3);
+  const [ranking, setRanking] = useState<RankingPlayer[] | null>(null);
+  const [rankingError, setRankingError] = useState(false);
+  const myUserId = useMemo(() => getTokenUserId(), []);
+
+  useEffect(() => {
+    getRanking()
+      .then(rows => setRanking(rows.map(toPlayer)))
+      .catch(() => setRankingError(true));
+  }, []);
+
+  const podio = (ranking ?? []).slice(0, 3);
+  const restoDelTop = (ranking ?? []).slice(3);
 
   const getMedalColor = (pos: number) => {
     if (pos === 1) return '#fbbf24'; 
@@ -242,6 +260,16 @@ export default function GlobalRanking() {
             )}
           </div>
 
+          {(rankingError || !ranking || ranking.length === 0) && (
+            <p role="status" style={{ textAlign: 'center', fontSize: '13px', color: rankingError ? '#fca5a5' : 'rgba(180,255,205,0.6)' }}>
+              {rankingError
+                ? 'No se pudo cargar el ranking. Probá de nuevo en un rato.'
+                : !ranking
+                ? 'Cargando ranking...'
+                : 'Todavía no hay jugadores en el ranking. ¡Jugá una partida y sé el primero!'}
+            </p>
+          )}
+
           <div className="ranking-card" style={{
             background: 'rgba(4,20,11,0.75)',
             border: '1px solid rgba(57,255,140,0.2)',
@@ -266,7 +294,7 @@ export default function GlobalRanking() {
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '340px', overflowY: 'auto', paddingRight: '4px' }}>
               {restoDelTop.map((player) => {
-                const isMe = player.name === 'Cami_Dev'; 
+                const isMe = player.userId === myUserId;
 
                 return (
                   <div key={player.id} className={`rank-row${isMe ? ' me' : ''}`}>

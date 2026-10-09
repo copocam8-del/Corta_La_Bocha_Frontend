@@ -64,6 +64,19 @@ src/
   (y la fecha `LEGAL_LAST_UPDATE`).
 - El registro exige aceptar Términos y Privacidad (casilla obligatoria, consentimiento de la Ley 25.326).
 
+## Perfil, partidas y ranking
+
+- Partida solo (`pages/Game.tsx`): la decide el servidor. `api/soloMatch.ts` llama a
+  `POST /solo-matches/quick` (letra, categorías y plan de la máquina) y a `.../finish` (resultado oficial y
+  estadísticas). El frontend **no** calcula puntajes ni quién ganó.
+- Perfil (`pages/Profile.tsx`): avatar del set propio (`profile/avatarData.ts`, mismos ids que el backend),
+  equipo/selección/jugador favorito, bio, estadísticas y puesto en el ranking (`api/profile.ts`).
+- Ranking (`pages/GlobalRanking.tsx`): datos reales de `GET /users/ranking`.
+- **El multijugador (Room, GameMulti, PublicQueue) todavía es una simulación local**: no usa el backend.
+- Logros: `GET /users/me/achievements` (nombre y descripción vienen del backend). Íconos por id en
+  `profile/achievementIcons.ts`; grilla en `profile/AchievementsGrid.tsx` (bloqueados en gris). La partida solo
+  muestra "¡Logro desbloqueado!" con los `newAchievements` que devuelve el backend.
+
 ## Variables de entorno
 
 - `VITE_API_URL`: URL del backend (default `http://localhost:3000`)

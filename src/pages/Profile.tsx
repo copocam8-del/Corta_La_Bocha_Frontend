@@ -1,6 +1,4 @@
 import { useEffect, useMemo, useState } from 'react';
-import api from '../api/axios';
-import { clearSession } from '../auth/session';
 import { useNavigate } from 'react-router-dom';
 import {
   ArrowLeft,
@@ -12,43 +10,50 @@ import {
   Flame,
   Pencil,
   LogOut,
+  Medal,
+  Zap,
+  Shirt,
+  Globe2,
+  Star,
 } from 'lucide-react';
+import { clearSession } from '../auth/session';
+import { parseAuthError } from '../auth/apiErrors';
+import type { FieldErrors } from '../auth/rules';
+import FieldError from '../components/FieldError';
+import { Avatar, AvatarPicker } from '../profile/avatars';
+import AchievementsGrid from '../profile/AchievementsGrid';
+import { getMyAchievements, type Achievement } from '../api/achievements';
+import {
+  getMyProfile,
+  getMyRanking,
+  updateMyProfile,
+  winRate as calcWinRate,
+  type MyProfile,
+  type MyRanking,
+} from '../api/profile';
 
-interface ProfileData {
-  id: string;
-  username: string;
-  email: string;
-  first_name: string | null;
-  last_name: string | null;
-  birth_date: string | null;
-  country: string | null;
-  created_at: string;
-  profile: {
-    avatar_url: string | null;
-    bio: string | null;
-    favorite_team: string | null;
-    favorite_country: string | null;
-    favorite_player: string | null;
-    matches_played: number;
-    matches_won: number;
-    tournaments_won: number;
-    total_points: number;
-    best_streak: number;
-  };
-}
+const EMPTY_STATS = {
+  avatar_id: null, bio: null, favorite_team: null, favorite_country: null, favorite_player: null,
+  matches_played: 0, matches_won: 0, tournaments_won: 0, total_points: 0, best_streak: 0, current_streak: 0,
+};
 
 export default function Profile() {
   const [entered, setEntered] = useState(false);
-  const [profile, setProfile] = useState<ProfileData | null>(null);
+  const [profile, setProfile] = useState<MyProfile | null>(null);
+  const [ranking, setRanking] = useState<MyRanking | null>(null);
+  const [achievements, setAchievements] = useState<Achievement[] | null>(null);
   const [editing, setEditing] = useState(false);
   const [username, setUsername] = useState('');
   const [bio, setBio] = useState('');
-  const [avatarUrl, setAvatarUrl] = useState('');
+  const [avatarId, setAvatarId] = useState<string | null>(null);
   const [favoriteTeam, setFavoriteTeam] = useState('');
+  const [favoriteCountry, setFavoriteCountry] = useState('');
+  const [favoritePlayer, setFavoritePlayer] = useState('');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [success, setSuccess] = useState(false);
-    const navigate = useNavigate();
+  const navigate = useNavigate();
 
   const handleLogout = () => {
     clearSession();
@@ -60,19 +65,27 @@ export default function Profile() {
     return () => clearTimeout(t);
   }, []);
 
+  // Carga el formulario con los datos guardados
+  const fillForm = (data: MyProfile) => {
+    setUsername(data.username || '');
+    setBio(data.profile?.bio || '');
+    setAvatarId(data.profile?.avatar_id || null);
+    setFavoriteTeam(data.profile?.favorite_team || '');
+    setFavoriteCountry(data.profile?.favorite_country || '');
+    setFavoritePlayer(data.profile?.favorite_player || '');
+  };
+
   useEffect(() => {
-    api
-      .get('/users/me')
-      .then((res) => {
-        const data: ProfileData = res.data;
+    getMyProfile()
+      .then((data) => {
         setProfile(data);
-        setUsername(data.username || '');
-        setBio(data.profile?.bio || '');
-        setAvatarUrl(data.profile?.avatar_url || '');
-        setFavoriteTeam(data.profile?.favorite_team || '');
+        fillForm(data);
       })
       .catch(() => navigate('/login'));
-  }, []);
+    // El ranking es un extra: si falla, el perfil se muestra igual
+    getMyRanking().then(setRanking).catch(() => setRanking(null));
+    getMyAchievements().then(setAchievements).catch(() => setAchievements(null));
+  }, [navigate]);
 
   const sparks = useMemo(
     () =>
@@ -91,31 +104,49 @@ export default function Profile() {
     e.preventDefault();
     setSaving(true);
     setError('');
+    setFieldErrors({});
     setSuccess(false);
     try {
-      const res = await api.put('/users/me', {
-        username,
+      // Un campo vacío ("") le indica al backend que lo borre
+      const data = await updateMyProfile({
+        username: username.trim(),
         bio,
-        avatar_url: avatarUrl || undefined,
-        favorite_team: favoriteTeam || undefined,
+        avatar_id: avatarId,
+        favorite_team: favoriteTeam,
+        favorite_country: favoriteCountry,
+        favorite_player: favoritePlayer,
       });
-      setProfile(res.data);
+      setProfile(data);
+      fillForm(data);
+      if (data.username) localStorage.setItem('username', data.username);
       setSuccess(true);
       setEditing(false);
-    } catch (err: any) {
-      setError(err?.response?.data?.message || 'No se pudo guardar el perfil');
+    } catch (err) {
+      const parsed = parseAuthError(err);
+      setFieldErrors(parsed.fieldErrors);
+      setError(parsed.message || (Object.keys(parsed.fieldErrors).length ? '' : 'No se pudo guardar el perfil'));
     } finally {
       setSaving(false);
     }
   };
 
+  const handleCancel = () => {
+    if (profile) fillForm(profile);
+    setFieldErrors({});
+    setError('');
+    setEditing(false);
+  };
+
+  const stats = profile?.profile ?? EMPTY_STATS;
   const fullName = profile
     ? [profile.first_name, profile.last_name].filter(Boolean).join(' ') || profile.username
     : '';
-  const winRate =
-    profile && profile.profile.matches_played > 0
-      ? Math.round((profile.profile.matches_won / profile.profile.matches_played) * 100)
-      : 0;
+  const winRate = calcWinRate(stats.matches_played, stats.matches_won);
+  const favorites = [
+    { Icon: Shirt, label: 'Equipo', value: stats.favorite_team },
+    { Icon: Globe2, label: 'Selección', value: stats.favorite_country },
+    { Icon: Star, label: 'Jugador', value: stats.favorite_player },
+  ].filter((f) => f.value);
 
   return (
     <>
@@ -194,7 +225,6 @@ export default function Profile() {
           height: 84px;
           border-radius: 50%;
           border: 2.5px solid rgba(57,255,140,0.6);
-          background: rgba(57,255,140,0.1);
           display: flex;
           align-items: center;
           justify-content: center;
@@ -442,7 +472,7 @@ export default function Profile() {
         </button>
 
         {/* CONTENIDO */}
-        <div style={{ width: '100%', maxWidth: '400px', position: 'relative', zIndex: 2 }}>
+        <div style={{ width: '100%', maxWidth: '440px', position: 'relative', zIndex: 2, padding: '56px 0 24px' }}>
 
           {!profile ? (
             <p style={{ textAlign: 'center', color: 'rgba(180,255,205,0.6)', fontSize: '13px' }}>
@@ -457,11 +487,7 @@ export default function Profile() {
                 animation: entered ? 'riseIn 0.6s ease both' : 'none',
               }}>
                 <div className="avatar-wrap">
-                  {avatarUrl ? (
-                    <img src={avatarUrl} alt={profile.username} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                  ) : (
-                    fullName.charAt(0).toUpperCase()
-                  )}
+                  <Avatar id={avatarId} fallback={fullName} size={84} />
                 </div>
                 <h1 className="neon-title" style={{
                   fontFamily: "'Oswald', sans-serif",
@@ -472,10 +498,13 @@ export default function Profile() {
                 <p style={{ fontSize: '12px', color: '#7CFFB2', margin: 0 }}>
                   @{profile.username}{profile.country ? ` · ${profile.country}` : ''}
                 </p>
-                {profile.profile.bio && (
+                {stats.bio && (
                   <p style={{ fontSize: '12px', color: 'rgba(180,255,205,0.7)', marginTop: '8px' }}>
-                    {profile.profile.bio}
+                    {stats.bio}
                   </p>
+                )}
+                {success && (
+                  <p role="status" style={{ color: '#39ff8c', fontSize: '12px', marginTop: '8px' }}>Perfil actualizado</p>
                 )}
               </div>
 
@@ -486,15 +515,28 @@ export default function Profile() {
                 marginBottom: '14px',
               }}>
                 <p className="section-label">Estadísticas</p>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
+                {ranking && (
+                  <div style={{
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+                    marginBottom: '10px', padding: '8px', borderRadius: '10px',
+                    background: 'rgba(250,204,21,0.08)', border: '1px solid rgba(250,204,21,0.3)',
+                  }}>
+                    <Medal size={16} color="#fde047" />
+                    <span style={{ fontSize: '12px', color: '#fef9c3' }}>
+                      Puesto <strong style={{ fontFamily: "'Oswald', sans-serif", fontSize: '16px' }}>#{ranking.position}</strong>
+                      {' '}de {ranking.totalPlayers} en el ranking global
+                    </span>
+                  </div>
+                )}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(96px, 1fr))', gap: '8px' }}>
                   <div className="stat-box">
                     <Gamepad2 size={16} color="#39ff8c" />
-                    <span className="stat-value">{profile.profile.matches_played}</span>
+                    <span className="stat-value">{stats.matches_played}</span>
                     <span className="stat-label">Partidas</span>
                   </div>
                   <div className="stat-box">
                     <CheckCircle2 size={16} color="#39ff8c" />
-                    <span className="stat-value">{profile.profile.matches_won}</span>
+                    <span className="stat-value">{stats.matches_won}</span>
                     <span className="stat-label">Ganadas</span>
                   </div>
                   <div className="stat-box">
@@ -504,26 +546,50 @@ export default function Profile() {
                   </div>
                   <div className="stat-box">
                     <Coins size={16} color="#39ff8c" />
-                    <span className="stat-value">{profile.profile.total_points}</span>
+                    <span className="stat-value">{stats.total_points}</span>
                     <span className="stat-label">Puntos</span>
                   </div>
                   <div className="stat-box">
                     <Trophy size={16} color="#39ff8c" />
-                    <span className="stat-value">{profile.profile.tournaments_won}</span>
+                    <span className="stat-value">{stats.tournaments_won}</span>
                     <span className="stat-label">Torneos</span>
                   </div>
                   <div className="stat-box">
+                    <Zap size={16} color="#39ff8c" />
+                    <span className="stat-value">{stats.current_streak}</span>
+                    <span className="stat-label">Racha actual</span>
+                  </div>
+                  <div className="stat-box">
                     <Flame size={16} color="#39ff8c" />
-                    <span className="stat-value">{profile.profile.best_streak}</span>
-                    <span className="stat-label">Racha</span>
+                    <span className="stat-value">{stats.best_streak}</span>
+                    <span className="stat-label">Mejor racha</span>
                   </div>
                 </div>
-                {profile.profile.favorite_team && (
-                  <p style={{ marginTop: '10px', fontSize: '11px', color: 'rgba(180,255,205,0.55)', textAlign: 'center' }}>
-                    Hincha de <span style={{ color: '#ecfff3', fontWeight: 600 }}>{profile.profile.favorite_team}</span>
-                  </p>
+                {favorites.length > 0 && (
+                  <div style={{ marginTop: '12px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    {favorites.map(({ Icon, label, value }) => (
+                      <p key={label} style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', color: 'rgba(180,255,205,0.6)' }}>
+                        <Icon size={14} color="#7CFFB2" />
+                        {label} favorito: <span style={{ color: '#ecfff3', fontWeight: 600 }}>{value}</span>
+                      </p>
+                    ))}
+                  </div>
                 )}
               </div>
+
+              {/* Logros */}
+              {achievements && (
+                <div className="profile-card" style={{
+                  opacity: entered ? 1 : 0,
+                  animation: entered ? 'riseIn 0.6s ease 0.14s both' : 'none',
+                  marginBottom: '14px',
+                }}>
+                  <p className="section-label">
+                    Logros · {achievements.filter(a => a.unlocked).length}/{achievements.length}
+                  </p>
+                  <AchievementsGrid achievements={achievements} />
+                </div>
+              )}
 
               {/* Editar perfil */}
               <div className="profile-card" style={{
@@ -540,51 +606,84 @@ export default function Profile() {
                 </div>
 
                 {editing && (
-                  <form onSubmit={handleSave} style={{ display: 'flex', flexDirection: 'column', gap: '12px', animation: 'slideDown 0.2s ease forwards' }}>
+                  <form onSubmit={handleSave} noValidate style={{ display: 'flex', flexDirection: 'column', gap: '12px', animation: 'slideDown 0.2s ease forwards' }}>
                     <div>
-                      <label className="field-label">Username</label>
+                      <span className="field-label">Avatar</span>
+                      <AvatarPicker value={avatarId} onChange={setAvatarId} />
+                      <FieldError id="profile-avatar-error" message={fieldErrors.avatar_id} />
+                    </div>
+                    <div>
+                      <label className="field-label" htmlFor="profile-username">Nombre de usuario</label>
                       <input
+                        id="profile-username"
                         className="field-input"
                         type="text"
                         value={username}
                         onChange={(e) => setUsername(e.target.value)}
-                        minLength={3}
+                        maxLength={30}
+                        aria-invalid={!!fieldErrors.username}
+                        aria-describedby="profile-username-error"
                       />
+                      <FieldError id="profile-username-error" message={fieldErrors.username} />
                     </div>
                     <div>
-                      <label className="field-label">URL de avatar</label>
+                      <label className="field-label" htmlFor="profile-team">Equipo favorito</label>
                       <input
-                        className="field-input"
-                        type="url"
-                        value={avatarUrl}
-                        onChange={(e) => setAvatarUrl(e.target.value)}
-                        placeholder="https://..."
-                      />
-                    </div>
-                    <div>
-                      <label className="field-label">Equipo favorito</label>
-                      <input
+                        id="profile-team"
                         className="field-input"
                         type="text"
                         value={favoriteTeam}
                         onChange={(e) => setFavoriteTeam(e.target.value)}
+                        maxLength={100}
                         placeholder="Ej: Boca Juniors"
+                        aria-describedby="profile-team-error"
                       />
+                      <FieldError id="profile-team-error" message={fieldErrors.favorite_team} />
                     </div>
                     <div>
-                      <label className="field-label">Bio</label>
+                      <label className="field-label" htmlFor="profile-country">Selección favorita</label>
+                      <input
+                        id="profile-country"
+                        className="field-input"
+                        type="text"
+                        value={favoriteCountry}
+                        onChange={(e) => setFavoriteCountry(e.target.value)}
+                        maxLength={100}
+                        placeholder="Ej: Argentina"
+                        aria-describedby="profile-country-error"
+                      />
+                      <FieldError id="profile-country-error" message={fieldErrors.favorite_country} />
+                    </div>
+                    <div>
+                      <label className="field-label" htmlFor="profile-player">Jugador favorito</label>
+                      <input
+                        id="profile-player"
+                        className="field-input"
+                        type="text"
+                        value={favoritePlayer}
+                        onChange={(e) => setFavoritePlayer(e.target.value)}
+                        maxLength={100}
+                        placeholder="Ej: Juan Román Riquelme"
+                        aria-describedby="profile-player-error"
+                      />
+                      <FieldError id="profile-player-error" message={fieldErrors.favorite_player} />
+                    </div>
+                    <div>
+                      <label className="field-label" htmlFor="profile-bio">Bio</label>
                       <textarea
+                        id="profile-bio"
                         className="field-input"
                         value={bio}
                         onChange={(e) => setBio(e.target.value)}
                         maxLength={160}
                         rows={3}
+                        aria-describedby="profile-bio-error"
                       />
                       <p style={{ fontSize: '10px', color: 'rgba(180,255,205,0.4)', marginTop: '4px' }}>{bio.length}/160</p>
+                      <FieldError id="profile-bio-error" message={fieldErrors.bio} />
                     </div>
 
-                    {error && <p style={{ color: '#ff7a7a', fontSize: '12px' }}>{error}</p>}
-                    {success && <p style={{ color: '#39ff8c', fontSize: '12px' }}>Perfil actualizado</p>}
+                    {error && <p role="alert" style={{ color: '#ff7a7a', fontSize: '12px' }}>{error}</p>}
 
                     <div style={{ display: 'flex', gap: '8px' }}>
                       <button type="submit" className="save-btn" disabled={saving}>
@@ -593,7 +692,7 @@ export default function Profile() {
                       <button
                         type="button"
                         className="edit-toggle-btn"
-                        onClick={() => setEditing(false)}
+                        onClick={handleCancel}
                         style={{ flexShrink: 0 }}
                       >
                         Cancelar
