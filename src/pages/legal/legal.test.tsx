@@ -19,7 +19,7 @@ describe('páginas legales', () => {
 
   it('la política de privacidad nombra a todos los proveedores que reciben datos', () => {
     const html = render(<Privacidad />, '/privacidad');
-    for (const proveedor of ['Vercel', 'Render', 'Supabase', 'OpenAI']) expect(html).toContain(proveedor);
+    for (const proveedor of ['Vercel', 'Render', 'Supabase', 'OpenAI', 'Google (inicio de sesión)']) expect(html).toContain(proveedor);
   });
 
   it('la política de cookies describe lo que se guarda en localStorage', () => {

@@ -54,6 +54,11 @@ export default function Cookies() {
           IP y el tipo de navegador, según sus propias políticas de privacidad. No usamos sus herramientas de
           publicidad ni de seguimiento.
         </p>
+        <p>
+          En las pantallas de inicio de sesión y registro se carga el botón de <strong>Google</strong>. Google puede
+          guardar sus propias cookies para que funcione el inicio de sesión con tu cuenta de Google, según su
+          política de privacidad.
+        </p>
       </Section>
 
       <Section title="4. Cómo borrar estos datos">

@@ -26,8 +26,8 @@ export default function Privacidad() {
           </thead>
           <tbody>
             <tr>
-              <td>Email y contraseña</td>
-              <td>Al registrarte</td>
+              <td>Email y contraseña (o identificador de tu cuenta de Google)</td>
+              <td>Al registrarte o al entrar con Google</td>
               <td>Identificarte e iniciar sesión. La contraseña se guarda cifrada (con bcrypt): nadie, ni
                 siquiera nosotros, puede leerla.</td>
             </tr>
@@ -86,6 +86,11 @@ export default function Privacidad() {
           </li>
           <li><strong>Google Fonts</strong>: sirve las tipografías de la página; tu navegador se conecta a sus
             servidores para descargarlas.</li>
+          <li>
+            <strong>Google (inicio de sesión)</strong>: si elegís "Continuar con Google", Google nos confirma tu
+            email, tu nombre y un identificador de tu cuenta de Google, que guardamos para reconocerte la
+            próxima vez. No recibimos tu contraseña de Google.
+          </li>
         </ul>
         <p>
           También podemos compartir datos si una autoridad judicial o administrativa competente lo exige
