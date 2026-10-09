@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import api from '../api/axios';
 import { useNavigate, Link } from 'react-router-dom';
 import { clearSession } from '../auth/session';
+import LegalFooter from '../components/LegalFooter';
 
 // Datos públicos que devuelve GET /users (sin email, fecha de nacimiento ni nombre real)
 interface PublicUser {
@@ -53,6 +54,7 @@ export default function Dashboard() {
             </div>
           ))}
         </div>
+        <LegalFooter variant="light" />
       </div>
     </div>
   );

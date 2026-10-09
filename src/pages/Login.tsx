@@ -3,6 +3,7 @@ import api from '../api/axios';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { Mail, Lock, ArrowRight, ShieldCheck } from 'lucide-react';
 import FieldError from '../components/FieldError';
+import LegalFooter from '../components/LegalFooter';
 import { validateLogin, type FieldErrors } from '../auth/rules';
 import { parseAuthError } from '../auth/apiErrors';
 
@@ -449,6 +450,7 @@ export default function Login() {
             <ShieldCheck size={13} strokeWidth={1.8} />
             Acceso seguro
           </div>
+          <LegalFooter />
         </div>
       </div>
     </>

@@ -56,6 +56,14 @@ src/
   Email, fecha de nacimiento y nombre real sólo vienen en `GET /users/me`.
 - Para cerrar sesión usar `clearSession()` (borra token, username y name), no `removeItem('token')`.
 
+## Páginas legales
+
+- `/privacidad`, `/terminos` y `/cookies` (en `src/pages/legal/`, públicas). Usan `components/LegalLayout.tsx`.
+- Los datos que faltan completar están marcados con `<Falta>…</Falta>` (se ven resaltados en amarillo).
+- Si la app empieza a guardar un dato nuevo o a usar otro proveedor, **actualizá la Política de privacidad**
+  (y la fecha `LEGAL_LAST_UPDATE`).
+- El registro exige aceptar Términos y Privacidad (casilla obligatoria, consentimiento de la Ley 25.326).
+
 ## Variables de entorno
 
 - `VITE_API_URL`: URL del backend (default `http://localhost:3000`)
