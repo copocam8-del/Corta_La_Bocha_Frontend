@@ -6,6 +6,13 @@ export function getToken(): string | null {
   return localStorage.getItem('token');
 }
 
+// Guarda la respuesta de un login exitoso (POST /auth/login o /auth/google)
+export function saveSession(data: { access_token: string; username?: string | null; name?: string | null }) {
+  localStorage.setItem('token', data.access_token);
+  if (data.username) localStorage.setItem('username', data.username);
+  if (data.name) localStorage.setItem('name', data.name);
+}
+
 export function clearSession() {
   SESSION_KEYS.forEach((k) => localStorage.removeItem(k));
 }
@@ -18,6 +25,18 @@ export function getTokenExpiration(token: string): number | null {
     const base64 = payload.replace(/-/g, '+').replace(/_/g, '/');
     const { exp } = JSON.parse(atob(base64));
     return typeof exp === 'number' ? exp : null;
+  } catch {
+    return null;
+  }
+}
+
+// Id del usuario logueado (campo "sub" del JWT). Sólo para mostrar cosas como "vos" en el ranking.
+export function getTokenUserId(token: string | null = getToken()): string | null {
+  if (!token) return null;
+  try {
+    const payload = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+    const { sub } = JSON.parse(atob(payload));
+    return typeof sub === 'string' ? sub : null;
   } catch {
     return null;
   }
