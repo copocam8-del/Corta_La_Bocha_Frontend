@@ -18,24 +18,40 @@ export interface QuickMatch {
   aiPlan: AiPlanItem[];
 }
 
-export interface AnswerResult {
+// Estado de cada respuesta: valid (vale), invalid (no vale), empty (no respondió) o
+// unverified (la IA no respondió: 0 puntos)
+export type AnswerStatus = 'valid' | 'invalid' | 'empty' | 'unverified';
+
+export interface CategoryResult {
   category: string;
   userAnswer: string | null;
+  status: AnswerStatus;
   isValid: boolean;
-  reason?: string;
+  canonical: string | null; // nombre que reconoció la IA (ej. "mesi" → "Lionel Messi")
+  reason: string; // motivo en español
   points: number;
+  machine: {
+    answer: string | null;
+    status: AnswerStatus;
+    isValid: boolean;
+    canonical: string | null;
+    reason: string;
+    points: number;
+  };
 }
 
 export interface QuickMatchResult {
   matchId: string;
   letter: string;
-  results: AnswerResult[];
+  results: CategoryResult[];
   playerPoints: number;
   aiAnswers: Record<string, string>;
   aiPoints: number;
   outcome: 'win' | 'draw' | 'loss';
+  // true si la IA no pudo validar alguna respuesta: esa partida no cuenta para estadísticas
+  validationIncomplete: boolean;
   newAchievements: NewAchievement[];
-  stats: {
+  stats: null | {
     matchesPlayed: number;
     matchesWon: number;
     totalPoints: number;

@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { Bot, PenLine, Hourglass, StopCircle, Timer, Trophy, Handshake, Skull, Flame } from 'lucide-react';
 import { finishQuickMatch, startQuickMatch, type QuickMatch, type QuickMatchResult } from '../api/soloMatch';
 import { achievementIcon } from '../profile/achievementIcons';
+import RoundResults from '../game/RoundResults';
 
 // La partida se decide en el servidor: él sortea la letra, arma las respuestas de la máquina
 // (según la dificultad) y al final valida tus respuestas, calcula el resultado y actualiza
@@ -702,12 +703,24 @@ export default function Game() {
                   </div>
                 )}
 
-                {resultado && resultado.stats.currentStreak > 1 && (
+                {resultado?.validationIncomplete && (
+                  <div role="alert" style={{
+                    margin: '0 0 14px', padding: '10px 12px', borderRadius: '10px', textAlign: 'left',
+                    background: 'rgba(251,191,36,0.1)', border: '1px solid rgba(251,191,36,0.5)',
+                    color: '#fde68a', fontSize: '12px', lineHeight: 1.5,
+                  }}>
+                    <strong>No pudimos validar algunas respuestas.</strong> La inteligencia artificial que revisa las
+                    respuestas no respondió, así que las marcadas "Sin validar" no suman puntos. Esta partida no cuenta
+                    para tus estadísticas ni el ranking. Probá jugar otra en un rato.
+                  </div>
+                )}
+
+                {resultado?.stats && resultado.stats.currentStreak > 1 && (
                   <p style={{
                     display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
                     color: '#fdba74', fontSize: '13px', margin: '-6px 0 14px',
                   }}>
-                    <Flame size={15} /> ¡Racha de {resultado.stats.currentStreak} victorias!
+                    <Flame size={15} /> ¡Racha de {resultado.stats?.currentStreak} victorias!
                   </p>
                 )}
 
@@ -724,17 +737,7 @@ export default function Game() {
                       }}>Reintentar</button>
                     </div>
                   ) : resultado?.results ? (
-                    resultado.results.map((item) => (
-                      <div key={item.category} className="result-item">
-                        <div>
-                          <div className="cat">{item.category}: <span style={{ fontWeight: 400, textTransform: 'none', letterSpacing: 0 }}>{item.userAnswer || '—'}</span></div>
-                          {item.reason && <div className="result-reason">{item.reason}</div>}
-                        </div>
-                        <div className="score" style={{ color: item.points > 0 ? '#39ff8c' : 'rgba(255,255,255,0.25)' }}>
-                          +{item.points}
-                        </div>
-                      </div>
-                    ))
+                    <RoundResults results={resultado.results} />
                   ) : null}
                 </div>
 
