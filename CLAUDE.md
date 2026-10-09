@@ -30,7 +30,6 @@ npm run lint      # eslint (hay errores viejos en varias páginas, ej. Math.rand
 src/
   App.tsx                    rutas; las privadas van envueltas en <ProtectedRoute>
   api/axios.ts               cliente axios: agrega el token y ante un 401 manda a /login?expired=1
-  api/tuttiFrutti.ts         validación de rondas
   auth/
     session.ts               token en localStorage, lectura de "exp" del JWT
     rules.ts                 reglas de registro/login (copia de las del backend)
@@ -73,6 +72,10 @@ src/
   equipo/selección/jugador favorito, bio, estadísticas y puesto en el ranking (`api/profile.ts`).
 - Ranking (`pages/GlobalRanking.tsx`): datos reales de `GET /users/ranking`.
 - **El multijugador (Room, GameMulti, PublicQueue) todavía es una simulación local**: no usa el backend.
+- Resultado de la partida solo (`game/RoundResults.tsx`): por cada categoría, tu respuesta y la de la máquina con su
+  estado (Válida / No vale / Sin respuesta / Sin validar), puntos, motivo y el nombre que reconoció la IA. Si
+  `validationIncomplete` es true se muestra un aviso: la IA no respondió y la partida no cuenta para estadísticas.
+  Puntaje: 20 único válido, 10 válida y distinta, 5 repetida, 0 no vale (lo calcula el backend).
 - Logros: `GET /users/me/achievements` (nombre y descripción vienen del backend). Íconos por id en
   `profile/achievementIcons.ts`; grilla en `profile/AchievementsGrid.tsx` (bloqueados en gris). La partida solo
   muestra "¡Logro desbloqueado!" con los `newAchievements` que devuelve el backend.
