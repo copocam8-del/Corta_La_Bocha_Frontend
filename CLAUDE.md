@@ -55,6 +55,12 @@ src/
   Email, fecha de nacimiento y nombre real sólo vienen en `GET /users/me`.
 - Para cerrar sesión usar `clearSession()` (borra token, username y name), no `removeItem('token')`.
 
+## Recuperar contraseña
+
+- Login → "¿Olvidaste tu contraseña?" → `/olvide-contrasena` (pide el email; el mensaje es el mismo exista o no la
+  cuenta) → mail con el link → `/restablecer-contrasena?token=…` (contraseña nueva + repetirla, reglas en
+  `auth/rules.ts` → `validateNewPassword`). API en `api/password.ts`.
+
 ## Páginas legales
 
 - `/privacidad`, `/terminos` y `/cookies` (en `src/pages/legal/`, públicas). Usan `components/LegalLayout.tsx`.

@@ -81,6 +81,16 @@ export function validateRegister(form: RegisterForm, today = new Date()): FieldE
   return errors;
 }
 
+// Contraseña nueva (recuperar contraseña): mismas reglas que el registro + que coincida la confirmación
+export function validateNewPassword(password: string, confirm: string): FieldErrors {
+  const errors: FieldErrors = {};
+  if (!password) errors.password = 'Ingresá una contraseña';
+  else if (password.length < PASSWORD_MIN || password.length > PASSWORD_MAX)
+    errors.password = `La contraseña debe tener entre ${PASSWORD_MIN} y ${PASSWORD_MAX} caracteres`;
+  if (!errors.password && password !== confirm) errors.confirm = 'Las contraseñas no coinciden';
+  return errors;
+}
+
 export function validateLogin(form: LoginForm): FieldErrors {
   const errors: FieldErrors = {};
   const emailError = validateEmail(form.email);

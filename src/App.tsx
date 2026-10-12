@@ -1,6 +1,8 @@
 import { BrowserRouter, Routes, Route, Navigate, useParams } from 'react-router-dom';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import OlvideContrasena from './pages/OlvideContrasena';
+import RestablecerContrasena from './pages/RestablecerContrasena';
 import Dashboard from './pages/Dashboard';
 import Profile from './pages/Profile';
 import Welcome from './pages/Welcome';
@@ -36,6 +38,8 @@ export default function App() {
         <Route path="/" element={<Navigate to="/login" />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/olvide-contrasena" element={<OlvideContrasena />} />
+        <Route path="/restablecer-contrasena" element={<RestablecerContrasena />} />
         {/* Páginas legales: públicas, sin necesidad de iniciar sesión */}
         <Route path="/privacidad" element={<Privacidad />} />
         <Route path="/terminos" element={<Terminos />} />

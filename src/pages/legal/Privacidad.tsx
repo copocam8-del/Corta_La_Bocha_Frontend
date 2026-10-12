@@ -82,9 +82,15 @@ export default function Privacidad() {
           <li><strong>Render</strong>: aloja el servidor de la aplicación.</li>
           <li><strong>Supabase</strong>: aloja la base de datos donde se guardan los datos de la sección 2.</li>
           <li>
-            <strong>OpenAI</strong>: valida si tus respuestas del juego son correctas. Sólo le enviamos la letra
+            <strong>Un proveedor de inteligencia artificial</strong> (Google Gemini, Anthropic u OpenAI, según cuál
+            tengamos configurado) valida si tus respuestas del Tutti Frutti son correctas. Sólo le enviamos la letra
             de la ronda, las categorías y las respuestas escritas; <strong>nunca</strong> tu nombre, email ni
             otros datos de tu cuenta.
+          </li>
+          <li>
+            <strong>Un servicio de envío de emails</strong> (<Falta>PROVEEDOR DE EMAIL, ej. Resend</Falta>): sólo si
+            pedís recuperar tu contraseña, le pasamos tu email para mandarte el link. El link vence en una hora y
+            sirve una sola vez.
           </li>
           <li><strong>Google Fonts</strong>: sirve las tipografías de la página; tu navegador se conecta a sus
             servidores para descargarlas.</li>
