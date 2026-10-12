@@ -68,6 +68,13 @@ src/
 - Partida solo (`pages/Game.tsx`): la decide el servidor. `api/soloMatch.ts` llama a
   `POST /solo-matches/quick` (letra, categorías y plan de la máquina) y a `.../finish` (resultado oficial y
   estadísticas). El frontend **no** calcula puntajes ni quién ganó.
+  - Reloj: se calcula contra la hora de fin (`game/round.ts` → `secondsLeft`), no restando de a 1, para que no
+    se atrase con la pestaña en segundo plano. La duración sale de `roundSeconds` del servidor.
+  - ¡Basta! sólo con **todas** las categorías completas (`missingCategories`); el backend lo vuelve a controlar
+    (400). El cartel final dice "¡Basta!" o "¡Tiempo!" según cómo terminó la ronda.
+  - La fila de la máquina muestra un lápiz cuando ya escribió (según `aiPlan`); sus respuestas se ven al final.
+  - Errores de `finish`: 409 ya terminada, 410 venció (llegó muy tarde: cuenta como perdida), 400 se muestra el
+    mensaje del servidor.
 - Perfil (`pages/Profile.tsx`): avatar del set propio (`profile/avatarData.ts`, mismos ids que el backend),
   equipo/selección/jugador favorito, bio, estadísticas y puesto en el ranking (`api/profile.ts`).
 - Ranking (`pages/GlobalRanking.tsx`): datos reales de `GET /users/ranking`.
