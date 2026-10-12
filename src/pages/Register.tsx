@@ -357,7 +357,7 @@ export default function Register() {
             }}>Corta la bocha</h1>
             <p style={{
               fontSize: '13px', color: 'rgba(180,255,205,0.75)', margin: 0,
-            }}>El tutti frutti del fútbol</p>
+            }}>Juegos de fútbol para los que saben</p>
           </div>
 
           <div className="register-card" style={{
