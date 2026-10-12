@@ -78,7 +78,16 @@ src/
 - Perfil (`pages/Profile.tsx`): avatar del set propio (`profile/avatarData.ts`, mismos ids que el backend),
   equipo/selección/jugador favorito, bio, estadísticas y puesto en el ranking (`api/profile.ts`).
 - Ranking (`pages/GlobalRanking.tsx`): datos reales de `GET /users/ranking`.
-- **El multijugador (Room, GameMulti, PublicQueue) todavía es una simulación local**: no usa el backend.
+- **Multijugador real** (`src/multi/`): una sola conexión Socket.IO (`multi/socket.ts`, autenticada con el token;
+  URL `VITE_WS_URL` o `VITE_API_URL`). `useRoom(code)` entra a la sala (y vuelve a entrar si se corta), recibe
+  `room:state` y expone las acciones. El servidor manda en todo; el frontend sólo muestra y manda lo que se escribe
+  (borrador cada 350 ms y el final al cortar la ronda). Reloj con `multi/clock.ts` (corrige la diferencia con el
+  reloj del servidor).
+  - `/create-room` → `POST /rooms` → `/room-code` (código real) → `/room/:code`.
+  - `/room/:code` (`pages/Room.tsx`) muestra el lobby o la partida (`pages/GameMulti.tsx`) según la fase: recargar
+    vuelve a donde estabas. `/game-multi/:code` redirige ahí. Si te vas de la pantalla, se avisa `room:leave`.
+  - Pública: `/public-setup` (temática y tamaño) → `/public-queue` (cola) → `queue:matched` → `/room/:code`.
+  - Estilos compartidos en `multi/MultiShell.tsx`.
 - Resultado de la partida solo (`game/RoundResults.tsx`): por cada categoría, tu respuesta y la de la máquina con su
   estado (Válida / No vale / Sin respuesta / Sin validar), puntos, motivo y el nombre que reconoció la IA. Si
   `validationIncomplete` es true se muestra un aviso: la IA no respondió y la partida no cuenta para estadísticas.

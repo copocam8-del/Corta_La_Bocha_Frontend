@@ -2,34 +2,18 @@ import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ChevronRight, Users } from 'lucide-react';
 
-const TEMATICAS = [
-  { id: 'general',        label: 'General' },
-  { id: 'liga_argentina', label: 'Liga Argentina' },
-  { id: 'mundial',        label: 'Mundial' },
-  { id: 'champions',      label: 'Champions' },
-  { id: 'libertadores',   label: 'Libertadores' },
-];
-
-const DIFICULTADES = [
-  { id: 'facil',   label: 'Fácil' },
-  { id: 'medio',   label: 'Medio' },
-  { id: 'dificil', label: 'Difícil' },
-  { id: 'experto', label: 'Experto' },
-];
-
-const TIEMPOS = [30, 45, 60, 90, 120];
+import { PUBLIC_ROUNDS, PUBLIC_SECONDS, TEMATICAS_MULTI as TEMATICAS } from '../multi/types';
 
 const CANTIDADES = [
-  { id: 'pocos',  label: 'Pocos',  desc: '2 a 5 jugadores',  min: 2, max: 5  },
-  { id: 'muchos', label: 'Muchos', desc: '6 a 15 jugadores', min: 6, max: 15 },
+  { id: 'pocos',  label: 'Pocos',  desc: '2 a 4 jugadores' },
+  { id: 'muchos', label: 'Muchos', desc: '5 a 8 jugadores' },
 ];
 
+// Partida pública: elegís temática y tamaño, y la cola arma la partida sola
 export default function PublicSetup() {
   const navigate = useNavigate();
   const [entered,    setEntered]    = useState(false);
   const [tematica,   setTematica]   = useState('general');
-  const [dificultad, setDificultad] = useState('medio');
-  const [tiempo,     setTiempo]     = useState(60);
   const [cantidad,   setCantidad]   = useState('pocos');
 
   useEffect(() => {
@@ -51,8 +35,7 @@ export default function PublicSetup() {
   );
 
   const handleBuscar = () => {
-    const sel = CANTIDADES.find(c => c.id === cantidad)!;
-    navigate('/public-queue', { state: { tematica, dificultad, tiempo, cantidad, min: sel.min, max: sel.max } });
+    navigate('/public-queue', { state: { tematica, size: cantidad } });
   };
 
   return (
@@ -298,31 +281,9 @@ export default function PublicSetup() {
               </div>
             </div>
 
-            {/* Dificultad */}
-            <div>
-              <p className="section-label">Dificultad</p>
-              <div style={{ display: 'flex', gap: '8px' }}>
-                {DIFICULTADES.map(d => (
-                  <button key={d.id} className={`option-btn${dificultad === d.id ? ' active' : ''}`}
-                    onClick={() => setDificultad(d.id)}>
-                    {d.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Tiempo */}
-            <div>
-              <p className="section-label">Tiempo</p>
-              <div style={{ display: 'flex', gap: '8px' }}>
-                {TIEMPOS.map(t => (
-                  <button key={t} className={`option-btn${tiempo === t ? ' active' : ''}`}
-                    onClick={() => setTiempo(t)}>
-                    {t}s
-                  </button>
-                ))}
-              </div>
-            </div>
+            <p style={{ fontSize: '12px', color: 'rgba(180,255,205,0.6)', margin: '-6px 0 0' }}>
+              Las partidas públicas son de {PUBLIC_ROUNDS} rondas de {PUBLIC_SECONDS} segundos.
+            </p>
 
             {/* Cantidad */}
             <div>

@@ -2,29 +2,19 @@ import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ChevronRight } from 'lucide-react';
 
-const TEMATICAS = [
-  { id: 'general',        label: 'General' },
-  { id: 'liga_argentina', label: 'Liga Argentina' },
-  { id: 'mundial',        label: 'Mundial' },
-  { id: 'champions',      label: 'Champions' },
-  { id: 'libertadores',   label: 'Libertadores' },
-];
+import { createRoom } from '../api/rooms';
+import { RONDAS_MULTI as RONDAS, TEMATICAS_MULTI as TEMATICAS, TIEMPOS_MULTI as TIEMPOS } from '../multi/types';
 
-const DIFICULTADES = [
-  { id: 'facil',   label: 'Fácil' },
-  { id: 'medio',   label: 'Medio' },
-  { id: 'dificil', label: 'Difícil' },
-  { id: 'experto', label: 'Experto' },
-];
-
-const TIEMPOS = [30, 45, 60, 90, 120];
-
+// Crear sala privada: el servidor la crea y devuelve el código. En multijugador no hay máquina,
+// así que no hay dificultad: el anfitrión elige temática, cantidad de rondas y tiempo.
 export default function CreateRoom() {
   const navigate = useNavigate();
   const [entered, setEntered] = useState(false);
   const [tematica, setTematica]     = useState('general');
-  const [dificultad, setDificultad] = useState('medio');
+  const [rondas, setRondas]         = useState(3);
   const [tiempo, setTiempo]         = useState(60);
+  const [creando, setCreando]       = useState(false);
+  const [error, setError]           = useState<string | null>(null);
 
   useEffect(() => {
     const t = setTimeout(() => setEntered(true), 80);
@@ -44,8 +34,16 @@ export default function CreateRoom() {
     []
   );
 
-  const handleContinuar = () => {
-    navigate('/room-code', { state: { tematica, dificultad, tiempo } });
+  const handleContinuar = async () => {
+    setCreando(true);
+    setError(null);
+    try {
+      const { code } = await createRoom({ tematica, rounds: rondas, seconds: tiempo });
+      navigate('/room-code', { state: { code } });
+    } catch {
+      setError('No se pudo crear la sala. Revisá tu conexión y probá de nuevo.');
+      setCreando(false);
+    }
   };
 
   return (
@@ -323,17 +321,17 @@ export default function CreateRoom() {
               </div>
             </div>
 
-            {/* Dificultad */}
+            {/* Rondas */}
             <div>
-              <p className="section-label">Dificultad</p>
+              <p className="section-label">Rondas</p>
               <div style={{ display: 'flex', gap: '8px' }}>
-                {DIFICULTADES.map(d => (
+                {RONDAS.map(r => (
                   <button
-                    key={d.id}
-                    className={`option-btn${dificultad === d.id ? ' active' : ''}`}
-                    onClick={() => setDificultad(d.id)}
+                    key={r}
+                    className={`option-btn${rondas === r ? ' active' : ''}`}
+                    onClick={() => setRondas(r)}
                   >
-                    {d.label}
+                    {r}
                   </button>
                 ))}
               </div>
@@ -356,8 +354,9 @@ export default function CreateRoom() {
             </div>
 
             {/* Continuar */}
-            <button className="continuar-btn" onClick={handleContinuar}>
-              Continuar
+            {error && <p role="alert" style={{ color: '#fca5a5', fontSize: '13px', textAlign: 'center' }}>{error}</p>}
+            <button className="continuar-btn" onClick={() => void handleContinuar()} disabled={creando}>
+              {creando ? 'Creando sala…' : 'Crear sala'}
               <ChevronRight size={18} strokeWidth={2.5} />
             </button>
           </div>

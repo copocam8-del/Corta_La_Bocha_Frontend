@@ -472,8 +472,8 @@ export default function Lobby() {
                 />
                 <button
                   className="join-btn"
-                  disabled={roomCode.length < 4}
-                  onClick={() => navigate(`/room/${roomCode}`, { state: { isHost: false, code: roomCode } })}
+                  disabled={roomCode.trim().length < 6}
+                  onClick={() => navigate(`/room/${roomCode.trim()}`)}
                 >
                   Unirse a la sala
                 </button>
