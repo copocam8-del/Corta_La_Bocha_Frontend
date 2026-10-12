@@ -1,6 +1,6 @@
 import type { ComponentType } from 'react';
 import {
-  Award, BookOpen, Bot, Brain, CalendarCheck, CalendarHeart, Eye, Grid3x3, Search, Sparkles, CheckCheck, CircleDot, Coins, Crown, Flame, Footprints, Gem, Goal, GraduationCap, Medal,
+  Award, BookOpen, Bot, Brain, BrainCircuit, Layers, Puzzle, CalendarCheck, CalendarHeart, Eye, Grid3x3, Search, Sparkles, CheckCheck, CircleDot, Coins, Crown, Flame, Footprints, Gem, Goal, GraduationCap, Medal,
   Rocket, Shirt, Trophy, Wind, Zap,
 } from 'lucide-react';
 
@@ -36,6 +36,10 @@ const ICONS: Record<string, IconType> = {
   sopa_relampago: Eye,
   sopa_dificil: Grid3x3,
   sopa_diez: Search,
+  // Memotest
+  memotest_elefante: BrainCircuit,
+  memotest_dificil: Layers,
+  memotest_diez: Puzzle,
 };
 
 // Si el backend agrega un logro nuevo antes que el frontend, se muestra con un ícono genérico

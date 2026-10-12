@@ -85,6 +85,8 @@ src/
 - **Sopa de letras** (`/sopa-de-letras`, `pages/SopaDeLetras.tsx`, `api/sopa.ts`): se marca arrastrando (mouse o
   dedo, con `pointer events` y `touch-action: none`) o tocando la primera y después la última letra. La línea se
   "pega" a la dirección recta más cercana (`games/sopaLinea.ts`). El servidor verifica.
+- **Memotest** (`/memotest`, `pages/Memotest.tsx`, `api/memotest.ts`): cartas con texto e íconos de lucide (escudo,
+  etiqueta, persona, bandera, estadio). Si dos cartas no son par, se ven 0,9 s y se tapan.
 - Ojo en Windows: no puede haber dos archivos que sólo difieren en mayúsculas (`Pelota.tsx` y `pelota.ts` chocan).
 
 ## Perfil, partidas y ranking
