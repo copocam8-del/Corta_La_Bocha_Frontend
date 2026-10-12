@@ -75,7 +75,8 @@ describe('hinchas de clubes', () => {
     for (const h of HINCHAS) {
       expect(h.id).toMatch(/^hincha_[a-z0-9_]+$/);
       expect(h.id.length).toBeLessThanOrEqual(30);
-      for (const c of [...h.camiseta, h.short, h.medias, h.piluso, h.fondo]) expect(c).toMatch(color);
+      for (const c of [...h.camiseta, h.short, h.medias, h.fondo]) expect(c).toMatch(color);
+      expect(h.fondo).not.toBe(h.camiseta[0]); // el fondo contrasta con la camiseta
     }
   });
 
@@ -100,11 +101,35 @@ describe('hinchas de clubes', () => {
     }
   });
 
-  it('no son todos iguales: hay varias poses, caras y tonos de piel', () => {
+  it('no son todos iguales: poses, caras, tonos de piel, pelos, barba/bigote y accesorios', () => {
     const v = HINCHAS.map((h) => varianteDe(h.id));
     expect(new Set(v.map((x) => x.pose)).size).toBe(4);
     expect(new Set(v.map((x) => x.cara)).size).toBe(3);
     expect(new Set(v.map((x) => x.piel)).size).toBe(4);
+    expect(new Set(v.map((x) => x.pelo)).size).toBe(4);
+    expect(new Set(v.map((x) => x.vello)).size).toBe(3);
+    expect(new Set(v.map((x) => x.accesorio)).size).toBe(3);
+  });
+
+  it('ningún SVG tiene texto: ningún hincha, en ningún tamaño, ni el avatar completo', () => {
+    for (const h of HINCHAS) {
+      for (const size of [20, 26, 36, 47, 48, 60, 84, 104]) {
+        const svg = renderToStaticMarkup(<HinchaSvg hincha={h} size={size} />);
+        expect(svg.startsWith('<svg')).toBe(true);
+        // ni elementos de texto…
+        expect(svg).not.toMatch(/<(text|tspan|textPath|title|desc|foreignObject|image|use|a)[\s>/]/);
+        // …ni texto suelto entre etiquetas
+        expect(svg.replace(/<[^>]*>/g, '')).toBe('');
+        // …ni el nombre del club escondido en algún atributo
+        expect(svg.toLowerCase()).not.toContain(h.club.toLowerCase());
+      }
+      const avatar = renderToStaticMarkup(<Avatar id={h.id} fallback="Lionel" size={84} />);
+      expect(avatar.replace(/<[^>]*>/g, '')).toBe(''); // el nombre va sólo en aria-label, no se dibuja
+    }
+  });
+
+  it('sin gorro: el personaje nuevo no tiene piluso', () => {
+    for (const h of HINCHAS) expect(Object.keys(h)).not.toContain('piluso');
   });
 
   it('el selector tiene la sección Clubes, alfabética, con el nombre debajo y buscador', () => {

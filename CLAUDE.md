@@ -135,9 +135,13 @@ src/
     mensaje del servidor.
 - Avatares (`profile/avatars.tsx` → `<Avatar id size>` y `<AvatarPicker>`): los clásicos (íconos, `profile/avatarData.ts`)
   y los **hinchas de clubes** (`profile/hinchas.ts` = datos de cada club; `profile/Hincha.tsx` = el personaje en SVG).
-  - El hincha es un personaje PROPIO armado en código: piluso, camiseta, short, medias y zapatillas sobre fondo liso. Cambia
-    según el club: diseño de camiseta (`lisa`, `rayas`, `aros`, `franja`, `banda`, `mitades`, `v`) y colores. Pose (4),
-    cara (3) y tono de piel (4) salen del id (`varianteDe`), así no son todos iguales.
+  - El hincha es un personaje PROPIO armado en código, estilo hincha de tribuna: camiseta suelta, short, medias bajas y
+    zapatillas, con un vaso de plástico (bebida oscura, espuma y hielo; sin marcas), sin gorro, contorno negro tipo
+    historieta y sombras simples, sobre un fondo de color fuerte. Cambia según el club: diseño de camiseta (`lisa`,
+    `rayas`, `aros`, `franja`, `banda`, `mitades`, `v`) y colores (saturados). Del id (`varianteDe`) salen la pose (4:
+    mano en la cintura, señalando, "aguante" con el puño, vaso al pecho; nunca los dos brazos arriba), la cara (canchero,
+    gritando, guiño), la piel (4), el pelo (rulos, largo, rapado a los costados, flequillo) y su color, barba o bigote y
+    cadenita o muñequera con los colores del club. **Nunca cambies un id**: los usuarios ya los pueden tener elegidos.
   - **Prohibido** en el dibujo: texto, nombres de clubes, escudos o formas de escudo, logos, sponsors y marcas. El nombre
     del club va sólo como texto debajo de la miniatura en el selector. Los tests lo controlan (`avatars.test.tsx`).
   - Chiquito (`size` < 48: ranking, salas, marcador) se encuadra de la cintura para arriba; grande, de cuerpo entero.
