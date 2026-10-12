@@ -37,7 +37,10 @@ src/
   components/
     ProtectedRoute.tsx       sin token o token vencido → /login
     FieldError.tsx           mensaje de error debajo de un input
-  pages/                     una página por pantalla (Login, Register, Dashboard, Game, Room…)
+    BackButton.tsx           botón "Volver" (fijo arriba a la izquierda) + ventana "¿Seguro?" (textos en abandonar.ts)
+  games/multiConfig.ts       menú y opciones de las salas de cada juego (copia del backend)
+  multi/juegos/              pantallas de partida multijugador de trivia, ahorcado, sopa y memotest
+  pages/                     una página por pantalla (Login, Register, Dashboard, GameMenu, Game, Room…)
 ```
 
 ## Auth en el frontend
@@ -69,11 +72,34 @@ src/
   (y la fecha `LEGAL_LAST_UPDATE`).
 - El registro exige aceptar Términos y Privacidad (casilla obligatoria, consentimiento de la Ley 25.326).
 
-## Selección de juegos
+## Botón "Volver"
+
+- `components/BackButton.tsx`: flecha + "Volver", **igual en todas las pantallas** (fijo arriba a la izquierda, se
+  dibuja con un portal en `<body>` para que `position: fixed` no dependa de contenedores con animación). Recibe `to`:
+  la pantalla anterior **lógica**, no el historial del navegador:
+  - menú de un juego → Dashboard; crear sala / pública / código → menú del juego; cola pública → elegir pública;
+  - juego solo (configuración o partida) → menú de ese juego; sala (lobby, partida o final) → menú del juego;
+  - perfil → Dashboard; ranking → de donde viniste (`state.from`: perfil o Dashboard); legales → de donde viniste
+    (`state.from` que pone `LegalFooter`) o Dashboard/login; olvidé/restablecer contraseña → login.
+- En el Dashboard, en su lugar va **"Cerrar sesión"** (mismo botón). En Login y Register no hay.
+- En medio de una partida se pasa `confirm={ABANDONAR}` ("¿Seguro que querés abandonar? La partida cuenta como
+  perdida") y `onLeave` (ahorcado/memotest solo: rendirse; sopa: terminar; multijugador: `room.leave()`, que les avisa
+  a los demás). Desafío del día: avisa que el reloj sigue corriendo (se puede retomar).
+- Las pantallas dejan lugar arriba para el botón (`MultiShell` tiene 52 px de padding arriba).
+
+## Selección de juegos y menú de cada juego
 
 - `/dashboard` (`pages/Dashboard.tsx`) es la pantalla de selección de juegos: el catálogo viene de `GET /games` y
-  cada tarjeta muestra tus estadísticas de ese juego (`GET /users/me/games`). Después del login (Welcome) se va ahí;
-  Tutti Frutti lleva a `/lobby` (que tiene "Otros juegos" para volver).
+  cada tarjeta muestra tus estadísticas de ese juego (`GET /users/me/games`). Después del login (Welcome) se va ahí.
+  Los juegos con `multiplayer: true` abren su menú `/juego/:game`; el desafío del día va directo a su pantalla.
+- `/juego/:game` (`pages/GameMenu.tsx`, el viejo Lobby): "¿Cómo querés jugar?" → **Solo** (Tutti Frutti: "Contra la
+  IA"; los demás: "Jugar solo"), **Con amigos** (crear sala privada / unirse con código) y **Online** (partida
+  pública). El ranking está en el Dashboard y en el perfil (ya no en este menú).
+- Rutas del multijugador por juego: `/juego/:game/crear-sala`, `/juego/:game/codigo`, `/juego/:game/publica`,
+  `/juego/:game/buscando` y la sala `/room/:code` (el juego lo dice el servidor: `state.game`). Las rutas viejas de
+  Tutti Frutti (`/lobby`, `/create-room`, `/public-setup`) redirigen al menú nuevo.
+- Opciones de cada juego (temática, dificultad, rondas, tiempo, máximo de jugadores, pública) en
+  `games/multiConfig.ts`: **copia de `src/rooms/modes/*.mode.ts` del backend**; si cambia una, cambiala en los dos.
 - Íconos y nombres de cada juego en `games/gameIcons.ts` (íconos de lucide, sin logos de terceros).
 - El ranking tiene filtro por juego (el ELO es general); el perfil muestra estadísticas por juego y los logros
   agrupados (generales y de cada juego).
@@ -117,11 +143,15 @@ src/
   `room:state` y expone las acciones. El servidor manda en todo; el frontend sólo muestra y manda lo que se escribe
   (borrador cada 350 ms y el final al cortar la ronda). Reloj con `multi/clock.ts` (corrige la diferencia con el
   reloj del servidor).
-  - `/create-room` → `POST /rooms` → `/room-code` (código real) → `/room/:code`.
-  - `/room/:code` (`pages/Room.tsx`) muestra el lobby o la partida (`pages/GameMulti.tsx`) según la fase: recargar
-    vuelve a donde estabas. `/game-multi/:code` redirige ahí. Si te vas de la pantalla, se avisa `room:leave`.
-  - Pública: `/public-setup` (temática y tamaño) → `/public-queue` (cola) → `queue:matched` → `/room/:code`.
-  - Estilos compartidos en `multi/MultiShell.tsx`.
+  - `/juego/:game/crear-sala` → `POST /rooms {game, …}` → `/juego/:game/codigo` (código real) → `/room/:code`.
+  - `/room/:code` (`pages/Room.tsx`) muestra el lobby (opciones del juego) o la partida según la fase y el juego:
+    Tutti Frutti en `pages/GameMulti.tsx`; trivia, ahorcado, sopa y memotest en `multi/juegos/*Multi.tsx` (leen
+    `state.view`, tipos en `multi/gameViews.ts`, y mandan jugadas con `room.action(type, payload)` → `game:action`).
+    Recargar vuelve a donde estabas. `/game-multi/:code` redirige ahí. Si te vas de la pantalla, se avisa `room:leave`.
+  - Pública: `/juego/:game/publica` (tamaño; temática sólo en Tutti Frutti) → `/juego/:game/buscando` (cola) →
+    `queue:matched` → `/room/:code`.
+  - Partes comunes (encabezado, marcador, cuenta regresiva y final con logros) en `multi/MultiParts.tsx`; colores y
+    nombres de los jugadores en `multi/players.ts`; estilos en `multi/MultiShell.tsx`.
 - Resultado de la partida solo (`game/RoundResults.tsx`): por cada categoría, tu respuesta y la de la máquina con su
   estado (Válida / No vale / Sin respuesta / Sin validar), puntos, motivo y el nombre que reconoció la IA. Si
   `validationIncomplete` es true se muestra un aviso: la IA no respondió y la partida no cuenta para estadísticas.

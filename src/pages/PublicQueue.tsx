@@ -1,6 +1,9 @@
 import { useEffect, useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { Search, Users, X } from 'lucide-react';
+import BackButton from '../components/BackButton';
+import { gameName } from '../games/gameIcons';
+import { publicaPath } from '../games/multiConfig';
 import MultiShell from '../multi/MultiShell';
 import { emitAck, getSocket } from '../multi/socket';
 import { clockOffset, secondsUntil } from '../multi/clock';
@@ -12,14 +15,14 @@ import { temaLabel, type QueueState } from '../multi/types';
 export default function PublicQueue() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { tematica, size } = (location.state || {}) as { tematica?: string; size?: 'pocos' | 'muchos' };
+  const { game = 'tutti_frutti', tematica, size } = (location.state || {}) as { game?: string; tematica?: string; size?: 'pocos' | 'muchos' };
   const [queue, setQueue] = useState<QueueState | null>(null);
   const [offset, setOffset] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const now = useNow(!!queue?.startsAt);
 
   useEffect(() => {
-    if (!tematica || !size) return;
+    if (tematica === undefined || !size) return;
     const s = getSocket();
     let matched = false;
     const onState = (q: QueueState) => {
@@ -30,7 +33,7 @@ export default function PublicQueue() {
       matched = true;
       navigate(`/room/${code}`, { replace: true });
     };
-    const join = () => void emitAck('queue:join', { tematica, size }).then((r) => setError(r.ok ? null : r.error));
+    const join = () => void emitAck('queue:join', { game, tematica, size }).then((r) => setError(r.ok ? null : r.error));
     const onConnectError = (err: Error) => setError(err.message || 'No se pudo conectar con el servidor.');
     s.on('queue:state', onState);
     s.on('queue:matched', onMatched);
@@ -44,19 +47,18 @@ export default function PublicQueue() {
       s.off('connect_error', onConnectError);
       if (!matched) void emitAck('queue:leave');
     };
-  }, [tematica, size, navigate]);
+  }, [game, tematica, size, navigate]);
 
-  if (!tematica || !size) {
-    navigate('/public-setup');
-    return null;
-  }
+  if (tematica === undefined || !size) return <Navigate to={publicaPath(game)} replace />;
 
   const faltan = queue ? Math.max(0, queue.min - queue.players.length) : null;
 
   return (
     <MultiShell maxWidth={460}>
+      {/* Volver = salir de la cola (al desmontar se avisa queue:leave) */}
+      <BackButton to={publicaPath(game)} />
       <div style={{ textAlign: 'center' }}>
-        <p className="kicker">Partida pública · {temaLabel(tematica)}</p>
+        <p className="kicker">Partida pública · {game === 'tutti_frutti' ? temaLabel(tematica) : gameName(game)}</p>
         <h1 className="neon-title" style={{ fontSize: '26px', marginTop: '6px' }}>Buscando rivales</h1>
       </div>
 
@@ -93,7 +95,7 @@ export default function PublicQueue() {
       )}
 
       {error && <div className="error">{error}</div>}
-      <button className="ghost-btn" onClick={() => navigate('/public-setup')}>
+      <button className="ghost-btn" onClick={() => navigate(publicaPath(game))}>
         <X size={13} style={{ display: 'inline', verticalAlign: 'middle', marginRight: 6 }} /> Cancelar
       </button>
     </MultiShell>

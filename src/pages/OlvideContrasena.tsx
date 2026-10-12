@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
 import { Mail } from 'lucide-react';
 import MultiShell from '../multi/MultiShell';
 import FieldError from '../components/FieldError';
+import BackButton from '../components/BackButton';
 import { pedirLinkRecuperacion } from '../api/password';
 import { parseAuthError } from '../auth/apiErrors';
 
@@ -34,6 +34,7 @@ export default function OlvideContrasena() {
 
   return (
     <MultiShell maxWidth={420}>
+      <BackButton to="/login" />
       <div style={{ textAlign: 'center' }}>
         <p className="kicker">Corta La Bocha</p>
         <h1 className="neon-title" style={{ fontSize: '24px', marginTop: '6px' }}>¿Olvidaste tu contraseña?</h1>
@@ -57,7 +58,6 @@ export default function OlvideContrasena() {
         )}
         {error && <div className="error" style={{ marginTop: '10px' }}>{error}</div>}
       </div>
-      <Link to="/login" style={{ textAlign: 'center', fontSize: '12px', color: 'rgba(180,255,205,0.6)' }}>← Volver a iniciar sesión</Link>
     </MultiShell>
   );
 }

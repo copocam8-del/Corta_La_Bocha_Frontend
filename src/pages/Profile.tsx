@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  ArrowLeft,
   Gamepad2,
   CheckCircle2,
   Percent,
@@ -21,6 +20,7 @@ import { clearSession } from '../auth/session';
 import { parseAuthError } from '../auth/apiErrors';
 import type { FieldErrors } from '../auth/rules';
 import FieldError from '../components/FieldError';
+import BackButton from '../components/BackButton';
 import { Avatar, AvatarPicker } from '../profile/avatars';
 import AchievementsGrid from '../profile/AchievementsGrid';
 import { getMyGameStats, type GameStats } from '../api/games';
@@ -368,7 +368,7 @@ export default function Profile() {
         position: 'relative',
         overflow: 'hidden',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        padding: '12px 24px',
+        padding: '68px 16px 24px',
         background: '#010805',
         fontFamily: "'Inter', sans-serif",
       }}>
@@ -454,17 +454,7 @@ export default function Profile() {
         ))}
 
         {/* Volver */}
-        <button
-          className="back-corner"
-          onClick={() => navigate('/lobby')}
-          style={{
-            opacity: entered ? 1 : 0,
-            animation: entered ? 'riseIn 0.5s ease 0.1s both' : 'none',
-          }}
-        >
-          <ArrowLeft size={15} strokeWidth={2} />
-          Lobby
-        </button>
+        <BackButton to="/dashboard" />
 
                 <button
           className="back-corner"
@@ -537,6 +527,15 @@ export default function Profile() {
                     </span>
                   </div>
                 )}
+                <button type="button" data-testid="ver-ranking" onClick={() => navigate('/ranking', { state: { from: '/profile' } })}
+                  style={{
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', width: '100%', marginBottom: '10px',
+                    padding: '8px', borderRadius: '10px', cursor: 'pointer', background: 'rgba(57,255,140,0.05)',
+                    border: '1px solid rgba(57,255,140,0.3)', color: '#7CFFB2', fontFamily: "'Oswald', sans-serif",
+                    fontSize: '12px', letterSpacing: '2px', textTransform: 'uppercase',
+                  }}>
+                  <Medal size={14} /> Ver ranking
+                </button>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(96px, 1fr))', gap: '8px' }}>
                   <div className="stat-box">
                     <Gamepad2 size={16} color="#39ff8c" />

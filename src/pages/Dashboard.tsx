@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { LogOut, Trophy, User } from 'lucide-react';
 import { getGames, getMyGameStats, type GameInfo, type GameStats } from '../api/games';
 import { clearSession } from '../auth/session';
+import BackButton from '../components/BackButton';
 import MultiShell from '../multi/MultiShell';
 import LegalFooter from '../components/LegalFooter';
 import { gameIcon } from '../games/gameIcons';
@@ -24,13 +25,13 @@ export default function Dashboard() {
       .catch(() => setStats({}));
   }, []);
 
-  const logout = () => {
-    clearSession();
-    navigate('/login');
-  };
+  // Los juegos con multijugador abren su menú (Solo / Con amigos / Online); el desafío del día va directo
+  const abrir = (g: GameInfo) => navigate(g.multiplayer ? `/juego/${g.id}` : g.path);
 
   return (
     <MultiShell maxWidth={640}>
+      {/* En el Dashboard no hay "Volver": en su lugar, cerrar sesión */}
+      <BackButton to="/login" label="Cerrar sesión" icon={<LogOut size={15} strokeWidth={2.2} />} onLeave={clearSession} />
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
         <div>
           <p className="kicker">Corta La Bocha</p>
@@ -39,14 +40,12 @@ export default function Dashboard() {
           </h1>
         </div>
         <div style={{ display: 'flex', gap: '6px' }}>
-          <button className="option-btn" style={{ flex: 'none' }} onClick={() => navigate('/ranking')} aria-label="Ranking">
-            <Trophy size={14} />
+          <button className="option-btn" style={{ flex: 'none', display: 'inline-flex', alignItems: 'center', gap: '5px' }}
+            onClick={() => navigate('/ranking', { state: { from: '/dashboard' } })} aria-label="Ranking" data-testid="ir-ranking">
+            <Trophy size={14} /> Ranking
           </button>
           <button className="option-btn" style={{ flex: 'none' }} onClick={() => navigate('/profile')} aria-label="Mi perfil">
             <User size={14} />
-          </button>
-          <button className="option-btn" style={{ flex: 'none' }} onClick={logout} aria-label="Cerrar sesión">
-            <LogOut size={14} />
           </button>
         </div>
       </div>
@@ -64,7 +63,7 @@ export default function Dashboard() {
               data-juego={g.id}
               className="card"
               disabled={!g.available}
-              onClick={() => navigate(g.path)}
+              onClick={() => abrir(g)}
               style={{
                 textAlign: 'left', cursor: g.available ? 'pointer' : 'default', color: '#eafff2',
                 display: 'flex', flexDirection: 'column', gap: '8px', opacity: g.available ? 1 : 0.55,

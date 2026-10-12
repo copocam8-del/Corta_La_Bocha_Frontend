@@ -1,9 +1,23 @@
-import { useState, useEffect, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Bot, Home, KeyRound, Globe, Trophy, LayoutGrid } from 'lucide-react';
+import { createElement, useState, useEffect, useMemo } from 'react';
+import { Navigate, useNavigate, useParams } from 'react-router-dom';
+import { Bot, Home, KeyRound, Globe } from 'lucide-react';
 import api from '../api/axios';
+import BackButton from '../components/BackButton';
+import { GAME_ICONS, gameName } from '../games/gameIcons';
+import { crearSalaPath, isMultiGame, MULTI_CONFIG, publicaPath } from '../games/multiConfig';
 
-export default function Lobby() {
+// Menú "¿Cómo querés jugar?" de cada juego (/juego/:game): solo, con amigos (sala privada o unirse
+// con código) u online (partida pública). Se abre al elegir un juego en el Dashboard. El desafío
+// del día no tiene este menú (es individual, una vez por día).
+export default function GameMenu() {
+  const { game = '' } = useParams<{ game: string }>();
+  if (!isMultiGame(game)) return <Navigate to="/dashboard" replace />;
+  return <Menu key={game} game={game} />;
+}
+
+function Menu({ game }: { game: keyof typeof MULTI_CONFIG }) {
+  const config = MULTI_CONFIG[game];
+  const soloIcon = createElement(game === 'tutti_frutti' ? Bot : GAME_ICONS[game], { size: 24, strokeWidth: 1.5 });
   const [entered, setEntered] = useState(false);
   const [showJoinInput, setShowJoinInput] = useState(false);
   const [roomCode, setRoomCode] = useState('');
@@ -254,7 +268,7 @@ export default function Lobby() {
         position: 'relative',
         overflow: 'hidden',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        padding: '12px 24px',
+        padding: '68px 16px 16px',
         background: '#010805',
         fontFamily: "'Inter', sans-serif",
       }}>
@@ -347,6 +361,8 @@ export default function Lobby() {
           } as React.CSSProperties}/>
         ))}
 
+        <BackButton to="/dashboard" />
+
         {/* PERFIL - esquina superior derecha */}
         <button
           className="profile-corner"
@@ -412,7 +428,7 @@ export default function Lobby() {
               fontSize: '26px', fontWeight: 700,
               letterSpacing: '1px', margin: '0 0 4px',
               color: '#eafff2', textTransform: 'uppercase',
-            }}>Jugar</h1>
+            }}>{gameName(game)}</h1>
             <p style={{
               fontSize: '12px', color: 'rgba(180,255,205,0.75)', margin: 0,
             }}>¿Cómo querés jugar?</p>
@@ -434,18 +450,18 @@ export default function Lobby() {
 
             {/* Solo */}
             <p className="section-label">Solo</p>
-            <button className="mode-card" onClick={() => navigate('/game-setup')}>
-              <span className="mode-card-icon"><Bot size={24} strokeWidth={1.5} /></span>
+            <button className="mode-card" data-testid="modo-solo" onClick={() => navigate(config.solo.path)}>
+              <span className="mode-card-icon">{soloIcon}</span>
               <div>
-                <div style={{ fontWeight: 600, fontSize: '13px' }}>Contra la IA</div>
-                <div style={{ fontSize: '11px', color: 'rgba(180,255,205,0.5)', marginTop: '1px' }}>Jugá solo contra la inteligencia artificial</div>
+                <div style={{ fontWeight: 600, fontSize: '13px' }}>{config.solo.titulo}</div>
+                <div style={{ fontSize: '11px', color: 'rgba(180,255,205,0.5)', marginTop: '1px' }}>{config.solo.descripcion}</div>
               </div>
             </button>
 
             {/* Con amigos */}
             <p className="section-label" style={{ marginTop: '4px' }}>Con amigos</p>
 
-            <button className="mode-card" onClick={() => navigate('/create-room')}>
+            <button className="mode-card" data-testid="modo-crear-sala" onClick={() => navigate(crearSalaPath(game))}>
               <span className="mode-card-icon"><Home size={24} strokeWidth={1.5} /></span>
               <div>
                 <div style={{ fontWeight: 600, fontSize: '13px' }}>Crear sala privada</div>
@@ -465,6 +481,7 @@ export default function Lobby() {
               <div style={{ animation: 'slideDown 0.2s ease forwards', display: 'flex', flexDirection: 'column', gap: '6px' }}>
                 <input
                   className="join-input"
+                  data-testid="codigo-unirse"
                   placeholder="ABC123"
                   value={roomCode}
                   onChange={e => setRoomCode(e.target.value.toUpperCase())}
@@ -482,29 +499,11 @@ export default function Lobby() {
 
             {/* Online */}
             <p className="section-label" style={{ marginTop: '4px' }}>Online</p>
-            <button className="mode-card" onClick={() => navigate('/public-setup')}>
+            <button className="mode-card" data-testid="modo-publica" onClick={() => navigate(publicaPath(game))}>
               <span className="mode-card-icon"><Globe size={24} strokeWidth={1.5} /></span>
               <div>
                 <div style={{ fontWeight: 600, fontSize: '13px' }}>Partida pública</div>
                 <div style={{ fontSize: '11px', color: 'rgba(180,255,205,0.5)', marginTop: '1px' }}>Jugá contra alguien al azar en todo el mundo</div>
-              </div>
-            </button>
-
-            {/* Estadísticas */}
-            <p className="section-label" style={{ marginTop: '4px' }}>Estadísticas</p>
-            <button className="mode-card" onClick={() => navigate('/ranking')}>
-              <span className="mode-card-icon"><Trophy size={24} strokeWidth={1.5} /></span>
-              <div>
-                <div style={{ fontWeight: 600, fontSize: '13px' }}>Ranking Global</div>
-                <div style={{ fontSize: '11px', color: 'rgba(180,255,205,0.5)', marginTop: '1px' }}>Mirá las posiciones de los mejores directores técnicos</div>
-              </div>
-            </button>
-
-            <button className="mode-card" onClick={() => navigate('/dashboard')}>
-              <span className="mode-card-icon"><LayoutGrid size={24} strokeWidth={1.5} /></span>
-              <div>
-                <div style={{ fontWeight: 600, fontSize: '13px' }}>Otros juegos</div>
-                <div style={{ fontSize: '11px', color: 'rgba(180,255,205,0.5)', marginTop: '1px' }}>Volvé a la pantalla de selección de juegos</div>
               </div>
             </button>
 

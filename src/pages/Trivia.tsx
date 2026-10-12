@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { ArrowLeft } from 'lucide-react';
 import MultiShell from '../multi/MultiShell';
+import BackButton from '../components/BackButton';
+import { ABANDONAR } from '../components/abandonar';
+import { menuPath } from '../games/multiConfig';
 import GameResult from '../games/GameResult';
 import QuestionCard from '../games/QuestionCard';
 import { secondsLeft } from '../game/round';
@@ -20,7 +21,6 @@ const mensajeError = (e: unknown) =>
   (e as { response?: { data?: { message?: string } } })?.response?.data?.message ?? 'No se pudo conectar con el servidor. Probá de nuevo.';
 
 export default function Trivia() {
-  const navigate = useNavigate();
   const [categoria, setCategoria] = useState('');
   const [dificultad, setDificultad] = useState<DificultadTrivia | ''>('');
   const [matchId, setMatchId] = useState<string | null>(null);
@@ -95,6 +95,7 @@ export default function Trivia() {
   if (final) {
     return (
       <MultiShell maxWidth={520}>
+        <BackButton to={menuPath('trivia')} />
         <GameResult
           titulo={final.gano ? '¡Aprobaste!' : 'Te faltó un poco'}
           gano={!!final.gano}
@@ -113,9 +114,7 @@ export default function Trivia() {
   if (!matchId || !pregunta) {
     return (
       <MultiShell maxWidth={480}>
-        <button className="ghost-btn" style={{ width: 'auto', alignSelf: 'flex-start' }} onClick={() => navigate('/dashboard')}>
-          <ArrowLeft size={13} style={{ display: 'inline', verticalAlign: 'middle' }} /> Juegos
-        </button>
+        <BackButton to={menuPath('trivia')} />
         <div style={{ textAlign: 'center' }}>
           <p className="kicker">Trivia futbolera</p>
           <h1 className="neon-title" style={{ fontSize: '28px', marginTop: '6px' }}>¿Cuánto sabés?</h1>
@@ -151,6 +150,7 @@ export default function Trivia() {
 
   return (
     <MultiShell maxWidth={560}>
+      <BackButton to={menuPath('trivia')} confirm={ABANDONAR} />
       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
         <span className="kicker">Pregunta {pregunta.numero} de {total}</span>
         <span className="kicker" data-testid="marcador-trivia">{marcador.aciertos} ✓ · {marcador.puntos} pts</span>

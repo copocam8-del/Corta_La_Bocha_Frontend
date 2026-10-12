@@ -1,12 +1,17 @@
 import { useState, useEffect, useMemo } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { Navigate, useNavigate, useLocation, useParams } from 'react-router-dom';
 import { Copy, Share2, ChevronRight, Check } from 'lucide-react';
+import BackButton from '../components/BackButton';
+import { gameName } from '../games/gameIcons';
+import { isMultiGame, menuPath } from '../games/multiConfig';
 
 // Muestra el código de la sala que creó el servidor, para compartirlo
 export default function RoomCode() {
   const navigate = useNavigate();
   const location = useLocation();
   const { code } = (location.state || {}) as { code?: string };
+  const { game: param } = useParams<{ game: string }>();
+  const game = isMultiGame(param) ? param : 'tutti_frutti';
 
   const [entered, setEntered] = useState(false);
   const [copied, setCopied]   = useState(false);
@@ -56,10 +61,11 @@ export default function RoomCode() {
     navigate(`/room/${code}`);
   };
 
-  if (!code) { navigate('/lobby'); return null; }
+  if (!code) return <Navigate to={menuPath(game)} replace />;
 
   return (
     <>
+      <BackButton to={menuPath(game)} />
       <style>{`
         * { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -247,7 +253,7 @@ export default function RoomCode() {
         position: 'relative', zIndex: 1,
         minHeight: '100vh',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        padding: '24px',
+        padding: '68px 16px 24px',
         fontFamily: "'Inter', sans-serif",
       }}>
         <div style={{ width: '100%', maxWidth: '420px', position: 'relative', zIndex: 2 }}>
@@ -262,7 +268,7 @@ export default function RoomCode() {
               fontSize: '11px', letterSpacing: '3px', fontWeight: 500,
               color: '#7CFFB2', textTransform: 'uppercase', marginBottom: '12px',
               fontFamily: "'Oswald', sans-serif",
-            }}>Sala Privada</p>
+            }}>Sala Privada · {gameName(game)}</p>
 
             <h1 className="neon-title" style={{
               fontFamily: "'Oswald', sans-serif",
@@ -356,19 +362,11 @@ export default function RoomCode() {
             </div>
 
             {/* Continuar */}
-            <button className="continuar-btn" onClick={handleContinuar}>
+            <button className="continuar-btn" data-testid="ir-a-la-sala" onClick={handleContinuar}>
               Ir a la sala
               <ChevronRight size={18} strokeWidth={2.5}/>
             </button>
           </div>
-
-          <p onClick={() => navigate('/create-room')} style={{
-            textAlign: 'center', color: 'rgba(180,255,205,0.4)',
-            fontSize: '12px', marginTop: '16px', cursor: 'pointer',
-            fontFamily: "'Inter', sans-serif",
-            opacity: entered ? 1 : 0,
-            animation: entered ? 'riseIn 0.6s ease 0.4s both' : 'none',
-          }}>← Volver</p>
         </div>
       </div>
     </>

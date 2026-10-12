@@ -1,7 +1,7 @@
 import type { ComponentType } from 'react';
 import {
   Award, BookOpen, Bot, Brain, BrainCircuit, Layers, Puzzle, CalendarCheck, CalendarHeart, Eye, Grid3x3, Search, Sparkles, CheckCheck, CircleDot, Coins, Crown, Flame, Footprints, Gem, Goal, GraduationCap, Medal,
-  Rocket, Shirt, Trophy, Wind, Zap,
+  Lightbulb, Rocket, ScanSearch, Shirt, Swords, Trophy, UsersRound, Wind, Zap,
 } from 'lucide-react';
 
 type IconType = ComponentType<{ size?: number; strokeWidth?: number; color?: string }>;
@@ -24,10 +24,12 @@ const ICONS: Record<string, IconType> = {
   redonda_intacta: CircleDot,
   ahorcado_crack: Brain,
   ahorcado_diez: Wind,
+  ahorcado_multi: Swords,
   // Trivia
   trivia_perfecta: BookOpen,
   trivia_rapida: Zap,
   trivia_diez: GraduationCap,
+  trivia_multi: Lightbulb,
   // Desafío del día
   diaria_perfecta: Sparkles,
   diaria_racha_7: CalendarCheck,
@@ -36,10 +38,12 @@ const ICONS: Record<string, IconType> = {
   sopa_relampago: Eye,
   sopa_dificil: Grid3x3,
   sopa_diez: Search,
+  sopa_multi: ScanSearch,
   // Memotest
   memotest_elefante: BrainCircuit,
   memotest_dificil: Layers,
   memotest_diez: Puzzle,
+  memotest_multi: UsersRound,
 };
 
 // Si el backend agrega un logro nuevo antes que el frontend, se muestra con un ícono genérico

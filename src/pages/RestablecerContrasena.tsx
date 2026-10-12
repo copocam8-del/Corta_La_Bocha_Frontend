@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { Lock } from 'lucide-react';
 import MultiShell from '../multi/MultiShell';
+import BackButton from '../components/BackButton';
 import FieldError from '../components/FieldError';
 import { restablecerContrasena } from '../api/password';
 import { validateNewPassword, type FieldErrors } from '../auth/rules';
@@ -38,6 +39,7 @@ export default function RestablecerContrasena() {
 
   return (
     <MultiShell maxWidth={420}>
+      <BackButton to="/login" />
       <div style={{ textAlign: 'center' }}>
         <p className="kicker">Corta La Bocha</p>
         <h1 className="neon-title" style={{ fontSize: '24px', marginTop: '6px' }}>Elegí tu contraseña nueva</h1>

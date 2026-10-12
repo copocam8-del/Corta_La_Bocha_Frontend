@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Trophy, Medal, ArrowLeft, Shield, Star } from 'lucide-react';
+import { useLocation } from 'react-router-dom';
+import { Trophy, Medal, Shield, Star } from 'lucide-react';
+import BackButton from '../components/BackButton';
 import { getMyRanking, getRanking, winRate, type MyRanking, type RankingPeriod, type RankingRow } from '../api/profile';
 import { getTokenUserId } from '../auth/session';
 import { getGames, type GameInfo } from '../api/games';
@@ -33,7 +34,8 @@ const TABS: { id: RankingPeriod; label: string; desc: string }[] = [
 ];
 
 export default function GlobalRanking() {
-  const navigate = useNavigate();
+  // Pantalla anterior lógica: el perfil si viniste de ahí; si no, el Dashboard
+  const from = (useLocation().state as { from?: string } | null)?.from === '/profile' ? '/profile' : '/dashboard';
   const [entered, setEntered] = useState(false);
 
   useEffect(() => {
@@ -217,7 +219,7 @@ export default function GlobalRanking() {
       <div style={{
         position: 'relative', zIndex: 1, minHeight: '100vh',
         display: 'flex', justifyContent: 'center',
-        padding: '24px', fontFamily: "'Inter', sans-serif", overflowY: 'auto',
+        padding: '68px 16px 24px', fontFamily: "'Inter', sans-serif", overflowY: 'auto',
       }}>
         <div style={{
           width: '100%', maxWidth: '680px',
@@ -227,10 +229,8 @@ export default function GlobalRanking() {
           animation: entered ? 'riseIn 0.5s ease both' : 'none',
         }}>
           
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <button className="back-btn" onClick={() => navigate('/dashboard')}>
-              <ArrowLeft size={14} /> Volver
-            </button>
+          <BackButton to={from} />
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Shield size={14} color="#39ff8c" />
               <span style={{ fontFamily: "'Oswald', sans-serif", fontSize: '11px', color: 'rgba(57,255,140,0.6)', letterSpacing: '2px', textTransform: 'uppercase' }}>
@@ -381,7 +381,7 @@ export default function GlobalRanking() {
                 const isMe = player.userId === myUserId;
 
                 return (
-                  <div key={player.id} className={`rank-row${isMe ? ' me' : ''}`}>
+                  <div key={player.userId} className={`rank-row${isMe ? ' me' : ''}`}>
                     <div style={{
                       fontFamily: "'Oswald', sans-serif", fontSize: '14px', fontWeight: 700,
                       color: 'rgba(124,255,178,0.6)', width: '40px'
