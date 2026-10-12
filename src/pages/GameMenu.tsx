@@ -1,5 +1,6 @@
 import { createElement, useState, useEffect, useMemo } from 'react';
 import { Navigate, useNavigate, useParams } from 'react-router-dom';
+import FraseRotativa from '../components/FraseRotativa';
 import { Bot, Home, KeyRound, Globe } from 'lucide-react';
 import api from '../api/axios';
 import BackButton from '../components/BackButton';
@@ -385,10 +386,10 @@ function Menu({ game }: { game: keyof typeof MULTI_CONFIG }) {
             opacity: entered ? 1 : 0,
             animation: entered ? 'riseIn 0.6s ease both' : 'none',
           }}>
-            <p style={{
+            <FraseRotativa style={{
               fontSize: '11px', letterSpacing: '3px', fontWeight: 500,
               color: '#7CFFB2', textTransform: 'uppercase', marginBottom: '6px',
-            }}>Temporada 2026</p>
+            }} />
 
             <div
               className="ball-logo"
