@@ -141,11 +141,18 @@ src/
 Copiá `.env.local.example` a `.env.local` (apunta al backend local en el puerto 3000) y corré `npm run dev`. El
 backend local se levanta con `npm run db:local` y `npm run dev:local` (ver el README del backend).
 
+## Publicidad (apagada)
+
+`ads/AdSlot.tsx` reserva un espacio para un anuncio **entre partidas** (resultados y selección de juegos). No dibuja
+nada salvo que `VITE_ADS_ENABLED=true`. No hay ninguna red de anuncios integrada: antes de activarla leé
+`docs/PUBLICIDAD.md` (usuarios desde 13 años, anuncios no personalizados, consentimiento de cookies, políticas).
+
 ## Variables de entorno
 
 - `VITE_API_URL`: URL del backend (default `http://localhost:3000`)
 - `VITE_WS_URL`: URL de WebSocket
 - `VITE_GOOGLE_CLIENT_ID`: Client ID de Google (opcional). Ver `.env.example`.
+- `VITE_ADS_ENABLED`: `true` muestra el espacio de publicidad (por defecto apagado). Ver `docs/PUBLICIDAD.md`.
 - `.env.production` tiene las URLs de Render (son públicas, no secretos).
 
 ## Reglas para trabajar

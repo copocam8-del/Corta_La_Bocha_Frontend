@@ -6,6 +6,7 @@ import { clearSession } from '../auth/session';
 import MultiShell from '../multi/MultiShell';
 import LegalFooter from '../components/LegalFooter';
 import { gameIcon } from '../games/gameIcons';
+import AdSlot from '../ads/AdSlot';
 
 // Pantalla de selección de juegos. El catálogo viene del servidor (GET /games): para sumar un
 // juego se agrega allá y aparece acá solo.
@@ -87,6 +88,7 @@ export default function Dashboard() {
           );
         })}
       </div>
+      <AdSlot placement="seleccion-juegos" />
       <LegalFooter />
     </MultiShell>
   );

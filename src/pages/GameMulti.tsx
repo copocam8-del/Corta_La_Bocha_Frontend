@@ -9,6 +9,7 @@ import { useNow } from '../multi/useNow';
 import { MultiRoundResults, Standings } from '../multi/MultiRoundResults';
 import { missingCategories } from '../game/round';
 import { achievementIcon } from '../profile/achievementIcons';
+import AdSlot from '../ads/AdSlot';
 
 // Partida multijugador en curso. Todo lo decide el servidor (letra, reloj, ¡Basta!, validación y
 // puntaje); acá se muestra el estado y se mandan las respuestas mientras el jugador escribe.
@@ -284,6 +285,7 @@ export default function GameMulti({ room, state }: { room: RoomApi; state: RoomS
           </button>
         )}
         <button className="ghost-btn" onClick={() => void handleSalir()}>Volver al lobby</button>
+        <AdSlot placement="resultado" />
       </>
     );
   }

@@ -5,6 +5,7 @@ import { finishQuickMatch, startQuickMatch, type QuickMatch, type QuickMatchResu
 import { achievementIcon } from '../profile/achievementIcons';
 import RoundResults from '../game/RoundResults';
 import { missingCategories, secondsLeft } from '../game/round';
+import AdSlot from '../ads/AdSlot';
 
 // La partida se decide en el servidor: él sortea la letra, arma las respuestas de la máquina
 // (según la dificultad) y al final valida tus respuestas, calcula el resultado y actualiza
@@ -782,6 +783,8 @@ export default function Game() {
                 }}>
                   Volver al Lobby
                 </button>
+                {/* Entre partidas: sólo cuando ya está el resultado (apagado salvo VITE_ADS_ENABLED=true) */}
+                {resultado && <AdSlot placement="resultado" />}
               </div>
             );
           })()}

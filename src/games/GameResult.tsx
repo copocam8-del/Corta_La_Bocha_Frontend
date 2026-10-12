@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { RotateCcw, Trophy } from 'lucide-react';
 import type { NewAchievement } from '../api/achievements';
 import { achievementIcon } from '../profile/achievementIcons';
+import AdSlot from '../ads/AdSlot';
 
 // Tarjeta de resultado común a los juegos (los puntos los calcula siempre el servidor)
 export default function GameResult({
@@ -49,6 +50,8 @@ export default function GameResult({
         <button className="main-btn" onClick={onJugarOtra}><RotateCcw size={16} /> Jugar otra</button>
         <button className="ghost-btn" onClick={() => navigate('/dashboard')}>Otros juegos</button>
       </div>
+      {/* Entre partidas (apagado salvo VITE_ADS_ENABLED=true) */}
+      <AdSlot placement="resultado" />
     </div>
   );
 }
