@@ -136,6 +136,11 @@ src/
   manda el `credential` a `POST /auth/google`. **Si `VITE_GOOGLE_CLIENT_ID` no está definido, el botón no se
   muestra.** La sesión se guarda con `saveSession()` igual que en el login normal.
 
+## Programar en tu compu
+
+Copiá `.env.local.example` a `.env.local` (apunta al backend local en el puerto 3000) y corré `npm run dev`. El
+backend local se levanta con `npm run db:local` y `npm run dev:local` (ver el README del backend).
+
 ## Variables de entorno
 
 - `VITE_API_URL`: URL del backend (default `http://localhost:3000`)
