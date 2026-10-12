@@ -14,6 +14,7 @@ import PublicSetup from './pages/PublicSetup';
 import PublicQueue from './pages/PublicQueue';
 import GlobalRanking from './pages/GlobalRanking';
 import Ahorcado from './pages/Ahorcado';
+import Trivia from './pages/Trivia';
 import ProtectedRoute from './components/ProtectedRoute';
 import Privacidad from './pages/legal/Privacidad';
 import Terminos from './pages/legal/Terminos';
@@ -73,6 +74,7 @@ export default function App() {
         <Route path="/public-queue" element={<ProtectedRoute><PublicQueue /></ProtectedRoute>} />
         {/* Juegos */}
         <Route path="/ahorcado" element={<ProtectedRoute><Ahorcado /></ProtectedRoute>} />
+        <Route path="/trivia" element={<ProtectedRoute><Trivia /></ProtectedRoute>} />
         <Route path="/global-ranking" element={<ProtectedRoute><GlobalRanking /></ProtectedRoute>} />
         <Route path="/ranking" element={<ProtectedRoute><GlobalRanking /></ProtectedRoute>} />
       </Routes>
