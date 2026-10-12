@@ -210,6 +210,8 @@ nada salvo que `VITE_ADS_ENABLED=true`. No hay ninguna red de anuncios integrada
 - `VITE_API_URL`: URL del backend (default `http://localhost:3000`)
 - `VITE_WS_URL`: URL de WebSocket
 - `VITE_GOOGLE_CLIENT_ID`: Client ID de Google (opcional). Ver `.env.example`.
+  En producción está cargado en Vercel (proyecto **corta-la-bocha-frontend**, tipo Config) y en Render como `GOOGLE_CLIENT_ID`.
+  Al cambiar una variable `VITE_` en Vercel hay que volver a publicar, porque se leen en el build.
 - `VITE_ADS_ENABLED`: `true` muestra el espacio de publicidad (por defecto apagado). Ver `docs/PUBLICIDAD.md`.
 - `.env.production` tiene las URLs de Render (son públicas, no secretos).
 
