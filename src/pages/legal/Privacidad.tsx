@@ -5,7 +5,7 @@ export default function Privacidad() {
   return (
     <LegalLayout title="Política de privacidad">
       <p>
-        En <strong>Corta la bocha</strong> (el "Tutti Frutti del fútbol") cuidamos tus datos personales.
+        En <strong>Corta la bocha</strong> (juegos de fútbol online) cuidamos tus datos personales.
         Esta política explica qué datos guardamos, para qué, con quién los compartimos y cómo podés
         ejercer tus derechos, de acuerdo con la <strong>Ley 25.326 de Protección de los Datos Personales</strong> de
         la República Argentina y su reglamentación.
