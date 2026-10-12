@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, CircleUserRound, Flag, Landmark, Shield, Tag, type LucideIcon } from 'lucide-react';
+import { CircleUserRound, Flag, Landmark, Shield, Tag, type LucideIcon } from 'lucide-react';
 import MultiShell from '../multi/MultiShell';
+import BackButton from '../components/BackButton';
+import { ABANDONAR } from '../components/abandonar';
+import { menuPath } from '../games/multiConfig';
 import GameResult from '../games/GameResult';
 import { useNow } from '../multi/useNow';
 import { secondsLeft } from '../game/round';
@@ -19,7 +21,6 @@ const mensajeError = (e: unknown) =>
   (e as { response?: { data?: { message?: string } } })?.response?.data?.message ?? 'No se pudo conectar con el servidor. Probá de nuevo.';
 
 export default function Memotest() {
-  const navigate = useNavigate();
   const [tema, setTema] = useState('clubes_apodos');
   const [nivel, setNivel] = useState<NivelMemotest>('facil');
   const [partida, setPartida] = useState<PartidaMemotest | null>(null);
@@ -72,9 +73,7 @@ export default function Memotest() {
   if (!partida) {
     return (
       <MultiShell maxWidth={480}>
-        <button className="ghost-btn" style={{ width: 'auto', alignSelf: 'flex-start' }} onClick={() => navigate('/dashboard')}>
-          <ArrowLeft size={13} style={{ display: 'inline', verticalAlign: 'middle' }} /> Juegos
-        </button>
+        <BackButton to={menuPath('memotest')} />
         <div style={{ textAlign: 'center' }}>
           <p className="kicker">Memotest</p>
           <h1 className="neon-title" style={{ fontSize: '28px', marginTop: '6px' }}>Encontrá los pares</h1>
@@ -110,6 +109,9 @@ export default function Memotest() {
   const descubiertas = new Map(partida.descubiertas.map((d) => [d.indice, d]));
   return (
     <MultiShell maxWidth={560}>
+      {/* En medio de la partida, salir = rendirse (cuenta como perdida) */}
+      <BackButton to={menuPath('memotest')} confirm={partida.terminada ? null : ABANDONAR}
+        onLeave={() => (partida.terminada ? undefined : rendirseMemotest(partida.matchId))} />
       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
         <span className="kicker">{partida.tema}</span>
         <span className="kicker" data-testid="estado-memotest">

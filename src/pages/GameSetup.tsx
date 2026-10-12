@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { CircleDot, Flag, Globe, Star, Trophy, Smile, Meh, Angry, Flame, Timer } from 'lucide-react';
+import BackButton from '../components/BackButton';
 
 const TEMATICAS = [
   { id: 'general', nombre: 'General', icon: <CircleDot size={16} strokeWidth={1.5} /> },
@@ -55,6 +56,7 @@ export default function GameSetup() {
 
   return (
     <>
+      <BackButton to="/juego/tutti_frutti" />
       <style>{`
         * { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -191,7 +193,7 @@ export default function GameSetup() {
         position: 'relative',
         overflow: 'hidden',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        padding: '24px',
+        padding: '68px 16px 24px',
         background: '#010805',
         fontFamily: "'Inter', sans-serif",
       }}>
@@ -403,13 +405,6 @@ export default function GameSetup() {
             </div>
           </div>
 
-          <p onClick={() => navigate('/dashboard')} style={{
-            textAlign: 'center', color: 'rgba(180,255,205,0.4)',
-            fontSize: '12px', marginTop: '16px', cursor: 'pointer',
-            fontFamily: "'Inter', sans-serif",
-            opacity: entered ? 1 : 0,
-            animation: entered ? 'fadeIn 0.6s ease 0.4s both' : 'none',
-          }}>← Volver al Dashboard</p>
         </div>
       </div>
     </>

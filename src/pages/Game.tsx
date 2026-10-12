@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { Navigate, useNavigate, useLocation } from 'react-router-dom';
+import BackButton from '../components/BackButton';
+import { ABANDONAR } from '../components/abandonar';
 import { Bot, PenLine, Hourglass, StopCircle, Timer, Trophy, Handshake, Skull, Flame } from 'lucide-react';
 import { finishQuickMatch, startQuickMatch, type QuickMatch, type QuickMatchResult } from '../api/soloMatch';
 import { achievementIcon } from '../profile/achievementIcons';
@@ -153,7 +155,7 @@ export default function Game() {
   const timerPct = ((duracion - timeLeft) / duracion) * 100;
   const timerColor = timeLeft > 30 ? '#39ff8c' : timeLeft > 10 ? '#fbbf24' : '#ef4444';
 
-  if (!tematica) { navigate('/lobby'); return null; }
+  if (!tematica) return <Navigate to={'/juego/tutti_frutti'} replace />;
 
   if (!match) {
     return (
@@ -162,13 +164,14 @@ export default function Game() {
         gap: '14px', padding: '24px', background: '#010805', color: '#ecfff3', fontFamily: "'Inter', sans-serif",
         textAlign: 'center',
       }}>
+        <BackButton to={'/juego/tutti_frutti'} />
         {startError ? (
           <>
             <p style={{ color: '#fca5a5', fontSize: '14px' }}>{startError}</p>
-            <button onClick={() => navigate('/lobby')} style={{
+            <button onClick={() => navigate('/juego/tutti_frutti')} style={{
               background: 'linear-gradient(135deg, #0fae5d, #39ff8c)', color: '#04210f', border: 'none',
               borderRadius: '8px', padding: '10px 22px', fontWeight: 700, cursor: 'pointer',
-            }}>Volver al Lobby</button>
+            }}>Volver al menú</button>
           </>
         ) : (
           <p style={{ color: 'rgba(180,255,205,0.75)', fontSize: '14px' }}>Preparando la partida...</p>
@@ -393,12 +396,15 @@ export default function Game() {
         ))}
       </div>
 
+      {/* Volver: en medio de la ronda pregunta antes (la partida queda como abandonada = perdida) */}
+      <BackButton to={'/juego/tutti_frutti'} confirm={!finished ? ABANDONAR : null} />
+
       {/* CONTENIDO */}
       <div style={{
         position: 'relative', zIndex: 1,
         minHeight: '100vh',
         display: 'flex', alignItems: 'flex-start', justifyContent: 'center',
-        padding: '24px',
+        padding: '68px 16px 24px',
         fontFamily: "'Inter', sans-serif",
         overflowY: 'auto',
       }}>
@@ -771,7 +777,7 @@ export default function Game() {
                 </div>
 
                 {/* Volver */}
-                <button onClick={() => navigate('/lobby')} style={{
+                <button onClick={() => navigate('/juego/tutti_frutti')} style={{
                   background: 'linear-gradient(135deg, #0fae5d, #39ff8c)',
                   color: '#04210f', border: 'none', borderRadius: '8px',
                   padding: '11px 28px', cursor: 'pointer',
@@ -781,7 +787,7 @@ export default function Game() {
                   boxShadow: '0 0 18px rgba(57,255,140,0.4)',
                   transition: 'all 0.2s ease',
                 }}>
-                  Volver al Lobby
+                  Volver al menú
                 </button>
                 {/* Entre partidas: sólo cuando ya está el resultado (apagado salvo VITE_ADS_ENABLED=true) */}
                 {resultado && <AdSlot placement="resultado" />}

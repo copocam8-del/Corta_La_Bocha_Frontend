@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
-import { Link, NavLink } from 'react-router-dom';
-import { ArrowLeft } from 'lucide-react';
+import { NavLink, useLocation } from 'react-router-dom';
+import BackButton from './BackButton';
+import { getToken } from '../auth/session';
 
 // Marco común de las páginas legales (/privacidad, /terminos, /cookies),
 // con el mismo estilo de cancha nocturna del Login.
@@ -36,8 +37,13 @@ export function Section({ title, children }: { title: string; children: ReactNod
 }
 
 export default function LegalLayout({ title, children }: { title: string; children: ReactNode }) {
+  // Pantalla anterior lógica: la que mandó acá (ej. el registro); si no, el Dashboard con sesión o el login
+  const from = (useLocation().state as { from?: string } | null)?.from;
+  const conSesion = typeof localStorage !== 'undefined' && !!getToken();
+  const volverA = from ?? (conSesion ? '/dashboard' : '/login');
   return (
     <>
+      <BackButton to={volverA} />
       <style>{`
         .legal-body p, .legal-body li { font-size: 14px; line-height: 1.65; color: rgba(225,255,236,0.86); }
         .legal-body p { margin: 0 0 10px; }
@@ -56,22 +62,16 @@ export default function LegalLayout({ title, children }: { title: string; childr
       `}</style>
 
       <div style={{
-        minHeight: '100vh', padding: '32px 16px 48px',
+        minHeight: '100vh', padding: '68px 16px 48px',
         background: `
           radial-gradient(ellipse 90% 50% at 50% 0%, rgba(57,255,140,0.18) 0%, transparent 60%),
           repeating-linear-gradient(115deg, #031c0e 0px, #031c0e 80px, #042a15 80px, #042a15 160px)`,
         fontFamily: "'Inter', sans-serif",
       }}>
         <div style={{ maxWidth: '760px', margin: '0 auto' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
-            <Link to="/login" style={{
-              display: 'inline-flex', alignItems: 'center', gap: '6px',
-              color: '#7CFFB2', textDecoration: 'none', fontSize: '13px',
-            }}>
-              <ArrowLeft size={15} /> Corta la bocha
-            </Link>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
             <nav className="legal-nav" aria-label="Páginas legales" style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
-              {LEGAL_LINKS.map((l) => <NavLink key={l.to} to={l.to}>{l.label}</NavLink>)}
+              {LEGAL_LINKS.map((l) => <NavLink key={l.to} to={l.to} state={from ? { from } : undefined}>{l.label}</NavLink>)}
             </nav>
           </div>
 

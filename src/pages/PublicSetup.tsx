@@ -1,17 +1,24 @@
 import { useState, useEffect, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { ChevronRight, Users } from 'lucide-react';
 
-import { PUBLIC_ROUNDS, PUBLIC_SECONDS, TEMATICAS_MULTI as TEMATICAS } from '../multi/types';
+import { TEMATICAS_MULTI as TEMATICAS } from '../multi/types';
+import BackButton from '../components/BackButton';
+import { gameName } from '../games/gameIcons';
+import { isMultiGame, menuPath, MULTI_CONFIG } from '../games/multiConfig';
 
 const CANTIDADES = [
   { id: 'pocos',  label: 'Pocos',  desc: '2 a 4 jugadores' },
   { id: 'muchos', label: 'Muchos', desc: '5 a 8 jugadores' },
 ];
 
-// Partida pública: elegís temática y tamaño, y la cola arma la partida sola
+// Partida pública (/juego/:game/publica): elegís el tamaño (y en Tutti Frutti, la temática) y la
+// cola arma la partida sola. Los demás juegos tienen una configuración pública fija.
 export default function PublicSetup() {
   const navigate = useNavigate();
+  const { game: param } = useParams<{ game: string }>();
+  const game = isMultiGame(param) ? param : 'tutti_frutti';
+  const publica = MULTI_CONFIG[game].publica;
   const [entered,    setEntered]    = useState(false);
   const [tematica,   setTematica]   = useState('general');
   const [cantidad,   setCantidad]   = useState('pocos');
@@ -35,11 +42,12 @@ export default function PublicSetup() {
   );
 
   const handleBuscar = () => {
-    navigate('/public-queue', { state: { tematica, size: cantidad } });
+    navigate(`${menuPath(game)}/buscando`, { state: { game, tematica: publica.eligeTematica ? tematica : '', size: cantidad } });
   };
 
   return (
     <>
+      <BackButton to={menuPath(game)} />
       <style>{`
         * { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -213,7 +221,7 @@ export default function PublicSetup() {
       <div style={{
         position: 'relative', zIndex: 1, minHeight: '100vh',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        padding: '24px', fontFamily: "'Inter', sans-serif", overflowY: 'auto',
+        padding: '68px 16px 24px', fontFamily: "'Inter', sans-serif", overflowY: 'auto',
       }}>
         <div style={{ width: '100%', maxWidth: '420px', position: 'relative', zIndex: 2 }}>
 
@@ -226,7 +234,7 @@ export default function PublicSetup() {
             <p style={{
               fontFamily: "'Oswald', sans-serif", fontSize: '11px', letterSpacing: '3px',
               color: '#7CFFB2', textTransform: 'uppercase', marginBottom: '12px',
-            }}>Partida Pública</p>
+            }}>Partida Pública · {gameName(game)}</p>
 
             <div style={{
               display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -268,8 +276,8 @@ export default function PublicSetup() {
             display: 'flex', flexDirection: 'column', gap: '18px',
           }}>
 
-            {/* Temática */}
-            <div>
+            {/* Temática (sólo Tutti Frutti) */}
+            {publica.eligeTematica && <div>
               <p className="section-label">Temática</p>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
                 {TEMATICAS.map(t => (
@@ -279,10 +287,10 @@ export default function PublicSetup() {
                   </button>
                 ))}
               </div>
-            </div>
+            </div>}
 
-            <p style={{ fontSize: '12px', color: 'rgba(180,255,205,0.6)', margin: '-6px 0 0' }}>
-              Las partidas públicas son de {PUBLIC_ROUNDS} rondas de {PUBLIC_SECONDS} segundos.
+            <p style={{ fontSize: '12px', color: 'rgba(180,255,205,0.6)', margin: publica.eligeTematica ? '-6px 0 0' : 0 }}>
+              {publica.descripcion}
             </p>
 
             {/* Cantidad */}
@@ -292,7 +300,7 @@ export default function PublicSetup() {
                 Cantidad de jugadores
               </p>
               <div style={{ display: 'flex', gap: '10px' }}>
-                {CANTIDADES.map(c => (
+                {CANTIDADES.filter(c => publica.tamanos.includes(c.id as 'pocos' | 'muchos')).map(c => (
                   <div key={c.id} className={`cantidad-card${cantidad === c.id ? ' active' : ''}`}
                     onClick={() => setCantidad(c.id)}>
                     <span style={{
@@ -310,19 +318,11 @@ export default function PublicSetup() {
             </div>
 
             {/* Buscar */}
-            <button className="buscar-btn" onClick={handleBuscar}>
+            <button className="buscar-btn" data-testid="buscar-partida" onClick={handleBuscar}>
               Buscar partida
               <ChevronRight size={18} strokeWidth={2.5}/>
             </button>
           </div>
-
-          <p onClick={() => navigate('/lobby')} style={{
-            textAlign: 'center', color: 'rgba(180,255,205,0.4)',
-            fontSize: '12px', marginTop: '16px', cursor: 'pointer',
-            fontFamily: "'Inter', sans-serif",
-            opacity: entered ? 1 : 0,
-            animation: entered ? 'riseIn 0.6s ease 0.4s both' : 'none',
-          }}>← Volver al Lobby</p>
         </div>
       </div>
     </>

@@ -1,18 +1,25 @@
 import { useState, useEffect, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { ChevronRight } from 'lucide-react';
 
 import { createRoom } from '../api/rooms';
-import { RONDAS_MULTI as RONDAS, TEMATICAS_MULTI as TEMATICAS, TIEMPOS_MULTI as TIEMPOS } from '../multi/types';
+import BackButton from '../components/BackButton';
+import { gameName } from '../games/gameIcons';
+import { isMultiGame, menuPath, MULTI_CONFIG, tiempoLabel } from '../games/multiConfig';
 
-// Crear sala privada: el servidor la crea y devuelve el código. En multijugador no hay máquina,
-// así que no hay dificultad: el anfitrión elige temática, cantidad de rondas y tiempo.
+// Crear sala privada de cualquier juego (/juego/:game/crear-sala): el servidor la crea y devuelve
+// el código. El anfitrión elige las opciones del juego (temática, dificultad, rondas y tiempo); en
+// Tutti Frutti no hay dificultad porque en multijugador no juega la máquina.
 export default function CreateRoom() {
   const navigate = useNavigate();
+  const { game: param } = useParams<{ game: string }>();
+  const game = isMultiGame(param) ? param : 'tutti_frutti';
+  const config = MULTI_CONFIG[game];
   const [entered, setEntered] = useState(false);
-  const [tematica, setTematica]     = useState('general');
-  const [rondas, setRondas]         = useState(3);
-  const [tiempo, setTiempo]         = useState(60);
+  const [tematica, setTematica]     = useState(config.defaults.tematica);
+  const [dificultad, setDificultad] = useState(config.defaults.dificultad);
+  const [rondas, setRondas]         = useState(config.defaults.rounds);
+  const [tiempo, setTiempo]         = useState(config.defaults.seconds);
   const [creando, setCreando]       = useState(false);
   const [error, setError]           = useState<string | null>(null);
 
@@ -38,8 +45,8 @@ export default function CreateRoom() {
     setCreando(true);
     setError(null);
     try {
-      const { code } = await createRoom({ tematica, rounds: rondas, seconds: tiempo });
-      navigate('/room-code', { state: { code } });
+      const { code } = await createRoom({ game, tematica, rounds: rondas, seconds: tiempo, ...(dificultad ? { dificultad } : {}) });
+      navigate(`${menuPath(game)}/codigo`, { state: { code } });
     } catch {
       setError('No se pudo crear la sala. Revisá tu conexión y probá de nuevo.');
       setCreando(false);
@@ -48,6 +55,7 @@ export default function CreateRoom() {
 
   return (
     <>
+      <BackButton to={menuPath(game)} />
       <style>{`
         * { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -240,7 +248,7 @@ export default function CreateRoom() {
         position: 'relative', zIndex: 1,
         minHeight: '100vh',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        padding: '24px',
+        padding: '68px 16px 24px',
         fontFamily: "'Inter', sans-serif",
       }}>
         <div style={{ width: '100%', maxWidth: '420px', position: 'relative', zIndex: 2 }}>
@@ -255,7 +263,7 @@ export default function CreateRoom() {
               fontSize: '11px', letterSpacing: '3px', fontWeight: 500,
               color: '#7CFFB2', textTransform: 'uppercase', marginBottom: '12px',
               fontFamily: "'Oswald', sans-serif",
-            }}>Sala Privada</p>
+            }}>Sala Privada · {gameName(game)}</p>
 
             <div className="ball-logo" style={{
               display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -304,28 +312,48 @@ export default function CreateRoom() {
             display: 'flex', flexDirection: 'column', gap: '18px',
           }}>
 
-            {/* Temática */}
-            <div>
-              <p className="section-label">Temática</p>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                {TEMATICAS.map(t => (
-                  <button
-                    key={t.id}
-                    className={`option-btn${tematica === t.id ? ' active' : ''}`}
-                    onClick={() => setTematica(t.id)}
-                    style={{ flex: 'none' }}
-                  >
-                    {t.label}
-                  </button>
-                ))}
+            {/* Temática / categoría / tema */}
+            {config.tematicas && (
+              <div>
+                <p className="section-label">{config.tematicas.titulo}</p>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                  {config.tematicas.opciones.map(t => (
+                    <button
+                      key={t.id}
+                      className={`option-btn${tematica === t.id ? ' active' : ''}`}
+                      onClick={() => setTematica(t.id)}
+                      style={{ flex: 'none' }}
+                    >
+                      {t.label}
+                    </button>
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
+
+            {/* Dificultad */}
+            {config.dificultades && (
+              <div>
+                <p className="section-label">Dificultad</p>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                  {config.dificultades.map(d => (
+                    <button
+                      key={d.id}
+                      className={`option-btn${dificultad === d.id ? ' active' : ''}`}
+                      onClick={() => setDificultad(d.id)}
+                    >
+                      {d.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* Rondas */}
             <div>
-              <p className="section-label">Rondas</p>
+              <p className="section-label">{config.rondas.titulo}</p>
               <div style={{ display: 'flex', gap: '8px' }}>
-                {RONDAS.map(r => (
+                {config.rondas.opciones.map(r => (
                   <button
                     key={r}
                     className={`option-btn${rondas === r ? ' active' : ''}`}
@@ -339,15 +367,15 @@ export default function CreateRoom() {
 
             {/* Tiempo */}
             <div>
-              <p className="section-label">Tiempo</p>
+              <p className="section-label">{config.tiempos.titulo}</p>
               <div style={{ display: 'flex', gap: '8px' }}>
-                {TIEMPOS.map(t => (
+                {config.tiempos.opciones.map(t => (
                   <button
                     key={t}
                     className={`option-btn${tiempo === t ? ' active' : ''}`}
                     onClick={() => setTiempo(t)}
                   >
-                    {t}s
+                    {tiempoLabel(t)}
                   </button>
                 ))}
               </div>
@@ -355,19 +383,11 @@ export default function CreateRoom() {
 
             {/* Continuar */}
             {error && <p role="alert" style={{ color: '#fca5a5', fontSize: '13px', textAlign: 'center' }}>{error}</p>}
-            <button className="continuar-btn" onClick={() => void handleContinuar()} disabled={creando}>
+            <button className="continuar-btn" data-testid="crear-sala" onClick={() => void handleContinuar()} disabled={creando}>
               {creando ? 'Creando sala…' : 'Crear sala'}
               <ChevronRight size={18} strokeWidth={2.5} />
             </button>
           </div>
-
-          <p onClick={() => navigate('/lobby')} style={{
-            textAlign: 'center', color: 'rgba(180,255,205,0.4)',
-            fontSize: '12px', marginTop: '16px', cursor: 'pointer',
-            fontFamily: "'Inter', sans-serif",
-            opacity: entered ? 1 : 0,
-            animation: entered ? 'riseIn 0.6s ease 0.4s both' : 'none',
-          }}>← Volver al Lobby</p>
         </div>
       </div>
     </>

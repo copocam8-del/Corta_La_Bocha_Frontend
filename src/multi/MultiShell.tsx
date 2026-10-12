@@ -117,7 +117,8 @@ export default function MultiShell({ children, maxWidth = 520 }: { children: Rea
       </div>
       <div style={{
         position: 'relative', zIndex: 1, minHeight: '100vh', display: 'flex', alignItems: 'flex-start', justifyContent: 'center',
-        padding: '24px 16px', fontFamily: "'Inter', sans-serif", color: '#eafff2',
+        // Arriba queda lugar para el botón "Volver" (fijo arriba a la izquierda)
+        padding: '52px 16px 24px', fontFamily: "'Inter', sans-serif", color: '#eafff2',
       }}>
         <div style={{
           width: '100%', maxWidth: `${maxWidth}px`, display: 'flex', flexDirection: 'column', gap: '12px', paddingTop: '12px',

@@ -1,13 +1,17 @@
 // Lo que manda el servidor por Socket.IO (copia de los tipos de src/rooms/game-engine.ts del backend).
 import type { AnswerStatus } from '../api/soloMatch';
 import type { NewAchievement } from '../api/achievements';
+import type { MultiGameId } from '../games/multiConfig';
+import type { GameView } from './gameViews';
 
 export type Phase = 'lobby' | 'countdown' | 'playing' | 'collecting' | 'validating' | 'results' | 'finished' | 'closed';
 
+// Configuración de la sala: cada juego usa lo que necesita (ver games/multiConfig.ts)
 export interface Settings {
   tematica: string;
   rounds: number;
   seconds: number;
+  dificultad?: string;
 }
 
 export interface CellResult {
@@ -50,6 +54,7 @@ export interface RoomPlayer {
 
 export interface RoomSnapshot {
   code: string;
+  game: MultiGameId;
   isPrivate: boolean;
   me: string;
   hostUserId: string | null;
@@ -71,6 +76,8 @@ export interface RoomSnapshot {
   nextAt: number | null;
   lastResult: RoundResult | null;
   history: RoundResult[];
+  // Juegos nuevos: lo que ve este jugador de la partida (tipos en multi/gameViews.ts)
+  view: GameView | null;
   final: null | {
     reason: 'completed' | 'not_enough_players';
     countsForStats: boolean;
@@ -81,6 +88,7 @@ export interface RoomSnapshot {
 }
 
 export interface QueueState {
+  game?: MultiGameId;
   tematica: string;
   size: 'pocos' | 'muchos';
   min: number;

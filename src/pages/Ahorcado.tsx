@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Flag, Send } from 'lucide-react';
+import { Flag, Send } from 'lucide-react';
 import MultiShell from '../multi/MultiShell';
+import BackButton from '../components/BackButton';
+import { ABANDONAR } from '../components/abandonar';
+import { menuPath } from '../games/multiConfig';
 import Pelota from '../games/Pelota';
 import GameResult from '../games/GameResult';
 import {
@@ -23,7 +25,6 @@ const mensajeError = (e: unknown) =>
   (e as { response?: { data?: { message?: string } } })?.response?.data?.message ?? 'No se pudo conectar con el servidor. Probá de nuevo.';
 
 export default function Ahorcado() {
-  const navigate = useNavigate();
   const [dificultad, setDificultad] = useState<DificultadAhorcado | null>(null);
   const [partida, setPartida] = useState<PartidaAhorcado | null>(null);
   const [cargando, setCargando] = useState(false);
@@ -77,9 +78,7 @@ export default function Ahorcado() {
   if (!partida) {
     return (
       <MultiShell maxWidth={480}>
-        <button className="ghost-btn" style={{ width: 'auto', alignSelf: 'flex-start' }} onClick={() => navigate('/dashboard')}>
-          <ArrowLeft size={13} style={{ display: 'inline', verticalAlign: 'middle' }} /> Juegos
-        </button>
+        <BackButton to={menuPath('ahorcado')} />
         <div style={{ textAlign: 'center' }}>
           <p className="kicker">Ahorcado futbolero</p>
           <h1 className="neon-title" style={{ fontSize: '28px', marginTop: '6px' }}>Que no muera la redonda</h1>
@@ -104,6 +103,9 @@ export default function Ahorcado() {
   const terminada = partida.terminada;
   return (
     <MultiShell maxWidth={560}>
+      {/* En medio de la partida, salir = rendirse (cuenta como perdida) */}
+      <BackButton to={menuPath('ahorcado')} confirm={terminada ? null : ABANDONAR}
+        onLeave={() => (terminada ? undefined : rendirse(partida.matchId))} />
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <p className="kicker">Pista: <strong data-testid="pista">{partida.pista}</strong></p>
         <p className="kicker" data-testid="errores">Errores {partida.errores}/{partida.maxErrores}</p>

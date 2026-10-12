@@ -1,13 +1,23 @@
 import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Check, Clock, Copy, Crown, Globe, Hash, LogOut, Play, Users } from 'lucide-react';
+import { Check, Clock, Copy, Crown, Gauge, Globe, Hash, LogOut, Play, Users } from 'lucide-react';
 import MultiShell from '../multi/MultiShell';
 import { useRoom, type RoomApi } from '../multi/useRoom';
-import { RONDAS_MULTI, TEMATICAS_MULTI, TIEMPOS_MULTI, type RoomSnapshot } from '../multi/types';
+import type { Phase, RoomSnapshot } from '../multi/types';
+import BackButton from '../components/BackButton';
+import { ABANDONAR } from '../components/abandonar';
+import { gameName } from '../games/gameIcons';
+import { menuPath, MULTI_CONFIG, publicaPath, tiempoLabel } from '../games/multiConfig';
 import GameMulti from './GameMulti';
+import TriviaMulti from '../multi/juegos/TriviaMulti';
+import AhorcadoMulti from '../multi/juegos/AhorcadoMulti';
+import SopaMulti from '../multi/juegos/SopaMulti';
+import MemotestMulti from '../multi/juegos/MemotestMulti';
 
-// Sala multijugador (/room/:code). Muestra el lobby o la partida según lo que diga el servidor:
-// si recargás la página en medio de una ronda, volvés exactamente a donde estabas.
+// Sala multijugador de cualquier juego (/room/:code). Muestra el lobby o la partida según lo que
+// diga el servidor: si recargás la página en medio de una ronda, volvés exactamente a donde estabas.
+
+const EN_PARTIDA: Phase[] = ['countdown', 'playing', 'collecting', 'validating', 'results'];
 
 function Lobby({ room, state }: { room: RoomApi; state: RoomSnapshot }) {
   const navigate = useNavigate();
@@ -23,15 +33,17 @@ function Lobby({ room, state }: { room: RoomApi; state: RoomSnapshot }) {
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const config = MULTI_CONFIG[state.game] ?? MULTI_CONFIG.tutti_frutti;
+
   const salir = async () => {
     await room.leave();
-    navigate('/lobby');
+    navigate(menuPath(state.game));
   };
 
   return (
     <>
       <div style={{ textAlign: 'center', marginBottom: '4px' }}>
-        <p className="kicker">{state.isPrivate ? 'Sala privada' : 'Partida pública'}</p>
+        <p className="kicker">{state.isPrivate ? 'Sala privada' : 'Partida pública'} · {gameName(state.game)}</p>
         <h1 className="neon-title" style={{ fontSize: '26px', marginTop: '6px' }}>Sala de espera</h1>
         {state.isPrivate && (
           <button onClick={copy} data-testid="codigo-sala" style={{
@@ -74,21 +86,36 @@ function Lobby({ room, state }: { room: RoomApi; state: RoomSnapshot }) {
       </div>
 
       <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-        <div>
-          <p className="section-label"><Globe size={11} /> Temática</p>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-            {TEMATICAS_MULTI.map((t) => (
-              <button key={t.id} className={`option-btn${state.settings.tematica === t.id ? ' active' : ''}`} style={{ flex: 'none' }}
-                disabled={!isHost} onClick={() => void room.updateSettings({ tematica: t.id })}>
-                {t.label}
-              </button>
-            ))}
+        {config.tematicas && (
+          <div>
+            <p className="section-label"><Globe size={11} /> {config.tematicas.titulo}</p>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+              {config.tematicas.opciones.map((t) => (
+                <button key={t.id} className={`option-btn${state.settings.tematica === t.id ? ' active' : ''}`} style={{ flex: 'none' }}
+                  disabled={!isHost} onClick={() => void room.updateSettings({ tematica: t.id })}>
+                  {t.label}
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
+        {config.dificultades && (
+          <div>
+            <p className="section-label"><Gauge size={11} /> Dificultad</p>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+              {config.dificultades.map((d) => (
+                <button key={d.id} className={`option-btn${state.settings.dificultad === d.id ? ' active' : ''}`}
+                  disabled={!isHost} onClick={() => void room.updateSettings({ dificultad: d.id })}>
+                  {d.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
         <div>
-          <p className="section-label"><Hash size={11} /> Rondas</p>
+          <p className="section-label"><Hash size={11} /> {config.rondas.titulo}</p>
           <div style={{ display: 'flex', gap: '6px' }}>
-            {RONDAS_MULTI.map((r) => (
+            {config.rondas.opciones.map((r) => (
               <button key={r} className={`option-btn${state.settings.rounds === r ? ' active' : ''}`}
                 disabled={!isHost} onClick={() => void room.updateSettings({ rounds: r })}>
                 {r}
@@ -97,12 +124,12 @@ function Lobby({ room, state }: { room: RoomApi; state: RoomSnapshot }) {
           </div>
         </div>
         <div>
-          <p className="section-label"><Clock size={11} /> Tiempo por ronda</p>
+          <p className="section-label"><Clock size={11} /> {config.tiempos.titulo}</p>
           <div style={{ display: 'flex', gap: '6px' }}>
-            {TIEMPOS_MULTI.map((t) => (
+            {config.tiempos.opciones.map((t) => (
               <button key={t} className={`option-btn${state.settings.seconds === t ? ' active' : ''}`}
                 disabled={!isHost} onClick={() => void room.updateSettings({ seconds: t })}>
-                {t}s
+                {tiempoLabel(t)}
               </button>
             ))}
           </div>
@@ -150,7 +177,7 @@ export default function Room() {
     content = error ? (
       <div className="card" style={{ textAlign: 'center' }}>
         <div className="error" data-testid="error-sala">{error}</div>
-        <button className="ghost-btn" style={{ marginTop: '12px' }} onClick={() => navigate('/lobby')}>Volver al lobby</button>
+        <button className="ghost-btn" style={{ marginTop: '12px' }} onClick={() => navigate('/dashboard')}>Volver a los juegos</button>
       </div>
     ) : (
       <div className="card" style={{ textAlign: 'center' }}>
@@ -162,16 +189,36 @@ export default function Room() {
     content = (
       <div className="card" style={{ textAlign: 'center' }}>
         <p className="notice">{state.notice ?? 'La sala se cerró.'}</p>
-        <button className="main-btn" style={{ marginTop: '12px' }} onClick={() => navigate(state.isPrivate ? '/lobby' : '/public-setup')}>
-          {state.isPrivate ? 'Volver al lobby' : 'Buscar otra partida'}
+        <button className="main-btn" style={{ marginTop: '12px' }} onClick={() => navigate(state.isPrivate ? menuPath(state.game) : publicaPath(state.game))}>
+          {state.isPrivate ? 'Volver al menú' : 'Buscar otra partida'}
         </button>
       </div>
     );
   } else if (state.phase === 'lobby') {
     content = <Lobby room={room} state={state} />;
+  } else if (state.game === 'trivia') {
+    content = <TriviaMulti room={room} state={state} />;
+  } else if (state.game === 'ahorcado') {
+    content = <AhorcadoMulti room={room} state={state} />;
+  } else if (state.game === 'sopa_de_letras') {
+    content = <SopaMulti room={room} state={state} />;
+  } else if (state.game === 'memotest') {
+    content = <MemotestMulti room={room} state={state} />;
   } else {
     content = <GameMulti room={room} state={state} />;
   }
 
-  return <MultiShell maxWidth={state && state.phase !== 'lobby' ? 720 : 480}>{content}</MultiShell>;
+  // Volver: lobby → menú del juego; en partida pregunta antes (abandonar cuenta como perdida y se
+  // les avisa a los demás); al final, sale sin preguntar.
+  const meLeft = state?.players.find((p) => p.userId === state.me)?.left ?? false;
+  const enPartida = !!state && EN_PARTIDA.includes(state.phase) && !meLeft;
+  const back = (
+    <BackButton
+      to={state ? menuPath(state.game) : '/dashboard'}
+      confirm={enPartida ? ABANDONAR : null}
+      onLeave={() => (state ? room.leave() : undefined)}
+    />
+  );
+
+  return <MultiShell maxWidth={state && state.phase !== 'lobby' ? 720 : 480}>{back}{content}</MultiShell>;
 }

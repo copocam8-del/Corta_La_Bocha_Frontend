@@ -1,42 +1,21 @@
 import { useEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { StopCircle, Timer, Trophy, Users, WifiOff } from 'lucide-react';
+import { StopCircle, Timer, WifiOff } from 'lucide-react';
 import type { RoomApi } from '../multi/useRoom';
 import type { RoomSnapshot } from '../multi/types';
 import { temaLabel } from '../multi/types';
 import { secondsUntil } from '../multi/clock';
 import { useNow } from '../multi/useNow';
-import { MultiRoundResults, Standings } from '../multi/MultiRoundResults';
+import { MultiRoundResults } from '../multi/MultiRoundResults';
+import { MultiFinal, Scoreboard } from '../multi/MultiParts';
 import { missingCategories } from '../game/round';
-import { achievementIcon } from '../profile/achievementIcons';
-import AdSlot from '../ads/AdSlot';
 
-// Partida multijugador en curso. Todo lo decide el servidor (letra, reloj, ¡Basta!, validación y
-// puntaje); acá se muestra el estado y se mandan las respuestas mientras el jugador escribe.
+// Partida multijugador de Tutti Frutti en curso. Todo lo decide el servidor (letra, reloj, ¡Basta!,
+// validación y puntaje); acá se muestra el estado y se mandan las respuestas mientras el jugador escribe.
+// (Los otros juegos tienen su pantalla en src/multi/juegos/.)
 
 const SEND_DEBOUNCE_MS = 350;
 
-function Scoreboard({ state }: { state: RoomSnapshot }) {
-  const players = [...state.players].sort((a, b) => b.score - a.score);
-  return (
-    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }} data-testid="marcador">
-      {players.map((p) => (
-        <span key={p.userId} style={{
-          display: 'inline-flex', alignItems: 'center', gap: '5px', padding: '4px 10px', borderRadius: '999px',
-          border: `1px solid ${p.userId === state.me ? 'rgba(57,255,140,0.6)' : 'rgba(57,255,140,0.2)'}`,
-          background: 'rgba(4,20,11,0.6)', fontSize: '12px', opacity: p.left ? 0.4 : 1,
-        }}>
-          <span className="dot" style={{ background: p.connected ? '#39ff8c' : '#f87171', width: 6, height: 6 }} />
-          {p.userId === state.me ? 'Vos' : p.username}
-          <strong style={{ color: '#39ff8c', fontFamily: "'Oswald', sans-serif" }}>{p.score}</strong>
-        </span>
-      ))}
-    </div>
-  );
-}
-
 export default function GameMulti({ room, state }: { room: RoomApi; state: RoomSnapshot }) {
-  const navigate = useNavigate();
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const roundRef = useRef<number | null>(null);
   const finalSentRef = useRef<number | null>(null);
@@ -81,11 +60,6 @@ export default function GameMulti({ room, state }: { room: RoomApi; state: RoomS
     if (faltan > 0) return;
     if (sendTimer.current) clearTimeout(sendTimer.current);
     void room.basta(answersRef.current);
-  };
-
-  const handleSalir = async () => {
-    await room.leave();
-    navigate('/lobby');
   };
 
   const header = (
@@ -217,75 +191,24 @@ export default function GameMulti({ room, state }: { room: RoomApi; state: RoomS
 
   // ── Final ─────────────────────────────────────────────────────────────────────────────────
   if (phase === 'finished' && state.final) {
-    const meStanding = state.final.standings.find((s) => s.userId === state.me);
-    const winners = state.final.standings.filter((s) => s.won);
-    const isHost = state.hostUserId === state.me;
     return (
       <>
         {header}
-        <div className="card pulse" style={{ textAlign: 'center' }} data-testid="final">
-          <Trophy size={28} color="#fbbf24" />
-          <h1 className="neon-title" style={{ fontSize: '26px', margin: '6px 0' }}>
-            {meStanding?.won ? '¡Ganaste!' : winners.length ? `Ganó ${winners.map((w) => w.username).join(' y ')}` : 'Terminó la partida'}
-          </h1>
-          {state.notice && <p style={{ fontSize: '12px', color: '#fde68a', marginBottom: '8px' }}>{state.notice}</p>}
-          <Standings standings={state.final.standings} me={state.me} />
-          {!state.final.countsForStats && (
-            <div className="notice" style={{ marginTop: '12px', textAlign: 'left' }}>
-              Esta partida no cuenta para las estadísticas ni el ranking
-              {state.history.length === 0 ? ' (no se llegó a jugar ninguna ronda).' : ' (la IA no pudo validar algunas respuestas).'}
-            </div>
+        <MultiFinal room={room} state={state}>
+          {state.history.length > 0 && (
+            <details className="card">
+              <summary style={{ cursor: 'pointer', fontFamily: "'Oswald', sans-serif", letterSpacing: '2px', textTransform: 'uppercase', fontSize: '12px' }}>
+                Ver todas las rondas
+              </summary>
+              {state.history.map((r) => (
+                <div key={r.number} style={{ marginTop: '10px' }}>
+                  <p className="kicker">Ronda {r.number} · Letra {r.letter}</p>
+                  <MultiRoundResults result={r} me={state.me} />
+                </div>
+              ))}
+            </details>
           )}
-          {state.final.newAchievements.length > 0 && (
-            <div role="status" style={{
-              marginTop: '12px', padding: '10px 12px', borderRadius: '10px', background: 'rgba(250,204,21,0.1)', border: '1px solid rgba(250,204,21,0.45)',
-            }}>
-              <p className="kicker" style={{ color: '#fde047' }}>
-                {state.final.newAchievements.length === 1 ? '¡Logro desbloqueado!' : '¡Logros desbloqueados!'}
-              </p>
-              {state.final.newAchievements.map((a) => {
-                const Icon = achievementIcon(a.id);
-                return (
-                  <p key={a.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', fontSize: '13px', color: '#fef9c3' }}>
-                    <Icon size={15} color="#fde047" /> <strong>{a.name}</strong> · {a.description}
-                  </p>
-                );
-              })}
-            </div>
-          )}
-        </div>
-
-        {state.history.length > 0 && (
-          <details className="card">
-            <summary style={{ cursor: 'pointer', fontFamily: "'Oswald', sans-serif", letterSpacing: '2px', textTransform: 'uppercase', fontSize: '12px' }}>
-              Ver todas las rondas
-            </summary>
-            {state.history.map((r) => (
-              <div key={r.number} style={{ marginTop: '10px' }}>
-                <p className="kicker">Ronda {r.number} · Letra {r.letter}</p>
-                <MultiRoundResults result={r} me={state.me} />
-              </div>
-            ))}
-          </details>
-        )}
-
-        {state.isPrivate ? (
-          isHost ? (
-            <button className="main-btn" onClick={() => void room.playAgain()}>
-              <Users size={18} /> Jugar otra vez
-            </button>
-          ) : (
-            <p style={{ textAlign: 'center', fontSize: '12px', color: 'rgba(180,255,205,0.6)' }}>
-              Esperando a que el anfitrión arranque otra…
-            </p>
-          )
-        ) : (
-          <button className="main-btn" onClick={() => { void room.leave(); navigate('/public-setup'); }}>
-            Buscar otra partida
-          </button>
-        )}
-        <button className="ghost-btn" onClick={() => void handleSalir()}>Volver al lobby</button>
-        <AdSlot placement="resultado" />
+        </MultiFinal>
       </>
     );
   }

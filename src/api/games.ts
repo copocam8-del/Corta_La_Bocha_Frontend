@@ -9,7 +9,8 @@ export interface GameInfo {
   name: string;
   description: string;
   available: boolean;
-  path: string;
+  path: string; // pantalla para jugar solo
+  multiplayer: boolean; // true = al elegirlo se abre el menú "¿Cómo querés jugar?" (/juego/:id)
   hasElo: boolean;
 }
 

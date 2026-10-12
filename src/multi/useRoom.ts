@@ -80,6 +80,9 @@ export function useRoom(code: string) {
     sendAnswers: (answers: Record<string, string>, final = false) =>
       emitAck('round:answers', { code, answers, final }),
     basta: (answers: Record<string, string>) => run('round:basta', { answers }),
+    // Juegos nuevos: una jugada (responder, arriesgar una letra, marcar una palabra, dar vuelta una
+    // carta). No pisa el error general: cada pantalla muestra la respuesta a su manera.
+    action: (type: string, payload: object = {}) => emitAck('game:action', { code, type, payload }),
   };
 }
 

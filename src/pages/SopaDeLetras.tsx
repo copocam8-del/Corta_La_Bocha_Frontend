@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Flag } from 'lucide-react';
+import { Flag } from 'lucide-react';
 import MultiShell from '../multi/MultiShell';
+import BackButton from '../components/BackButton';
+import { ABANDONAR } from '../components/abandonar';
+import { menuPath } from '../games/multiConfig';
 import GameResult from '../games/GameResult';
 import { useNow } from '../multi/useNow';
 import { secondsLeft } from '../game/round';
@@ -16,7 +18,6 @@ const mensajeError = (e: unknown) =>
   (e as { response?: { data?: { message?: string } } })?.response?.data?.message ?? 'No se pudo conectar con el servidor. Probá de nuevo.';
 
 export default function SopaDeLetras() {
-  const navigate = useNavigate();
   const [tematica, setTematica] = useState('jugadores');
   const [dificultad, setDificultad] = useState<DificultadSopa>('facil');
   const [partida, setPartida] = useState<PartidaSopa | null>(null);
@@ -115,9 +116,7 @@ export default function SopaDeLetras() {
   if (!partida) {
     return (
       <MultiShell maxWidth={480}>
-        <button className="ghost-btn" style={{ width: 'auto', alignSelf: 'flex-start' }} onClick={() => navigate('/dashboard')}>
-          <ArrowLeft size={13} style={{ display: 'inline', verticalAlign: 'middle' }} /> Juegos
-        </button>
+        <BackButton to={menuPath('sopa_de_letras')} />
         <div style={{ textAlign: 'center' }}>
           <p className="kicker">Sopa de letras</p>
           <h1 className="neon-title" style={{ fontSize: '28px', marginTop: '6px' }}>Buscá los nombres</h1>
@@ -155,6 +154,9 @@ export default function SopaDeLetras() {
   const restantes = partida.terminada ? 0 : Math.min(partida.segundos, secondsLeft(fin, now));
   return (
     <MultiShell maxWidth={560}>
+      {/* En medio de la partida, salir = terminarla con lo encontrado (no la ganás) */}
+      <BackButton to={menuPath('sopa_de_letras')} confirm={partida.terminada ? null : ABANDONAR}
+        onLeave={() => (partida.terminada ? undefined : terminarSopa(partida.matchId))} />
       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
         <span className="kicker">{partida.tematica}</span>
         <span className="kicker" data-testid="reloj-sopa">{Math.floor(restantes / 60)}:{String(restantes % 60).padStart(2, '0')}</span>

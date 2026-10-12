@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, CalendarCheck, Copy, Flame, Share2 } from 'lucide-react';
+import { CalendarCheck, Copy, Flame, Share2 } from 'lucide-react';
+import BackButton from '../components/BackButton';
 import MultiShell from '../multi/MultiShell';
 import QuestionCard from '../games/QuestionCard';
 import { useNow } from '../multi/useNow';
@@ -19,7 +19,6 @@ const mensajeError = (e: unknown) =>
   (e as { response?: { data?: { message?: string } } })?.response?.data?.message ?? 'No se pudo conectar con el servidor. Probá de nuevo.';
 
 export default function DesafioDiario() {
-  const navigate = useNavigate();
   const [hoy, setHoy] = useState<DesafioHoy | null>(null);
   const [tabla, setTabla] = useState<TablaDesafio | null>(null);
   const [jugada, setJugada] = useState<JugadaDesafio | null>(null);
@@ -99,17 +98,19 @@ export default function DesafioDiario() {
     } catch { /* el usuario canceló */ }
   };
 
-  const volver = (
-    <button className="ghost-btn" style={{ width: 'auto', alignSelf: 'flex-start' }} onClick={() => navigate('/dashboard')}>
-      <ArrowLeft size={13} style={{ display: 'inline', verticalAlign: 'middle' }} /> Juegos
-    </button>
-  );
+  // El desafío del día no tiene menú: "Volver" lleva a los juegos
+  const volver = <BackButton to="/dashboard" />;
 
   // ── Jugando ───────────────────────────────────────────────────────────────────────────────
   if (pregunta && jugada) {
     const restantes = Math.min(pregunta.segundos, secondsLeft(finPregunta, now));
     return (
       <MultiShell maxWidth={560}>
+        <BackButton to="/dashboard" confirm={{
+          title: '¿Seguro que querés salir?',
+          message: 'Podés volver hoy y seguir donde quedaste, pero el reloj sigue corriendo: las preguntas que se venzan cuentan como sin responder.',
+          confirmLabel: 'Salir',
+        }} />
         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
           <span className="kicker">Desafío del día · {pregunta.numero} de {jugada.total}</span>
           <span className="kicker">{jugada.aciertos} ✓</span>
