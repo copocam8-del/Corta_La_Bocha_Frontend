@@ -1,6 +1,6 @@
 import type { ComponentType } from 'react';
 import {
-  Award, BookOpen, Bot, Brain, CheckCheck, CircleDot, Coins, Crown, Flame, Footprints, Gem, Goal, GraduationCap, Medal,
+  Award, BookOpen, Bot, Brain, CalendarCheck, CalendarHeart, Sparkles, CheckCheck, CircleDot, Coins, Crown, Flame, Footprints, Gem, Goal, GraduationCap, Medal,
   Rocket, Shirt, Trophy, Wind, Zap,
 } from 'lucide-react';
 
@@ -28,6 +28,10 @@ const ICONS: Record<string, IconType> = {
   trivia_perfecta: BookOpen,
   trivia_rapida: Zap,
   trivia_diez: GraduationCap,
+  // Desafío del día
+  diaria_perfecta: Sparkles,
+  diaria_racha_7: CalendarCheck,
+  diaria_racha_30: CalendarHeart,
 };
 
 // Si el backend agrega un logro nuevo antes que el frontend, se muestra con un ícono genérico
