@@ -63,7 +63,11 @@ export interface QuickMatchResult {
 export const startQuickMatch = (data: { tematica: string; dificultad: string; tiempo: number }) =>
   api.post<QuickMatch>('/solo-matches/quick', data).then((r) => r.data);
 
+// Validar con IA puede tardar: el backend corta a los 25 s como máximo (y responde "sin validar").
+// Esperamos 45 s para dejar margen a la red y a que Render despierte el servidor.
+export const FINISH_TIMEOUT_MS = 45000;
+
 export const finishQuickMatch = (matchId: string, answers: { category: string; answer: string | null }[]) =>
   api
-    .post<QuickMatchResult>(`/solo-matches/quick/${matchId}/finish`, { answers }, { timeout: 30000 })
+    .post<QuickMatchResult>(`/solo-matches/quick/${matchId}/finish`, { answers }, { timeout: FINISH_TIMEOUT_MS })
     .then((r) => r.data);
