@@ -1,5 +1,7 @@
 import type { ComponentType } from 'react';
-import { Award, Bot, CheckCheck, Coins, Crown, Flame, Footprints, Gem, Goal, Medal, Rocket, Shirt, Trophy } from 'lucide-react';
+import {
+  Award, Bot, Brain, CheckCheck, CircleDot, Coins, Crown, Flame, Footprints, Gem, Goal, Medal, Rocket, Shirt, Trophy, Wind,
+} from 'lucide-react';
 
 type IconType = ComponentType<{ size?: number; strokeWidth?: number; color?: string }>;
 
@@ -17,6 +19,10 @@ const ICONS: Record<string, IconType> = {
   pleno: CheckCheck,
   le_ganaste_a_la_maquina: Bot,
   campeon_del_barrio: Medal,
+  // Ahorcado
+  redonda_intacta: CircleDot,
+  ahorcado_crack: Brain,
+  ahorcado_diez: Wind,
 };
 
 // Si el backend agrega un logro nuevo antes que el frontend, se muestra con un ícono genérico

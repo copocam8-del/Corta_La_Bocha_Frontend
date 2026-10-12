@@ -72,6 +72,14 @@ src/
 - El ranking tiene filtro por juego (el ELO es general); el perfil muestra estadísticas por juego y los logros
   agrupados (generales y de cada juego).
 
+## Juegos
+
+- Componentes comunes: `games/GameResult.tsx` (resultado con puntos y logros) y `multi/MultiShell.tsx` (fondo).
+- **Ahorcado** (`/ahorcado`, `pages/Ahorcado.tsx`, `api/ahorcado.ts`): la pelota (`games/Pelota.tsx`, etapas en
+  `games/pelotaEtapas.ts`) se aplasta con cada error. Teclado en pantalla (con Ñ) y del teclado físico. El
+  navegador nunca conoce la respuesta hasta el final.
+- Ojo en Windows: no puede haber dos archivos que sólo difieren en mayúsculas (`Pelota.tsx` y `pelota.ts` chocan).
+
 ## Perfil, partidas y ranking
 
 - Partida solo (`pages/Game.tsx`): la decide el servidor. `api/soloMatch.ts` llama a

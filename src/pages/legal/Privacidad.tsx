@@ -48,10 +48,12 @@ export default function Privacidad() {
               <td>Mostrar tu perfil. Son públicos para otros jugadores.</td>
             </tr>
             <tr>
-              <td>Partidas, respuestas, votos y estadísticas (partidas jugadas y ganadas, puntos, rachas)</td>
+              <td>Partidas de todos los juegos (Tutti Frutti, ahorcado, trivia, etc.), tus respuestas y tus
+                estadísticas, en total y por juego (partidas jugadas y ganadas, puntos, rachas, ELO y posición en
+                las ligas semanales y mensuales)</td>
               <td>Mientras jugás</td>
-              <td>Hacer funcionar el juego, calcular puntajes y armar los rankings. Las estadísticas son
-                públicas.</td>
+              <td>Hacer funcionar los juegos, calcular puntajes y armar los rankings y las ligas. Las
+                estadísticas y el ELO son públicos.</td>
             </tr>
             <tr>
               <td>Fecha de creación de la cuenta</td>

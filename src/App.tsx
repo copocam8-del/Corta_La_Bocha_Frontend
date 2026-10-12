@@ -13,6 +13,7 @@ import Room from './pages/Room';
 import PublicSetup from './pages/PublicSetup';
 import PublicQueue from './pages/PublicQueue';
 import GlobalRanking from './pages/GlobalRanking';
+import Ahorcado from './pages/Ahorcado';
 import ProtectedRoute from './components/ProtectedRoute';
 import Privacidad from './pages/legal/Privacidad';
 import Terminos from './pages/legal/Terminos';
@@ -70,6 +71,8 @@ export default function App() {
         <Route path="/game-multi" element={<Navigate to="/lobby" replace />} />
         <Route path="/public-setup" element={<ProtectedRoute><PublicSetup /></ProtectedRoute>} />
         <Route path="/public-queue" element={<ProtectedRoute><PublicQueue /></ProtectedRoute>} />
+        {/* Juegos */}
+        <Route path="/ahorcado" element={<ProtectedRoute><Ahorcado /></ProtectedRoute>} />
         <Route path="/global-ranking" element={<ProtectedRoute><GlobalRanking /></ProtectedRoute>} />
         <Route path="/ranking" element={<ProtectedRoute><GlobalRanking /></ProtectedRoute>} />
       </Routes>
