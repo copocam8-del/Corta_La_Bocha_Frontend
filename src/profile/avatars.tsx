@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { Search } from 'lucide-react';
 import { AVATARS, getAvatar } from './avatarData';
-import { buscarHinchas, getHincha, HINCHAS, ordenarPorClub } from './hinchas';
+import { buscarHinchas, getHincha, HINCHAS, nombresDe, ordenarPorClub } from './hinchas';
 import HinchaSvg from './Hincha';
 
 // Componentes de avatar: los clásicos (íconos, avatarData.ts) y los hinchas de clubes (hinchas.ts +
@@ -18,7 +18,7 @@ export function Avatar({ id, fallback, size = 84 }: { id?: string | null; fallba
   const hincha = getHincha(id);
   if (hincha) {
     return (
-      <div role="img" aria-label={`Avatar: hincha de ${hincha.club}`} data-avatar={hincha.id} style={{ ...base, background: hincha.fondo }}>
+      <div role="img" aria-label={`Avatar: hincha de ${nombresDe(hincha).join(', ')}`} data-avatar={hincha.id} style={{ ...base, background: hincha.fondo }}>
         <HinchaSvg hincha={hincha} size={size} />
       </div>
     );
@@ -50,15 +50,15 @@ const SECCION = {
   color: 'rgba(124,255,178,0.6)', margin: '4px 0 6px',
 } as const;
 
-function Opcion({ id, label, selected, onChange, size, conNombre }: {
-  id: string; label: string; selected: boolean; onChange: (id: string) => void; size: number; conNombre?: boolean;
+function Opcion({ id, label, otros, selected, onChange, size, conNombre }: {
+  id: string; label: string; otros?: string[]; selected: boolean; onChange: (id: string) => void; size: number; conNombre?: boolean;
 }) {
   return (
     <button
       type="button"
       role="radio"
       aria-checked={selected}
-      title={label}
+      title={[label, ...(otros ?? [])].join(' · ')}
       onClick={() => onChange(id)}
       style={{
         background: selected ? 'rgba(57,255,140,0.08)' : 'transparent', cursor: 'pointer', padding: '4px 2px',
@@ -74,6 +74,12 @@ function Opcion({ id, label, selected, onChange, size, conNombre }: {
           fontSize: '10px', lineHeight: 1.2, color: selected ? '#39ff8c' : 'rgba(225,255,236,0.8)', textAlign: 'center',
           width: '100%', overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical',
         }}>{label}</span>
+      )}
+      {/* Otros clubes con la misma camiseta */}
+      {conNombre && otros && otros.length > 0 && (
+        <span data-testid="otros-clubes" style={{
+          fontSize: '9px', lineHeight: 1.25, color: 'rgba(180,255,205,0.6)', textAlign: 'center', width: '100%',
+        }}>{otros.join(' · ')}</span>
       )}
     </button>
   );
@@ -113,7 +119,7 @@ export function AvatarPicker({ value, onChange }: { value: string | null; onChan
         maxHeight: '320px', overflowY: 'auto', paddingRight: '2px',
       }}>
         {clubes.map((h) => (
-          <Opcion key={h.id} id={h.id} label={h.club} selected={h.id === value} onChange={onChange} size={60} conNombre />
+          <Opcion key={h.id} id={h.id} label={h.club} otros={h.otros} selected={h.id === value} onChange={onChange} size={60} conNombre />
         ))}
         {clubes.length === 0 && (
           <p style={{ gridColumn: '1 / -1', fontSize: '12px', color: 'rgba(180,255,205,0.6)' }}>No encontramos ese club.</p>
