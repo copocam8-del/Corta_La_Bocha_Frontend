@@ -230,8 +230,8 @@ export default function Profile() {
         }
 
         .avatar-wrap {
-          width: 84px;
-          height: 84px;
+          width: 104px;
+          height: 104px;
           border-radius: 50%;
           border: 2.5px solid rgba(57,255,140,0.6);
           display: flex;
@@ -486,7 +486,7 @@ export default function Profile() {
                 animation: entered ? 'riseIn 0.6s ease both' : 'none',
               }}>
                 <div className="avatar-wrap">
-                  <Avatar id={avatarId} fallback={fullName} size={84} />
+                  <Avatar id={avatarId} fallback={fullName} size={104} />
                 </div>
                 <h1 className="neon-title" style={{
                   fontFamily: "'Oswald', sans-serif",

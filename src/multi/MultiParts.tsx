@@ -5,6 +5,7 @@ import type { RoomApi } from './useRoom';
 import type { RoomSnapshot } from './types';
 import { Standings } from './MultiRoundResults';
 import { rondaLabel } from './players';
+import { Avatar } from '../profile/avatars';
 import { secondsUntil } from './clock';
 import { achievementIcon } from '../profile/achievementIcons';
 import { gameName } from '../games/gameIcons';
@@ -25,6 +26,7 @@ export function Scoreboard({ state, extra }: { state: RoomSnapshot; extra?: (use
           background: 'rgba(4,20,11,0.6)', fontSize: '12px', opacity: p.left ? 0.4 : 1,
         }}>
           <span className="dot" style={{ background: p.connected ? '#39ff8c' : '#f87171', width: 6, height: 6 }} />
+          <Avatar id={p.avatarId} fallback={p.username} size={20} />
           {p.userId === state.me ? 'Vos' : p.username}
           <strong style={{ color: '#39ff8c', fontFamily: "'Oswald', sans-serif" }}>{p.score}</strong>
           {extra?.(p.userId)}

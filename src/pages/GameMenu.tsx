@@ -3,6 +3,7 @@ import { Navigate, useNavigate, useParams } from 'react-router-dom';
 import { Bot, Home, KeyRound, Globe } from 'lucide-react';
 import api from '../api/axios';
 import BackButton from '../components/BackButton';
+import { Avatar } from '../profile/avatars';
 import { GAME_ICONS, gameName } from '../games/gameIcons';
 import { crearSalaPath, isMultiGame, MULTI_CONFIG, publicaPath } from '../games/multiConfig';
 
@@ -21,7 +22,7 @@ function Menu({ game }: { game: keyof typeof MULTI_CONFIG }) {
   const [entered, setEntered] = useState(false);
   const [showJoinInput, setShowJoinInput] = useState(false);
   const [roomCode, setRoomCode] = useState('');
-  const [userInfo, setUserInfo] = useState<{ name: string; username: string; avatarUrl: string | null } | null>(null);
+  const [userInfo, setUserInfo] = useState<{ name: string; username: string; avatarId: string | null } | null>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -38,7 +39,7 @@ function Menu({ game }: { game: keyof typeof MULTI_CONFIG }) {
         setUserInfo({
           name,
           username: data.username,
-          avatarUrl: data.profile?.avatar_url || null,
+          avatarId: data.profile?.avatar_id ?? null,
         });
       })
       .catch(() => {});
@@ -372,17 +373,7 @@ function Menu({ game }: { game: keyof typeof MULTI_CONFIG }) {
             animation: entered ? 'cornerPop 0.5s cubic-bezier(0.34,1.56,0.64,1) 0.2s both' : 'none',
           }}
         >
-          <span className="profile-avatar">
-            {userInfo?.avatarUrl ? (
-              <img
-                src={userInfo.avatarUrl}
-                alt={userInfo.username}
-                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-              />
-            ) : (
-              (userInfo?.name?.charAt(0) || '?').toUpperCase()
-            )}
-          </span>
+          <Avatar id={userInfo?.avatarId} fallback={userInfo?.name || userInfo?.username || '?'} size={32} />
           <span className="profile-corner-label">Mi perfil</span>
         </button>
 

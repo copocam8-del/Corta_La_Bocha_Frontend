@@ -133,7 +133,18 @@ src/
   - La fila de la máquina muestra un lápiz cuando ya escribió (según `aiPlan`); sus respuestas se ven al final.
   - Errores de `finish`: 409 ya terminada, 410 venció (llegó muy tarde: cuenta como perdida), 400 se muestra el
     mensaje del servidor.
-- Perfil (`pages/Profile.tsx`): avatar del set propio (`profile/avatarData.ts`, mismos ids que el backend),
+- Avatares (`profile/avatars.tsx` → `<Avatar id size>` y `<AvatarPicker>`): los clásicos (íconos, `profile/avatarData.ts`)
+  y los **hinchas de clubes** (`profile/hinchas.ts` = datos de cada club; `profile/Hincha.tsx` = el personaje en SVG).
+  - El hincha es un personaje PROPIO armado en código: piluso, camiseta, short, medias y zapatillas sobre fondo liso. Cambia
+    según el club: diseño de camiseta (`lisa`, `rayas`, `aros`, `franja`, `banda`, `mitades`, `v`) y colores. Pose (4),
+    cara (3) y tono de piel (4) salen del id (`varianteDe`), así no son todos iguales.
+  - **Prohibido** en el dibujo: texto, nombres de clubes, escudos o formas de escudo, logos, sponsors y marcas. El nombre
+    del club va sólo como texto debajo de la miniatura en el selector. Los tests lo controlan (`avatars.test.tsx`).
+  - Chiquito (`size` < 48: ranking, salas, marcador) se encuadra de la cintura para arriba; grande, de cuerpo entero.
+  - Para agregar un club: sumalo en `hinchas.ts` (orden alfabético por nombre) y su id en `CLUB_AVATAR_IDS` del backend.
+  - Se muestran en el perfil (grande), el ranking (podio y filas), el lobby de las salas, el marcador de la partida y el
+    menú de cada juego.
+- Perfil (`pages/Profile.tsx`): avatar del set propio (clásicos o hinchas, mismos ids que el backend),
   equipo/selección/jugador favorito, bio, estadísticas y puesto en el ranking (`api/profile.ts`).
 - Ranking (`pages/GlobalRanking.tsx`): pestañas Global / Semanal / Mensual / ELO (`GET /users/ranking?period=…`) y
   "Tu posición" aunque no estés en el top (`GET /users/me/ranking?period=…`). El perfil muestra ELO y puesto en
