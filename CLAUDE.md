@@ -162,6 +162,9 @@ src/
     cambia ni se borra (los usuarios lo pueden tener elegido).
   - Se muestran en el perfil (grande), el ranking (podio y filas), el lobby de las salas, el marcador de la partida y el
     menú de cada juego.
+- Perfil → "Editar perfil": Nombre y Apellido (arriba de Nombre de usuario) se validan antes de enviar con
+  `validateProfileNames` de `auth/rules.ts` (obligatorios, hasta `NAME_MAX` = 50, igual que el registro). Al guardar se
+  actualiza el nombre de arriba y el `name` de localStorage (es el `first_name`, como en el login).
 - Perfil (`pages/Profile.tsx`): avatar del set propio (clásicos o hinchas, mismos ids que el backend),
   equipo/selección/jugador favorito, bio, estadísticas y puesto en el ranking (`api/profile.ts`).
 - Ranking (`pages/GlobalRanking.tsx`): pestañas Global / Semanal / Mensual / ELO (`GET /users/ranking?period=…`) y

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { maxBirthDate, validateLogin, validateRegister, type RegisterForm } from './rules';
+import { maxBirthDate, NAME_MAX, validateLogin, validateProfileNames, validateRegister, type RegisterForm } from './rules';
 
 const hoy = new Date(Date.UTC(2026, 9, 8));
 
@@ -61,6 +61,23 @@ describe('validateRegister', () => {
 
   it('rechaza un email mal escrito', () => {
     expect(validateRegister({ ...valido, email: 'leo@mail' }, hoy).email).toBe('El email no es válido');
+  });
+});
+
+describe('validateProfileNames (Editar perfil)', () => {
+  it('nombre y apellido correctos no tienen errores', () => {
+    expect(validateProfileNames('Lionel', 'Messi')).toEqual({});
+    expect(validateProfileNames('x'.repeat(NAME_MAX), 'y'.repeat(NAME_MAX))).toEqual({});
+  });
+
+  it('no pueden quedar vacíos (ni con sólo espacios)', () => {
+    expect(validateProfileNames('', '   ')).toEqual({ first_name: 'Ingresá tu nombre', last_name: 'Ingresá tu apellido' });
+  });
+
+  it('hasta 50 caracteres, como en el registro', () => {
+    expect(NAME_MAX).toBe(50);
+    expect(validateProfileNames('x'.repeat(51), 'Messi')).toEqual({ first_name: 'El nombre puede tener hasta 50 caracteres' });
+    expect(validateRegister({ ...valido, lastName: 'y'.repeat(51) }, hoy)).toEqual({ lastName: 'El apellido puede tener hasta 50 caracteres' });
   });
 });
 
