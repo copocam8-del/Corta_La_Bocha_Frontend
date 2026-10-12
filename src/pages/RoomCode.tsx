@@ -2,21 +2,14 @@ import { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Copy, Share2, ChevronRight, Check } from 'lucide-react';
 
-function generateCode(): string {
-  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-  return Array.from({ length: 6 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
-}
-
+// Muestra el código de la sala que creó el servidor, para compartirlo
 export default function RoomCode() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { tematica, dificultad, tiempo } = (location.state || {}) as {
-    tematica: string; dificultad: string; tiempo: number;
-  };
+  const { code } = (location.state || {}) as { code?: string };
 
   const [entered, setEntered] = useState(false);
   const [copied, setCopied]   = useState(false);
-  const [code] = useState(generateCode);
 
   useEffect(() => {
     const t = setTimeout(() => setEntered(true), 80);
@@ -36,8 +29,10 @@ export default function RoomCode() {
     []
   );
 
+  const link = `${window.location.origin}/room/${code}`;
+
   const handleCopy = () => {
-    navigator.clipboard.writeText(code).then(() => {
+    navigator.clipboard.writeText(code ?? '').then(() => {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     });
@@ -46,22 +41,22 @@ export default function RoomCode() {
   const handleShare = () => {
     if (navigator.share) {
       navigator.share({
-        title: 'Tutti Frutti Fútbol',
+        title: 'Corta La Bocha',
         text: `¡Sumate a mi sala! Código: ${code}`,
-        url: `${window.location.origin}/join?code=${code}`,
+        url: link,
       });
     } else {
-      navigator.clipboard.writeText(`${window.location.origin}/join?code=${code}`);
+      navigator.clipboard.writeText(link);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     }
   };
 
   const handleContinuar = () => {
-    navigate(`/room/${code}`, { state: { tematica, dificultad, tiempo, code, isHost: true } });
+    navigate(`/room/${code}`);
   };
 
-  if (!tematica) { navigate('/lobby'); return null; }
+  if (!code) { navigate('/lobby'); return null; }
 
   return (
     <>
@@ -333,7 +328,7 @@ export default function RoomCode() {
               <div style={{
                 display: 'flex', gap: '8px', justifyContent: 'center', marginTop: '12px', flexWrap: 'wrap',
               }}>
-                {[tematica.replace('_', ' '), dificultad, `${tiempo}s`].map(tag => (
+                {['Compartí este código', '2 a 8 jugadores'].map(tag => (
                   <span key={tag} style={{
                     fontFamily: "'Oswald', sans-serif",
                     fontSize: '10px', letterSpacing: '1.5px',

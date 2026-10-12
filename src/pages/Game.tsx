@@ -4,6 +4,8 @@ import { Bot, PenLine, Hourglass, StopCircle, Timer, Trophy, Handshake, Skull, F
 import { finishQuickMatch, startQuickMatch, type QuickMatch, type QuickMatchResult } from '../api/soloMatch';
 import { achievementIcon } from '../profile/achievementIcons';
 import RoundResults from '../game/RoundResults';
+import { missingCategories, secondsLeft } from '../game/round';
+import AdSlot from '../ads/AdSlot';
 
 // La partida se decide en el servidor: él sortea la letra, arma las respuestas de la máquina
 // (según la dificultad) y al final valida tus respuestas, calcula el resultado y actualiza
@@ -24,6 +26,9 @@ export default function Game() {
   const [iaRespuestas, setIaRespuestas] = useState<Record<string, string>>({});
   const iaBuildRef = useRef<Record<string, string>>({});
   const [finished, setFinished] = useState(false);
+  // Por qué terminó la ronda: el jugador cantó ¡Basta! o se acabó el reloj
+  const [finishReason, setFinishReason] = useState<'basta' | 'tiempo' | null>(null);
+  const deadlineRef = useRef(0);
   const [isLoading, setIsLoading] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
   const [resultado, setResultado] = useState<QuickMatchResult | null>(null);
@@ -62,41 +67,48 @@ export default function Game() {
       .catch(() => setStartError('No se pudo empezar la partida. Revisá tu conexión y probá de nuevo.'));
   }, [tematica, dificultad, tiempo]);
 
-  // 2) Cronómetro: arranca cuando llega la partida
+  const endRound = useCallback((reason: 'basta' | 'tiempo') => {
+    clearInterval(intervalRef.current!);
+    iaTimeoutRef.current.forEach(clearTimeout);
+    setIaRespuestas({ ...iaBuildRef.current });
+    setFinishReason(reason);
+    setFinished(true);
+  }, []);
+
+  // 2) Cronómetro: arranca cuando llega la partida. Se calcula contra la hora de fin (no restando
+  // de a 1 segundo) para que no se atrase si el navegador frena la pestaña en segundo plano.
   useEffect(() => {
     if (!match || finished) return;
-    intervalRef.current = setInterval(() => {
-      setTimeLeft(t => {
-        if (t <= 1) {
-          clearInterval(intervalRef.current!);
-          iaTimeoutRef.current.forEach(clearTimeout);
-          setIaRespuestas({ ...iaBuildRef.current });
-          setFinished(true);
-          return 0;
-        }
-        return t - 1;
-      });
-    }, 1000);
+    if (!deadlineRef.current) deadlineRef.current = Date.now() + match.roundSeconds * 1000;
+    const tick = () => {
+      const left = secondsLeft(deadlineRef.current, Date.now());
+      setTimeLeft(left);
+      if (left <= 0) endRound('tiempo');
+    };
+    tick();
+    intervalRef.current = setInterval(tick, 250);
     return () => clearInterval(intervalRef.current!);
-  }, [match, finished]);
+  }, [match, finished, endRound]);
 
-  // 3) La máquina "escribe" según el plan que mandó el servidor
+  // 3) La máquina "escribe" según el plan que mandó el servidor (se ve el lápiz en su casilla)
   useEffect(() => {
     if (!match || finished) return;
     const timeouts = match.aiPlan
       .filter(item => item.answer)
       .map(item => setTimeout(() => {
         iaBuildRef.current = { ...iaBuildRef.current, [item.category]: item.answer! };
+        setIaRespuestas({ ...iaBuildRef.current });
       }, item.delayMs));
     iaTimeoutRef.current = timeouts;
     return () => timeouts.forEach(clearTimeout);
   }, [match, finished]);
 
+  // Como en el juego de verdad: ¡Basta! sólo con todas las categorías completas
+  const faltan = missingCategories(categorias, respuestas).length;
+
   const handleBasta = () => {
-    clearInterval(intervalRef.current!);
-    iaTimeoutRef.current.forEach(clearTimeout);
-    setIaRespuestas({ ...iaBuildRef.current });
-    setFinished(true);
+    if (faltan > 0) return;
+    endRound('basta');
   };
 
   // 4) Al terminar, el servidor valida y decide el resultado oficial
@@ -115,8 +127,11 @@ export default function Game() {
       })
       .catch(err => {
         const status = err?.response?.status;
+        const serverMessage = err?.response?.data?.message;
         setApiError(status === 409
           ? 'Esta partida ya se había terminado.'
+          : (status === 400 || status === 410) && typeof serverMessage === 'string'
+          ? serverMessage
           : 'No se pudo conectar con el servidor. Probá de nuevo.');
       })
       .finally(() => setIsLoading(false));
@@ -134,7 +149,8 @@ export default function Game() {
     setRespuestas(r => ({ ...r, [cat]: val }));
   };
 
-  const timerPct = ((tiempo - timeLeft) / tiempo) * 100;
+  const duracion = match?.roundSeconds ?? tiempo;
+  const timerPct = ((duracion - timeLeft) / duracion) * 100;
   const timerColor = timeLeft > 30 ? '#39ff8c' : timeLeft > 10 ? '#fbbf24' : '#ef4444';
 
   if (!tematica) { navigate('/lobby'); return null; }
@@ -583,10 +599,15 @@ export default function Game() {
           </div>
 
           {/* BASTA */}
-          <button className="basta-btn" onClick={handleBasta} disabled={finished}>
+          <button className="basta-btn" onClick={handleBasta} disabled={finished || faltan > 0}>
             <StopCircle size={18} strokeWidth={2} />
             ¡BASTA!
           </button>
+          {!finished && faltan > 0 && (
+            <p style={{ textAlign: 'center', fontSize: '11px', color: 'rgba(180,255,205,0.55)', margin: '-4px 0 0' }}>
+              Para cantar ¡Basta! completá todas las categorías ({faltan === 1 ? 'falta 1' : `faltan ${faltan}`}).
+            </p>
+          )}
 
           {/* RESULTADO */}
           {finished && (() => {
@@ -610,16 +631,17 @@ export default function Game() {
                 WebkitBackdropFilter: 'blur(18px)',
                 boxShadow: '0 30px 60px -20px rgba(0,0,0,0.75)',
               }}>
-                {/* ¡TIEMPO! */}
-                <div style={{
+                {/* ¡BASTA! o ¡TIEMPO!, según cómo terminó la ronda */}
+                <div data-testid="fin-de-ronda" style={{
                   fontFamily: "'Oswald', sans-serif",
                   fontSize: '20px', fontWeight: 700,
                   color: '#eafff2', letterSpacing: '3px', margin: '0 0 12px',
                   display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
                   textTransform: 'uppercase',
                 }}>
-                  <Timer size={20} strokeWidth={2} color="#39ff8c" />
-                  ¡Tiempo!
+                  {finishReason === 'basta'
+                    ? <><StopCircle size={20} strokeWidth={2} color="#39ff8c" /> ¡Basta!</>
+                    : <><Timer size={20} strokeWidth={2} color="#39ff8c" /> ¡Tiempo!</>}
                 </div>
 
                 {/* Marcador */}
@@ -715,6 +737,13 @@ export default function Game() {
                   </div>
                 )}
 
+                {resultado?.elo && (
+                  <p data-testid="cambio-elo" style={{ fontSize: '12px', color: 'rgba(180,255,205,0.75)', margin: '-6px 0 12px' }}>
+                    ELO {resultado.elo.before} → <strong>{resultado.elo.after}</strong>{' '}
+                    ({resultado.elo.after >= resultado.elo.before ? '+' : ''}{resultado.elo.after - resultado.elo.before})
+                  </p>
+                )}
+
                 {resultado?.stats && resultado.stats.currentStreak > 1 && (
                   <p style={{
                     display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
@@ -754,6 +783,8 @@ export default function Game() {
                 }}>
                   Volver al Lobby
                 </button>
+                {/* Entre partidas: sólo cuando ya está el resultado (apagado salvo VITE_ADS_ENABLED=true) */}
+                {resultado && <AdSlot placement="resultado" />}
               </div>
             );
           })()}

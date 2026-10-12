@@ -1,0 +1,108 @@
+// Lo que manda el servidor por Socket.IO (copia de los tipos de src/rooms/game-engine.ts del backend).
+import type { AnswerStatus } from '../api/soloMatch';
+import type { NewAchievement } from '../api/achievements';
+
+export type Phase = 'lobby' | 'countdown' | 'playing' | 'collecting' | 'validating' | 'results' | 'finished' | 'closed';
+
+export interface Settings {
+  tematica: string;
+  rounds: number;
+  seconds: number;
+}
+
+export interface CellResult {
+  userId: string;
+  username: string;
+  answer: string | null;
+  status: AnswerStatus;
+  canonical: string | null;
+  reason: string;
+  points: number;
+}
+
+export interface RoundResult {
+  number: number;
+  letter: string;
+  bastaBy: string | null;
+  incomplete: boolean;
+  categories: { category: string; entries: CellResult[] }[];
+  roundPoints: Record<string, number>;
+}
+
+export interface Standing {
+  userId: string;
+  username: string;
+  points: number;
+  position: number;
+  won: boolean;
+  abandoned: boolean;
+}
+
+export interface RoomPlayer {
+  userId: string;
+  username: string;
+  avatarId: string | null;
+  connected: boolean;
+  left: boolean;
+  isHost: boolean;
+  score: number;
+}
+
+export interface RoomSnapshot {
+  code: string;
+  isPrivate: boolean;
+  me: string;
+  hostUserId: string | null;
+  phase: Phase;
+  settings: Settings;
+  minPlayers: number;
+  maxPlayers: number;
+  serverNow: number;
+  players: RoomPlayer[];
+  round: null | {
+    number: number;
+    total: number;
+    letter: string | null;
+    categories: string[];
+    endsAt: number | null;
+    bastaBy: string | null;
+    myAnswers: Record<string, string>;
+  };
+  nextAt: number | null;
+  lastResult: RoundResult | null;
+  history: RoundResult[];
+  final: null | {
+    reason: 'completed' | 'not_enough_players';
+    countsForStats: boolean;
+    standings: Standing[];
+    newAchievements: NewAchievement[];
+  };
+  notice: string | null;
+}
+
+export interface QueueState {
+  tematica: string;
+  size: 'pocos' | 'muchos';
+  min: number;
+  max: number;
+  players: string[];
+  startsAt: number | null;
+  serverNow: number;
+}
+
+export type Ack = { ok: true; code?: string } | { ok: false; error: string };
+
+// Opciones (las mismas que valida el servidor)
+export const TEMATICAS_MULTI = [
+  { id: 'general', label: 'General' },
+  { id: 'liga_argentina', label: 'Liga Argentina' },
+  { id: 'mundial', label: 'Mundial' },
+  { id: 'champions', label: 'Champions' },
+  { id: 'libertadores', label: 'Libertadores' },
+];
+export const RONDAS_MULTI = [1, 3, 5];
+export const TIEMPOS_MULTI = [30, 45, 60, 90, 120];
+// Partidas públicas (igual que en el backend: src/rooms/matchmaking.ts)
+export const PUBLIC_ROUNDS = 3;
+export const PUBLIC_SECONDS = 60;
+export const temaLabel =(id: string) => TEMATICAS_MULTI.find((t) => t.id === id)?.label ?? id;

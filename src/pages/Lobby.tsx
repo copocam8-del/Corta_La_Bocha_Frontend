@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Bot, Home, KeyRound, Globe, Trophy } from 'lucide-react';
+import { Bot, Home, KeyRound, Globe, Trophy, LayoutGrid } from 'lucide-react';
 import api from '../api/axios';
 
 export default function Lobby() {
@@ -472,8 +472,8 @@ export default function Lobby() {
                 />
                 <button
                   className="join-btn"
-                  disabled={roomCode.length < 4}
-                  onClick={() => navigate(`/room/${roomCode}`, { state: { isHost: false, code: roomCode } })}
+                  disabled={roomCode.trim().length < 6}
+                  onClick={() => navigate(`/room/${roomCode.trim()}`)}
                 >
                   Unirse a la sala
                 </button>
@@ -497,6 +497,14 @@ export default function Lobby() {
               <div>
                 <div style={{ fontWeight: 600, fontSize: '13px' }}>Ranking Global</div>
                 <div style={{ fontSize: '11px', color: 'rgba(180,255,205,0.5)', marginTop: '1px' }}>Mirá las posiciones de los mejores directores técnicos</div>
+              </div>
+            </button>
+
+            <button className="mode-card" onClick={() => navigate('/dashboard')}>
+              <span className="mode-card-icon"><LayoutGrid size={24} strokeWidth={1.5} /></span>
+              <div>
+                <div style={{ fontWeight: 600, fontSize: '13px' }}>Otros juegos</div>
+                <div style={{ fontSize: '11px', color: 'rgba(180,255,205,0.5)', marginTop: '1px' }}>Volvé a la pantalla de selección de juegos</div>
               </div>
             </button>
 

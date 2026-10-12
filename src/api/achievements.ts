@@ -8,6 +8,7 @@ export interface Achievement {
   description: string;
   unlocked: boolean;
   unlockedAt: string | null;
+  game?: string | null; // null = logro general; si no, el id del juego
 }
 
 // Logro recién desbloqueado (viene en la respuesta al terminar una partida)

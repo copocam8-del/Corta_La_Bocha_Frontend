@@ -422,6 +422,10 @@ export default function Login() {
               </div>
               <FieldError id="login-password-error" message={fieldErrors.password} />
 
+              <Link to="/olvide-contrasena" data-testid="olvide" style={{
+                alignSelf: 'flex-end', fontSize: '12px', color: 'rgba(180,255,205,0.7)', textDecoration: 'underline', textUnderlineOffset: '2px',
+              }}>¿Olvidaste tu contraseña?</Link>
+
               <button type="submit" className="submit-btn" disabled={loading}>
                 {loading ? 'Entrando...' : (<>Entrar <ArrowRight size={16} strokeWidth={2} /></>)}
               </button>

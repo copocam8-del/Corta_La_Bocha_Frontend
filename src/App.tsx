@@ -1,6 +1,8 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useParams } from 'react-router-dom';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import OlvideContrasena from './pages/OlvideContrasena';
+import RestablecerContrasena from './pages/RestablecerContrasena';
 import Dashboard from './pages/Dashboard';
 import Profile from './pages/Profile';
 import Welcome from './pages/Welcome';
@@ -10,14 +12,24 @@ import Game from './pages/Game';
 import CreateRoom from './pages/CreateRoom';
 import RoomCode from './pages/RoomCode';
 import Room from './pages/Room';
-import GameMulti from './pages/GameMulti';
 import PublicSetup from './pages/PublicSetup';
 import PublicQueue from './pages/PublicQueue';
 import GlobalRanking from './pages/GlobalRanking';
+import Ahorcado from './pages/Ahorcado';
+import Trivia from './pages/Trivia';
+import DesafioDiario from './pages/DesafioDiario';
+import SopaDeLetras from './pages/SopaDeLetras';
+import Memotest from './pages/Memotest';
 import ProtectedRoute from './components/ProtectedRoute';
 import Privacidad from './pages/legal/Privacidad';
 import Terminos from './pages/legal/Terminos';
 import Cookies from './pages/legal/Cookies';
+
+// La partida multijugador vive en /room/:code (lobby y juego en la misma pantalla)
+function RedirectToRoom() {
+  const { code } = useParams();
+  return <Navigate to={`/room/${code}`} replace />;
+}
 
 export default function App() {
   return (
@@ -26,6 +38,8 @@ export default function App() {
         <Route path="/" element={<Navigate to="/login" />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/olvide-contrasena" element={<OlvideContrasena />} />
+        <Route path="/restablecer-contrasena" element={<RestablecerContrasena />} />
         {/* Páginas legales: públicas, sin necesidad de iniciar sesión */}
         <Route path="/privacidad" element={<Privacidad />} />
         <Route path="/terminos" element={<Terminos />} />
@@ -57,12 +71,20 @@ export default function App() {
         <Route path="/game-setup" element={<GameSetup />} />
         <Route path="/lobby" element={<Lobby />} />
         <Route path="/game" element={<ProtectedRoute><Game /></ProtectedRoute>} />
-        <Route path="/create-room" element={<CreateRoom />} />
-        <Route path="/room-code" element={<RoomCode />} />
-        <Route path="/room/:code" element={<Room />} />
-        <Route path="/game-multi" element={<GameMulti />} />
-        <Route path="/public-setup" element={<PublicSetup />} />
-        <Route path="/public-queue" element={<PublicQueue />} />
+        {/* Multijugador: necesita sesión (el socket se autentica con el token) */}
+        <Route path="/create-room" element={<ProtectedRoute><CreateRoom /></ProtectedRoute>} />
+        <Route path="/room-code" element={<ProtectedRoute><RoomCode /></ProtectedRoute>} />
+        <Route path="/room/:code" element={<ProtectedRoute><Room /></ProtectedRoute>} />
+        <Route path="/game-multi/:code" element={<RedirectToRoom />} />
+        <Route path="/game-multi" element={<Navigate to="/lobby" replace />} />
+        <Route path="/public-setup" element={<ProtectedRoute><PublicSetup /></ProtectedRoute>} />
+        <Route path="/public-queue" element={<ProtectedRoute><PublicQueue /></ProtectedRoute>} />
+        {/* Juegos */}
+        <Route path="/ahorcado" element={<ProtectedRoute><Ahorcado /></ProtectedRoute>} />
+        <Route path="/trivia" element={<ProtectedRoute><Trivia /></ProtectedRoute>} />
+        <Route path="/desafio-diario" element={<ProtectedRoute><DesafioDiario /></ProtectedRoute>} />
+        <Route path="/sopa-de-letras" element={<ProtectedRoute><SopaDeLetras /></ProtectedRoute>} />
+        <Route path="/memotest" element={<ProtectedRoute><Memotest /></ProtectedRoute>} />
         <Route path="/global-ranking" element={<ProtectedRoute><GlobalRanking /></ProtectedRoute>} />
         <Route path="/ranking" element={<ProtectedRoute><GlobalRanking /></ProtectedRoute>} />
       </Routes>
