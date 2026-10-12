@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Trophy, Medal, ArrowLeft, Shield, Star } from 'lucide-react';
-import { getRanking, winRate, type RankingRow } from '../api/profile';
+import { getMyRanking, getRanking, winRate, type MyRanking, type RankingPeriod, type RankingRow } from '../api/profile';
 import { getTokenUserId } from '../auth/session';
 
 interface RankingPlayer {
@@ -13,15 +13,23 @@ interface RankingPlayer {
   winRate: string;
 }
 
-// Adapta lo que devuelve GET /users/ranking a lo que dibuja esta pantalla
-const toPlayer = (r: RankingRow): RankingPlayer => ({
+// Adapta lo que devuelve GET /users/ranking a lo que dibuja esta pantalla. En la pestaña ELO,
+// "points" es el ELO.
+const toPlayer = (period: RankingPeriod) => (r: RankingRow): RankingPlayer => ({
   id: r.position,
   userId: r.userId,
   name: r.username,
-  points: r.totalPoints,
+  points: period === 'elo' ? r.elo : r.totalPoints,
   matches: r.matchesPlayed,
   winRate: `${winRate(r.matchesPlayed, r.matchesWon)}%`,
 });
+
+const TABS: { id: RankingPeriod; label: string; desc: string }[] = [
+  { id: 'global', label: 'Global', desc: 'Puntos de todas tus partidas' },
+  { id: 'semanal', label: 'Semanal', desc: 'Puntos desde el lunes (hora argentina)' },
+  { id: 'mensual', label: 'Mensual', desc: 'Puntos desde el día 1 del mes (hora argentina)' },
+  { id: 'elo', label: 'ELO', desc: 'Sube si le ganás a rivales fuertes, baja si perdés con débiles' },
+];
 
 export default function GlobalRanking() {
   const navigate = useNavigate();
@@ -45,15 +53,32 @@ export default function GlobalRanking() {
     []
   );
 
+  const [period, setPeriod] = useState<RankingPeriod>('global');
   const [ranking, setRanking] = useState<RankingPlayer[] | null>(null);
+  const [mine, setMine] = useState<MyRanking | null>(null);
   const [rankingError, setRankingError] = useState(false);
   const myUserId = useMemo(() => getTokenUserId(), []);
+  const unit = period === 'elo' ? 'ELO' : 'pts';
+
+  const changePeriod = (p: RankingPeriod) => {
+    if (p === period) return;
+    setPeriod(p);
+    setRanking(null);
+    setMine(null);
+    setRankingError(false);
+  };
 
   useEffect(() => {
-    getRanking()
-      .then(rows => setRanking(rows.map(toPlayer)))
-      .catch(() => setRankingError(true));
-  }, []);
+    let alive = true;
+    Promise.all([getRanking(period), getMyRanking(period)])
+      .then(([rows, me]) => {
+        if (!alive) return;
+        setRanking(rows.map(toPlayer(period)));
+        setMine(me);
+      })
+      .catch(() => alive && setRankingError(true));
+    return () => { alive = false; };
+  }, [period]);
 
   const podio = (ranking ?? []).slice(0, 3);
   const restoDelTop = (ranking ?? []).slice(3);
@@ -206,12 +231,44 @@ export default function GlobalRanking() {
               color: '#eafff2', letterSpacing: '4px', textTransform: 'uppercase',
               textShadow: '0 0 20px rgba(57,255,140,0.4)', display: 'inline-flex', alignItems: 'center', gap: '10px'
             }}>
-              <Trophy size={32} color="#fbbf24" strokeWidth={2} /> RANKING GLOBAL
+              <Trophy size={32} color="#fbbf24" strokeWidth={2} /> RANKING
             </h1>
             <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '12px', marginTop: '4px', letterSpacing: '1px' }}>
-              Los mejores directores técnicos del juego de respuestas futboleras
+              {TABS.find(t => t.id === period)!.desc}
             </p>
           </div>
+
+          {/* Pestañas */}
+          <div role="tablist" style={{ display: 'flex', gap: '6px' }}>
+            {TABS.map(t => (
+              <button key={t.id} role="tab" aria-selected={period === t.id} onClick={() => changePeriod(t.id)} style={{
+                flex: 1, padding: '8px 4px', borderRadius: '8px', cursor: 'pointer',
+                fontFamily: "'Oswald', sans-serif", fontSize: '12px', fontWeight: 600, letterSpacing: '1.5px', textTransform: 'uppercase',
+                border: `1px solid ${period === t.id ? '#39ff8c' : 'rgba(57,255,140,0.2)'}`,
+                background: period === t.id ? 'rgba(57,255,140,0.12)' : 'rgba(57,255,140,0.03)',
+                color: period === t.id ? '#39ff8c' : 'rgba(180,255,205,0.55)',
+              }}>{t.label}</button>
+            ))}
+          </div>
+
+          {/* Mi posición (aunque no esté en el top) */}
+          {mine && (
+            <div data-testid="mi-posicion" style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px',
+              padding: '10px 14px', borderRadius: '12px', background: 'rgba(57,255,140,0.06)', border: '1px solid rgba(57,255,140,0.35)',
+            }}>
+              <span style={{ fontFamily: "'Oswald', sans-serif", fontSize: '13px', letterSpacing: '1px', color: '#7CFFB2', textTransform: 'uppercase' }}>
+                Tu posición
+              </span>
+              <span style={{ fontFamily: "'Oswald', sans-serif", fontSize: '15px', color: '#eafff2' }}>
+                {mine.position
+                  ? `${mine.position}° de ${mine.totalPlayers} · ${(period === 'elo' ? mine.elo : mine.totalPoints).toLocaleString()} ${unit}`
+                  : period === 'elo'
+                  ? `Sin ranking todavía (ELO ${mine.elo})`
+                  : 'Todavía no jugaste en este período'}
+              </span>
+            </div>
+          )}
 
           <div style={{
             display: 'grid', gridTemplateColumns: '1fr 1.1fr 1fr', gap: '12px', 
@@ -226,7 +283,7 @@ export default function GlobalRanking() {
               }}>
                 <Medal size={24} color={getMedalColor(2)} />
                 <p style={{ fontFamily: "'Oswald', sans-serif", fontSize: '14px', color: '#eafff2', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', width: '100%', marginTop: '6px' }}>{podio[1].name}</p>
-                <p style={{ fontFamily: "'Oswald', sans-serif", fontSize: '16px', fontWeight: 700, color: '#cbd5e1', marginTop: '2px' }}>{podio[1].points.toLocaleString()} pts</p>
+                <p style={{ fontFamily: "'Oswald', sans-serif", fontSize: '16px', fontWeight: 700, color: '#cbd5e1', marginTop: '2px' }}>{podio[1].points.toLocaleString()} {unit}</p>
                 <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.3)' }}>{podio[1].winRate} WR</span>
               </div>
             )}
@@ -240,7 +297,7 @@ export default function GlobalRanking() {
               }}>
                 <Trophy size={32} color={getMedalColor(1)} style={{ filter: 'drop-shadow(0 0 8px #fbbf24)' }} />
                 <p style={{ fontFamily: "'Oswald', sans-serif", fontSize: '16px', fontWeight: 600, color: '#fff', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', width: '100%', marginTop: '6px' }}>{podio[0].name}</p>
-                <p style={{ fontFamily: "'Oswald', sans-serif", fontSize: '20px', fontWeight: 700, color: '#fbbf24', marginTop: '2px' }}>{podio[0].points.toLocaleString()} pts</p>
+                <p style={{ fontFamily: "'Oswald', sans-serif", fontSize: '20px', fontWeight: 700, color: '#fbbf24', marginTop: '2px' }}>{podio[0].points.toLocaleString()} {unit}</p>
                 <span style={{ fontSize: '10px', color: 'rgba(251,191,36,0.6)', fontWeight: 600, letterSpacing: '1px' }}>{podio[0].winRate} VICTORIAS</span>
               </div>
             )}
@@ -253,7 +310,7 @@ export default function GlobalRanking() {
               }}>
                 <Medal size={24} color={getMedalColor(3)} />
                 <p style={{ fontFamily: "'Oswald', sans-serif", fontSize: '14px', color: '#eafff2', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', width: '100%', marginTop: '6px' }}>{podio[2].name}</p>
-                <p style={{ fontFamily: "'Oswald', sans-serif", fontSize: '16px', fontWeight: 700, color: '#b45309', marginTop: '2px' }}>{podio[2].points.toLocaleString()} pts</p>
+                <p style={{ fontFamily: "'Oswald', sans-serif", fontSize: '16px', fontWeight: 700, color: '#b45309', marginTop: '2px' }}>{podio[2].points.toLocaleString()} {unit}</p>
                 <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.3)' }}>{podio[2].winRate} WR</span>
               </div>
             )}
@@ -288,7 +345,7 @@ export default function GlobalRanking() {
               <div style={{ flex: 1 }}>DT / Entrenador</div>
               <div style={{ width: '80px', textAlign: 'center' }}>Partidas</div>
               <div style={{ width: '60px', textAlign: 'center' }}>Efect.</div>
-              <div style={{ width: '100px', textAlign: 'right' }}>Puntos</div>
+              <div style={{ width: '100px', textAlign: 'right' }}>{period === 'elo' ? 'ELO' : 'Puntos'}</div>
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '340px', overflowY: 'auto', paddingRight: '4px' }}>

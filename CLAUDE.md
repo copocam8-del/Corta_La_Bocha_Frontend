@@ -77,7 +77,9 @@ src/
     mensaje del servidor.
 - Perfil (`pages/Profile.tsx`): avatar del set propio (`profile/avatarData.ts`, mismos ids que el backend),
   equipo/selección/jugador favorito, bio, estadísticas y puesto en el ranking (`api/profile.ts`).
-- Ranking (`pages/GlobalRanking.tsx`): datos reales de `GET /users/ranking`.
+- Ranking (`pages/GlobalRanking.tsx`): pestañas Global / Semanal / Mensual / ELO (`GET /users/ranking?period=…`) y
+  "Tu posición" aunque no estés en el top (`GET /users/me/ranking?period=…`). El perfil muestra ELO y puesto en
+  las ligas semanal y mensual; la partida solo muestra cuánto cambió el ELO.
 - **Multijugador real** (`src/multi/`): una sola conexión Socket.IO (`multi/socket.ts`, autenticada con el token;
   URL `VITE_WS_URL` o `VITE_API_URL`). `useRoom(code)` entra a la sala (y vuelve a entrar si se corta), recibe
   `room:state` y expone las acciones. El servidor manda en todo; el frontend sólo muestra y manda lo que se escribe

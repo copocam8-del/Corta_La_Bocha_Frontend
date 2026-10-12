@@ -14,6 +14,8 @@ export interface ProfileStats {
   total_points: number;
   best_streak: number;
   current_streak: number;
+  elo?: number; // arranca en 1000
+  elo_games?: number; // partidas que movieron el ELO
 }
 
 export interface MyProfile {
@@ -37,10 +39,19 @@ export interface ProfileUpdate {
   favorite_player?: string;
 }
 
+// global = puntos totales · semanal/mensual = partidas del período (hora argentina) · elo = ELO
+export type RankingPeriod = 'global' | 'semanal' | 'mensual' | 'elo';
+
 export interface MyRanking {
-  position: number;
+  period: RankingPeriod;
+  from: string | null; // desde cuándo cuenta el período
+  position: number | null; // null = todavía no jugó en este período
   totalPlayers: number;
   totalPoints: number;
+  matchesPlayed: number;
+  matchesWon: number;
+  elo: number;
+  eloGames: number;
 }
 
 export interface RankingRow {
@@ -53,11 +64,14 @@ export interface RankingRow {
   matchesPlayed: number;
   matchesWon: number;
   bestStreak: number;
+  elo: number;
 }
 
 export const getMyProfile = () => api.get<MyProfile>('/users/me').then((r) => r.data);
 export const updateMyProfile = (data: ProfileUpdate) => api.put<MyProfile>('/users/me', data).then((r) => r.data);
-export const getMyRanking = () => api.get<MyRanking>('/users/me/ranking').then((r) => r.data);
-export const getRanking = () => api.get<RankingRow[]>('/users/ranking').then((r) => r.data);
+export const getMyRanking = (period: RankingPeriod = 'global') =>
+  api.get<MyRanking>('/users/me/ranking', { params: { period } }).then((r) => r.data);
+export const getRanking = (period: RankingPeriod = 'global') =>
+  api.get<RankingRow[]>('/users/ranking', { params: { period } }).then((r) => r.data);
 
 export const winRate = (played: number, won: number) => (played > 0 ? Math.round((won / played) * 100) : 0);

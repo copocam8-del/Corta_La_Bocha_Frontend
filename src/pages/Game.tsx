@@ -736,6 +736,13 @@ export default function Game() {
                   </div>
                 )}
 
+                {resultado?.elo && (
+                  <p data-testid="cambio-elo" style={{ fontSize: '12px', color: 'rgba(180,255,205,0.75)', margin: '-6px 0 12px' }}>
+                    ELO {resultado.elo.before} → <strong>{resultado.elo.after}</strong>{' '}
+                    ({resultado.elo.after >= resultado.elo.before ? '+' : ''}{resultado.elo.after - resultado.elo.before})
+                  </p>
+                )}
+
                 {resultado?.stats && resultado.stats.currentStreak > 1 && (
                   <p style={{
                     display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',

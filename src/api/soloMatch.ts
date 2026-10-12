@@ -58,6 +58,8 @@ export interface QuickMatchResult {
     currentStreak: number;
     bestStreak: number;
   };
+  // ELO antes y después (null si la partida no contó)
+  elo?: { before: number; after: number } | null;
 }
 
 export const startQuickMatch = (data: { tematica: string; dificultad: string; tiempo: number }) =>

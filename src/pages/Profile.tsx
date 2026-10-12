@@ -15,6 +15,7 @@ import {
   Shirt,
   Globe2,
   Star,
+  TrendingUp,
 } from 'lucide-react';
 import { clearSession } from '../auth/session';
 import { parseAuthError } from '../auth/apiErrors';
@@ -35,12 +36,15 @@ import {
 const EMPTY_STATS = {
   avatar_id: null, bio: null, favorite_team: null, favorite_country: null, favorite_player: null,
   matches_played: 0, matches_won: 0, tournaments_won: 0, total_points: 0, best_streak: 0, current_streak: 0,
+  elo: 1000, elo_games: 0,
 };
 
 export default function Profile() {
   const [entered, setEntered] = useState(false);
   const [profile, setProfile] = useState<MyProfile | null>(null);
   const [ranking, setRanking] = useState<MyRanking | null>(null);
+  const [weekly, setWeekly] = useState<MyRanking | null>(null);
+  const [monthly, setMonthly] = useState<MyRanking | null>(null);
   const [achievements, setAchievements] = useState<Achievement[] | null>(null);
   const [editing, setEditing] = useState(false);
   const [username, setUsername] = useState('');
@@ -84,6 +88,8 @@ export default function Profile() {
       .catch(() => navigate('/login'));
     // El ranking es un extra: si falla, el perfil se muestra igual
     getMyRanking().then(setRanking).catch(() => setRanking(null));
+    getMyRanking('semanal').then(setWeekly).catch(() => setWeekly(null));
+    getMyRanking('mensual').then(setMonthly).catch(() => setMonthly(null));
     getMyAchievements().then(setAchievements).catch(() => setAchievements(null));
   }, [navigate]);
 
@@ -522,7 +528,7 @@ export default function Profile() {
                   }}>
                     <Medal size={16} color="#fde047" />
                     <span style={{ fontSize: '12px', color: '#fef9c3' }}>
-                      Puesto <strong style={{ fontFamily: "'Oswald', sans-serif", fontSize: '16px' }}>#{ranking.position}</strong>
+                      Puesto <strong style={{ fontFamily: "'Oswald', sans-serif", fontSize: '16px' }}>#{ranking.position ?? '—'}</strong>
                       {' '}de {ranking.totalPlayers} en el ranking global
                     </span>
                   </div>
@@ -563,7 +569,18 @@ export default function Profile() {
                     <span className="stat-value">{stats.best_streak}</span>
                     <span className="stat-label">Mejor racha</span>
                   </div>
+                  <div className="stat-box" data-testid="elo">
+                    <TrendingUp size={16} color="#39ff8c" />
+                    <span className="stat-value">{stats.elo ?? 1000}</span>
+                    <span className="stat-label">ELO</span>
+                  </div>
                 </div>
+                {(weekly || monthly) && (
+                  <p style={{ marginTop: '10px', fontSize: '12px', color: 'rgba(180,255,205,0.7)', textAlign: 'center' }}>
+                    Liga semanal: <strong>{weekly?.position ? `${weekly.position}° (${weekly.totalPoints} pts)` : 'sin partidas'}</strong>
+                    {' · '}Liga mensual: <strong>{monthly?.position ? `${monthly.position}° (${monthly.totalPoints} pts)` : 'sin partidas'}</strong>
+                  </p>
+                )}
                 {favorites.length > 0 && (
                   <div style={{ marginTop: '12px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
                     {favorites.map(({ Icon, label, value }) => (
