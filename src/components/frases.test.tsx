@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
 import FraseRotativa from './FraseRotativa';
-import { FRASE_MS, FRASES, siguienteFrase } from './frases';
+import { FRASE_MS, FRASES, fraseActual, fraseAlAzar, siguienteFrase } from './frases';
 
 describe('frases que rotan', () => {
   it('están las 13 frases, sin repetir', () => {
@@ -16,6 +16,16 @@ describe('frases que rotan', () => {
     expect(siguienteFrase(FRASES.length - 1)).toBe(0);
     expect(FRASE_MS).toBeGreaterThanOrEqual(3000);
     expect(FRASE_MS).toBeLessThanOrEqual(6000);
+  });
+
+  it('empieza por una al azar (siempre una que existe)', () => {
+    expect(fraseAlAzar(() => 0)).toBe(0);
+    expect(fraseAlAzar(() => 0.5)).toBe(6);
+    expect(fraseAlAzar(() => 0.999999)).toBe(FRASES.length - 1);
+    expect(fraseActual()).toBeGreaterThanOrEqual(0);
+    expect(fraseActual()).toBeLessThan(FRASES.length);
+    const salidas = new Set(Array.from({ length: 200 }, () => fraseAlAzar()));
+    expect(salidas.size).toBeGreaterThan(5); // no arranca siempre por la misma
   });
 
   it('muestra una frase con el estilo que se le pasa', () => {

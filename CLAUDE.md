@@ -68,7 +68,7 @@ src/
 
 - Arriba del título en Login, Register, el menú de cada juego y la configuración de Tutti Frutti solo ya no hay
   "Temporada 2025/2026": va `components/FraseRotativa.tsx`, que cambia de frase futbolera cada 4 s (`FRASE_MS`) con un
-  fundido. La lista está en `components/frases.ts`. Reserva el alto de dos renglones para que la pantalla no salte en
+  fundido, empezando por una al azar cada vez que se abre la app. La lista está en `components/frases.ts`. Reserva el alto de dos renglones para que la pantalla no salte en
   el celular. Un test controla que ninguna pantalla vuelva a decir "Temporada 20xx".
 
 ## Páginas legales
