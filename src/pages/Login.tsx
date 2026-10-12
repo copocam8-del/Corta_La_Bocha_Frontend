@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import api from '../api/axios';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
+import FraseRotativa from '../components/FraseRotativa';
 import { Mail, Lock, ArrowRight, ShieldCheck } from 'lucide-react';
 import FieldError from '../components/FieldError';
 import LegalFooter from '../components/LegalFooter';
@@ -296,10 +297,10 @@ export default function Login() {
             opacity: entered ? 1 : 0,
             animation: entered ? 'riseIn 0.6s ease both' : 'none',
           }}>
-            <p style={{
+            <FraseRotativa style={{
               fontSize: '11px', letterSpacing: '3px', fontWeight: 500,
               color: '#7CFFB2', textTransform: 'uppercase', marginBottom: '12px',
-            }}>Temporada 2025</p>
+            }} />
 
             <div
               className="ball-logo"
