@@ -50,37 +50,28 @@ const SECCION = {
   color: 'rgba(124,255,178,0.6)', margin: '4px 0 6px',
 } as const;
 
-function Opcion({ id, label, otros, selected, onChange, size, conNombre }: {
-  id: string; label: string; otros?: string[]; selected: boolean; onChange: (id: string) => void; size: number; conNombre?: boolean;
+// Una opción del selector: sólo la miniatura. El nombre (del club y de los otros clubes con la misma
+// camiseta) no se dibuja: va en title (al pasar el mouse) y en aria-label (lectores de pantalla).
+function Opcion({ id, label, otros, selected, onChange, size }: {
+  id: string; label: string; otros?: string[]; selected: boolean; onChange: (id: string) => void; size: number;
 }) {
+  const nombre = [label, ...(otros ?? [])].join(' · ');
   return (
     <button
       type="button"
       role="radio"
       aria-checked={selected}
-      title={[label, ...(otros ?? [])].join(' · ')}
+      aria-label={nombre}
+      title={nombre}
       onClick={() => onChange(id)}
       style={{
-        background: selected ? 'rgba(57,255,140,0.08)' : 'transparent', cursor: 'pointer', padding: '4px 2px',
-        borderRadius: conNombre ? '12px' : '50%', border: selected ? '2px solid #39ff8c' : '2px solid transparent',
+        background: 'transparent', cursor: 'pointer', padding: '3px', borderRadius: '50%',
+        border: selected ? '2px solid #39ff8c' : '2px solid transparent',
         boxShadow: selected ? '0 0 12px rgba(57,255,140,0.55)' : 'none',
-        display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', minWidth: 0,
+        display: 'flex', justifyContent: 'center', minWidth: 0,
       }}
     >
       <Avatar id={id} fallback={label} size={size} />
-      {/* El nombre del club va sólo acá, como texto debajo de la miniatura (nunca en el dibujo) */}
-      {conNombre && (
-        <span style={{
-          fontSize: '10px', lineHeight: 1.2, color: selected ? '#39ff8c' : 'rgba(225,255,236,0.8)', textAlign: 'center',
-          width: '100%', overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical',
-        }}>{label}</span>
-      )}
-      {/* Otros clubes con la misma camiseta */}
-      {conNombre && otros && otros.length > 0 && (
-        <span data-testid="otros-clubes" style={{
-          fontSize: '9px', lineHeight: 1.25, color: 'rgba(180,255,205,0.6)', textAlign: 'center', width: '100%',
-        }}>{otros.join(' · ')}</span>
-      )}
     </button>
   );
 }
@@ -115,11 +106,11 @@ export function AvatarPicker({ value, onChange }: { value: string | null; onChan
         />
       </label>
       <div data-testid="clubes" style={{
-        display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(76px, 1fr))', gap: '6px',
+        display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(68px, 1fr))', gap: '6px',
         maxHeight: '320px', overflowY: 'auto', paddingRight: '2px',
       }}>
         {clubes.map((h) => (
-          <Opcion key={h.id} id={h.id} label={h.club} otros={h.otros} selected={h.id === value} onChange={onChange} size={60} conNombre />
+          <Opcion key={h.id} id={h.id} label={h.club} otros={h.otros} selected={h.id === value} onChange={onChange} size={60} />
         ))}
         {clubes.length === 0 && (
           <p style={{ gridColumn: '1 / -1', fontSize: '12px', color: 'rgba(180,255,205,0.6)' }}>No encontramos ese club.</p>

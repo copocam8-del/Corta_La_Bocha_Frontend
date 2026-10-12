@@ -54,7 +54,7 @@ describe('avatares', () => {
   it('el selector marca el avatar elegido', () => {
     const html = renderToStaticMarkup(<AvatarPicker value="fuego" onChange={() => {}} />);
     expect(html.match(/aria-checked="true"/g)).toHaveLength(1);
-    expect(html).toContain('aria-checked="true" title="Fuego"');
+    expect(html).toContain('aria-checked="true" aria-label="Fuego" title="Fuego"');
   });
 });
 
@@ -176,10 +176,29 @@ describe('hinchas de clubes', () => {
     expect(html.match(/aria-checked="true"/g)).toHaveLength(1);
     expect(buscarHinchas('velez').map((h) => h.club)).toEqual(['Vélez Sarsfield']);
     expect(buscarHinchas('GIMNASIA').length).toBe(2); // La Plata y Mendoza (con Central Córdoba)
-    // Debajo de la miniatura, los otros clubes con la misma camiseta
-    expect(html).toContain('Instituto · Unión (Santa Fe) · Barracas Central');
-    expect(html).toContain('Huracán · Quilmes · All Boys');
+    // Los nombres (club y "otros") van en title y aria-label, para accesibilidad…
+    expect(html).toContain('aria-label="Estudiantes (La Plata) · Instituto · Unión (Santa Fe) · Barracas Central"');
+    expect(html).toContain('title="Real Madrid · Huracán · Quilmes · All Boys"');
     expect(buscarHinchas('').length).toBe(HINCHAS.length);
+  });
+});
+
+describe('selector de hinchas: sólo el avatar', () => {
+  it('no muestra el nombre del club ni los "otros" debajo de la miniatura (sólo el avatar)', () => {
+    const html = renderToStaticMarkup(<AvatarPicker value={null} onChange={() => {}} />);
+    const grilla = html.slice(html.lastIndexOf('<div', html.indexOf('data-testid="clubes"')));
+    const textoVisible = grilla.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+    expect(textoVisible).toBe(''); // ningún texto dibujado en la grilla de clubes
+    expect(html).not.toContain('otros-clubes');
+    for (const h of HINCHAS) {
+      expect(grilla).toContain(`aria-label="${nombresDe(h).join(' · ').replace(/'/g, '&#x27;')}"`);
+    }
+  });
+
+  it('el buscador sigue encontrando por el club y por los "otros"', () => {
+    expect(buscarHinchas('boca').map((h) => h.id)).toEqual(['hincha_boca']);
+    expect(buscarHinchas('quilmes').map((h) => h.id)).toEqual(['hincha_real_madrid']);
+    expect(renderToStaticMarkup(<AvatarPicker value={null} onChange={() => {}} />)).toContain('Buscá tu club');
   });
 });
 

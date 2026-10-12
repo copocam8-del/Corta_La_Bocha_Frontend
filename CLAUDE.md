@@ -151,10 +151,11 @@ src/
     salen pose (6), espejo (vaso en la otra mano; nunca en mitades ni banda), cara (3), piel (4), pelo (4) y color,
     bigote finito o barba de pocos días, y cadenita o muñequera con los colores del club.
   - **Un avatar por camiseta**: si varios clubes tienen la misma (mismo diseño y colores, aunque cambie el fondo), hay un
-    solo avatar con el club más conocido en `club` y los demás en `otros` (se muestran debajo en el selector y el
+    solo avatar con el club más conocido en `club` y los demás en `otros` (no se muestran en el selector, pero el
     buscador los encuentra). 45 clubes en 29 avatares. Un test controla que no haya camisetas repetidas.
   - **Prohibido** en el dibujo: texto, nombres de clubes, escudos o formas de escudo, logos, sponsors y marcas. El nombre
-    del club va sólo como texto debajo de la miniatura en el selector. Los tests lo controlan (`avatars.test.tsx`).
+    del club tampoco aparece debajo de la miniatura: el selector muestra sólo el avatar, y el nombre (club y "otros") va
+    en `title` y `aria-label` para accesibilidad. Los tests lo controlan (`avatars.test.tsx`).
   - Chiquito (`size` < 48: ranking, salas, marcador) se encuadra de la cintura para arriba; grande, de cuerpo entero.
   - Para agregar un club: si su camiseta ya existe, sumalo a `otros` de ese avatar (sin id nuevo). Si no, agregá el avatar
     en `hinchas.ts` (orden alfabético por nombre) y su id en `CLUB_AVATAR_IDS` del backend. Una vez publicado, un id no se
