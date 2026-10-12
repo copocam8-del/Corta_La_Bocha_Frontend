@@ -69,9 +69,10 @@ export interface RankingRow {
 
 export const getMyProfile = () => api.get<MyProfile>('/users/me').then((r) => r.data);
 export const updateMyProfile = (data: ProfileUpdate) => api.put<MyProfile>('/users/me', data).then((r) => r.data);
-export const getMyRanking = (period: RankingPeriod = 'global') =>
-  api.get<MyRanking>('/users/me/ranking', { params: { period } }).then((r) => r.data);
-export const getRanking = (period: RankingPeriod = 'global') =>
-  api.get<RankingRow[]>('/users/ranking', { params: { period } }).then((r) => r.data);
+// game: ranking de un juego (sin game = general). El ELO es uno solo.
+export const getMyRanking = (period: RankingPeriod = 'global', game?: string) =>
+  api.get<MyRanking>('/users/me/ranking', { params: { period, game } }).then((r) => r.data);
+export const getRanking = (period: RankingPeriod = 'global', game?: string) =>
+  api.get<RankingRow[]>('/users/ranking', { params: { period, game } }).then((r) => r.data);
 
 export const winRate = (played: number, won: number) => (played > 0 ? Math.round((won / played) * 100) : 0);

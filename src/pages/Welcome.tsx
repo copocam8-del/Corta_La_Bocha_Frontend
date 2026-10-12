@@ -36,7 +36,8 @@ export default function Welcome() {
   useEffect(() => {
     const t1 = setTimeout(() => setEntered(true), 80);
     const t2 = setTimeout(() => setLeaving(true), 2400);
-    const t3 = setTimeout(() => navigate('/lobby'), 2900);
+    // Después de la bienvenida, la pantalla de selección de juegos
+    const t3 = setTimeout(() => navigate('/dashboard'), 2900);
     return () => {
       clearTimeout(t1);
       clearTimeout(t2);

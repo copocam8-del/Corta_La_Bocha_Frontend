@@ -31,4 +31,12 @@ describe('logros', () => {
     expect(html).toContain('Logro idolo: Descripción de idolo. Bloqueado.');
     expect(html.match(/grayscale\(1\)/g)).toHaveLength(1);
   });
+
+  it('con logros de juegos, se agrupan: primero los generales y después cada juego', () => {
+    const html = renderToStaticMarkup(
+      <AchievementsGrid achievements={[logro('debut', true), { ...logro('pleno', false), game: 'tutti_frutti' }]} />,
+    );
+    expect(html.indexOf('Generales · 1/1')).toBeGreaterThan(-1);
+    expect(html.indexOf('Tutti Frutti · 0/1')).toBeGreaterThan(html.indexOf('Generales'));
+  });
 });

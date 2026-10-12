@@ -23,6 +23,8 @@ import type { FieldErrors } from '../auth/rules';
 import FieldError from '../components/FieldError';
 import { Avatar, AvatarPicker } from '../profile/avatars';
 import AchievementsGrid from '../profile/AchievementsGrid';
+import { getMyGameStats, type GameStats } from '../api/games';
+import { gameName } from '../games/gameIcons';
 import { getMyAchievements, type Achievement } from '../api/achievements';
 import {
   getMyProfile,
@@ -44,6 +46,7 @@ export default function Profile() {
   const [profile, setProfile] = useState<MyProfile | null>(null);
   const [ranking, setRanking] = useState<MyRanking | null>(null);
   const [weekly, setWeekly] = useState<MyRanking | null>(null);
+  const [gameStats, setGameStats] = useState<GameStats[]>([]);
   const [monthly, setMonthly] = useState<MyRanking | null>(null);
   const [achievements, setAchievements] = useState<Achievement[] | null>(null);
   const [editing, setEditing] = useState(false);
@@ -89,6 +92,7 @@ export default function Profile() {
     // El ranking es un extra: si falla, el perfil se muestra igual
     getMyRanking().then(setRanking).catch(() => setRanking(null));
     getMyRanking('semanal').then(setWeekly).catch(() => setWeekly(null));
+    getMyGameStats().then(setGameStats).catch(() => setGameStats([]));
     getMyRanking('mensual').then(setMonthly).catch(() => setMonthly(null));
     getMyAchievements().then(setAchievements).catch(() => setAchievements(null));
   }, [navigate]);
@@ -575,6 +579,22 @@ export default function Profile() {
                     <span className="stat-label">ELO</span>
                   </div>
                 </div>
+                {gameStats.length > 0 && (
+                  <div data-testid="stats-por-juego" style={{ marginTop: '12px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    <p className="section-label" style={{ marginBottom: 0 }}>Por juego</p>
+                    {gameStats.map(g => (
+                      <div key={g.game} style={{
+                        display: 'flex', justifyContent: 'space-between', gap: '8px', fontSize: '12px',
+                        padding: '6px 10px', borderRadius: '8px', background: 'rgba(57,255,140,0.04)', border: '1px solid rgba(57,255,140,0.12)',
+                      }}>
+                        <span style={{ color: '#eafff2' }}>{gameName(g.game)}</span>
+                        <span style={{ color: 'rgba(180,255,205,0.7)' }}>
+                          {g.matchesPlayed} jugadas · {g.matchesWon} ganadas · {g.totalPoints} pts
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
                 {(weekly || monthly) && (
                   <p style={{ marginTop: '10px', fontSize: '12px', color: 'rgba(180,255,205,0.7)', textAlign: 'center' }}>
                     Liga semanal: <strong>{weekly?.position ? `${weekly.position}° (${weekly.totalPoints} pts)` : 'sin partidas'}</strong>

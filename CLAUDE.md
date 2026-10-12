@@ -63,6 +63,15 @@ src/
   (y la fecha `LEGAL_LAST_UPDATE`).
 - El registro exige aceptar Términos y Privacidad (casilla obligatoria, consentimiento de la Ley 25.326).
 
+## Selección de juegos
+
+- `/dashboard` (`pages/Dashboard.tsx`) es la pantalla de selección de juegos: el catálogo viene de `GET /games` y
+  cada tarjeta muestra tus estadísticas de ese juego (`GET /users/me/games`). Después del login (Welcome) se va ahí;
+  Tutti Frutti lleva a `/lobby` (que tiene "Otros juegos" para volver).
+- Íconos y nombres de cada juego en `games/gameIcons.ts` (íconos de lucide, sin logos de terceros).
+- El ranking tiene filtro por juego (el ELO es general); el perfil muestra estadísticas por juego y los logros
+  agrupados (generales y de cada juego).
+
 ## Perfil, partidas y ranking
 
 - Partida solo (`pages/Game.tsx`): la decide el servidor. `api/soloMatch.ts` llama a

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Trophy, Medal, ArrowLeft, Shield, Star } from 'lucide-react';
 import { getMyRanking, getRanking, winRate, type MyRanking, type RankingPeriod, type RankingRow } from '../api/profile';
 import { getTokenUserId } from '../auth/session';
+import { getGames, type GameInfo } from '../api/games';
 
 interface RankingPlayer {
   id: number; // posición
@@ -54,6 +55,10 @@ export default function GlobalRanking() {
   );
 
   const [period, setPeriod] = useState<RankingPeriod>('global');
+  // '' = ranking general (todos los juegos)
+  const [game, setGame] = useState('');
+  const [games, setGames] = useState<GameInfo[]>([]);
+  useEffect(() => { getGames().then(gs => setGames(gs.filter(g => g.available))).catch(() => setGames([])); }, []);
   const [ranking, setRanking] = useState<RankingPlayer[] | null>(null);
   const [mine, setMine] = useState<MyRanking | null>(null);
   const [rankingError, setRankingError] = useState(false);
@@ -68,9 +73,18 @@ export default function GlobalRanking() {
     setRankingError(false);
   };
 
+  const changeGame = (g: string) => {
+    if (g === game) return;
+    setGame(g);
+    setRanking(null);
+    setMine(null);
+    setRankingError(false);
+  };
+
   useEffect(() => {
     let alive = true;
-    Promise.all([getRanking(period), getMyRanking(period)])
+    const g = period === 'elo' ? undefined : game || undefined;
+    Promise.all([getRanking(period, g), getMyRanking(period, g)])
       .then(([rows, me]) => {
         if (!alive) return;
         setRanking(rows.map(toPlayer(period)));
@@ -78,7 +92,7 @@ export default function GlobalRanking() {
       })
       .catch(() => alive && setRankingError(true));
     return () => { alive = false; };
-  }, [period]);
+  }, [period, game]);
 
   const podio = (ranking ?? []).slice(0, 3);
   const restoDelTop = (ranking ?? []).slice(3);
@@ -214,7 +228,7 @@ export default function GlobalRanking() {
         }}>
           
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <button className="back-btn" onClick={() => navigate('/lobby')}>
+            <button className="back-btn" onClick={() => navigate('/dashboard')}>
               <ArrowLeft size={14} /> Volver
             </button>
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -250,6 +264,20 @@ export default function GlobalRanking() {
               }}>{t.label}</button>
             ))}
           </div>
+
+          {/* Juego (el ELO es general) */}
+          {period !== 'elo' && games.length > 1 && (
+            <div data-testid="filtro-juego" style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginTop: '-8px' }}>
+              {[{ id: '', name: 'Todos los juegos' }, ...games].map(g => (
+                <button key={g.id || 'todos'} onClick={() => changeGame(g.id)} style={{
+                  padding: '5px 10px', borderRadius: '999px', cursor: 'pointer', fontSize: '11px',
+                  border: `1px solid ${game === g.id ? '#39ff8c' : 'rgba(57,255,140,0.2)'}`,
+                  background: game === g.id ? 'rgba(57,255,140,0.12)' : 'transparent',
+                  color: game === g.id ? '#39ff8c' : 'rgba(180,255,205,0.6)',
+                }}>{g.name}</button>
+              ))}
+            </div>
+          )}
 
           {/* Mi posición (aunque no esté en el top) */}
           {mine && (

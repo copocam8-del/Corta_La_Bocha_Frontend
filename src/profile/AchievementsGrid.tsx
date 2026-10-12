@@ -1,12 +1,35 @@
 import { Lock } from 'lucide-react';
 import type { Achievement } from '../api/achievements';
 import { achievementIcon } from './achievementIcons';
+import { gameName } from '../games/gameIcons';
 
 const formatDate = (iso: string) =>
   new Date(iso).toLocaleDateString('es-AR', { day: 'numeric', month: 'short', year: 'numeric' });
 
-// Grilla de logros del perfil: los desbloqueados a color, los bloqueados en gris con un candado
+// Logros agrupados: primero los generales y después los de cada juego
 export default function AchievementsGrid({ achievements }: { achievements: Achievement[] }) {
+  const groups = new Map<string, Achievement[]>();
+  for (const a of achievements) {
+    const key = a.game ?? '';
+    groups.set(key, [...(groups.get(key) ?? []), a]);
+  }
+  if (groups.size <= 1) return <Grid achievements={achievements} />;
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+      {[...groups.entries()].map(([game, list]) => (
+        <div key={game || 'generales'}>
+          <p style={{ fontFamily: "'Oswald', sans-serif", fontSize: '11px', letterSpacing: '2px', textTransform: 'uppercase', color: 'rgba(124,255,178,0.6)', margin: '0 0 6px' }}>
+            {game ? gameName(game) : 'Generales'} · {list.filter((a) => a.unlocked).length}/{list.length}
+          </p>
+          <Grid achievements={list} />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// Grilla de logros: los desbloqueados a color, los bloqueados en gris con un candado
+function Grid({ achievements }: { achievements: Achievement[] }) {
   return (
     <ul style={{
       listStyle: 'none', margin: 0, padding: 0,
