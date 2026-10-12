@@ -5,6 +5,7 @@ import MultiShell from '../multi/MultiShell';
 import { useRoom, type RoomApi } from '../multi/useRoom';
 import type { Phase, RoomSnapshot } from '../multi/types';
 import BackButton from '../components/BackButton';
+import { Avatar } from '../profile/avatars';
 import { ABANDONAR } from '../components/abandonar';
 import { gameName } from '../games/gameIcons';
 import { menuPath, MULTI_CONFIG, publicaPath, tiempoLabel } from '../games/multiConfig';
@@ -72,7 +73,7 @@ function Lobby({ room, state }: { room: RoomApi; state: RoomSnapshot }) {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }} data-testid="jugadores">
           {active.map((p, i) => (
             <div key={p.userId} className="player-row" style={{ animationDelay: `${i * 0.05}s`, opacity: p.connected ? 1 : 0.5 }}>
-              <div className="avatar">{p.username.charAt(0).toUpperCase()}</div>
+              <Avatar id={p.avatarId} fallback={p.username} size={36} />
               <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '6px' }}>
                 <span style={{ fontFamily: "'Oswald', sans-serif", fontSize: '14px', fontWeight: 600 }}>
                   {p.userId === state.me ? `${p.username} (vos)` : p.username}

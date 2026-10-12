@@ -133,7 +133,28 @@ src/
   - La fila de la máquina muestra un lápiz cuando ya escribió (según `aiPlan`); sus respuestas se ven al final.
   - Errores de `finish`: 409 ya terminada, 410 venció (llegó muy tarde: cuenta como perdida), 400 se muestra el
     mensaje del servidor.
-- Perfil (`pages/Profile.tsx`): avatar del set propio (`profile/avatarData.ts`, mismos ids que el backend),
+- Avatares (`profile/avatars.tsx` → `<Avatar id size>` y `<AvatarPicker>`): los clásicos (íconos, `profile/avatarData.ts`)
+  y los **hinchas de clubes** (`profile/hinchas.ts` = datos de cada club; `profile/Hincha.tsx` = el personaje en SVG).
+  - El hincha es un personaje PROPIO armado en código, caricatura de hincha de barrio: flaco y desgarbado, cabeza
+    grande, pelo largo (flequillo, desprolijo, raya al medio o rulos), sonrisa enorme con dientes y ojos achinados. En una
+    mano el vaso de fernet con coca (casi negro, espuma clara; sin marcas); con la otra señala, hace pulgar arriba o la
+    apoya en la cintura. Camiseta un poco grande, short corto, medias bajas, zapatillas blancas grandes. Sin gorro.
+    Contorno negro tipo historieta, sombras simples y fondo de color fuerte. Cambia según el club: diseño de camiseta
+    (`lisa`, `rayas`, `aros`, `franja`, `banda`, `mitades`, `v`) y colores. Del id (`varianteDe`, con hash mezclado)
+    salen pose (6), espejo (vaso en la otra mano; nunca en mitades ni banda), cara (3), piel (4), pelo (4) y color,
+    bigote finito o barba de pocos días, y cadenita o muñequera con los colores del club.
+  - **Un avatar por camiseta**: si varios clubes tienen la misma (mismo diseño y colores, aunque cambie el fondo), hay un
+    solo avatar con el club más conocido en `club` y los demás en `otros` (se muestran debajo en el selector y el
+    buscador los encuentra). 45 clubes en 29 avatares. Un test controla que no haya camisetas repetidas.
+  - **Prohibido** en el dibujo: texto, nombres de clubes, escudos o formas de escudo, logos, sponsors y marcas. El nombre
+    del club va sólo como texto debajo de la miniatura en el selector. Los tests lo controlan (`avatars.test.tsx`).
+  - Chiquito (`size` < 48: ranking, salas, marcador) se encuadra de la cintura para arriba; grande, de cuerpo entero.
+  - Para agregar un club: si su camiseta ya existe, sumalo a `otros` de ese avatar (sin id nuevo). Si no, agregá el avatar
+    en `hinchas.ts` (orden alfabético por nombre) y su id en `CLUB_AVATAR_IDS` del backend. Una vez publicado, un id no se
+    cambia ni se borra (los usuarios lo pueden tener elegido).
+  - Se muestran en el perfil (grande), el ranking (podio y filas), el lobby de las salas, el marcador de la partida y el
+    menú de cada juego.
+- Perfil (`pages/Profile.tsx`): avatar del set propio (clásicos o hinchas, mismos ids que el backend),
   equipo/selección/jugador favorito, bio, estadísticas y puesto en el ranking (`api/profile.ts`).
 - Ranking (`pages/GlobalRanking.tsx`): pestañas Global / Semanal / Mensual / ELO (`GET /users/ranking?period=…`) y
   "Tu posición" aunque no estés en el top (`GET /users/me/ranking?period=…`). El perfil muestra ELO y puesto en

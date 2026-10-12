@@ -5,6 +5,7 @@ import BackButton from '../components/BackButton';
 import { getMyRanking, getRanking, winRate, type MyRanking, type RankingPeriod, type RankingRow } from '../api/profile';
 import { getTokenUserId } from '../auth/session';
 import { getGames, type GameInfo } from '../api/games';
+import { Avatar } from '../profile/avatars';
 
 interface RankingPlayer {
   id: number; // posición
@@ -13,6 +14,7 @@ interface RankingPlayer {
   points: number;
   matches: number;
   winRate: string;
+  avatarId: string | null;
 }
 
 // Adapta lo que devuelve GET /users/ranking a lo que dibuja esta pantalla. En la pestaña ELO,
@@ -24,6 +26,7 @@ const toPlayer = (period: RankingPeriod) => (r: RankingRow): RankingPlayer => ({
   points: period === 'elo' ? r.elo : r.totalPoints,
   matches: r.matchesPlayed,
   winRate: `${winRate(r.matchesPlayed, r.matchesWon)}%`,
+  avatarId: r.avatarId,
 });
 
 const TABS: { id: RankingPeriod; label: string; desc: string }[] = [
@@ -299,7 +302,7 @@ export default function GlobalRanking() {
           )}
 
           <div style={{
-            display: 'grid', gridTemplateColumns: '1fr 1.1fr 1fr', gap: '12px', 
+            display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1.1fr) minmax(0, 1fr)', gap: '8px', 
             alignItems: 'end', margin: '10px 0',
             animation: 'podioPop 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) both'
           }}>
@@ -307,9 +310,10 @@ export default function GlobalRanking() {
               <div style={{
                 background: 'linear-gradient(180deg, rgba(200,200,200,0.06) 0%, rgba(4,20,11,0.8) 100%)',
                 border: '1px solid rgba(200,200,200,0.2)', borderRadius: '12px',
-                padding: '16px 10px', textAlign: 'center', height: '140px', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center'
+                padding: '12px 8px', textAlign: 'center', minHeight: '170px', gap: '4px', minWidth: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center'
               }}>
-                <Medal size={24} color={getMedalColor(2)} />
+                <Medal size={20} color={getMedalColor(2)} />
+                <Avatar id={podio[1].avatarId} fallback={podio[1].name} size={40} />
                 <p style={{ fontFamily: "'Oswald', sans-serif", fontSize: '14px', color: '#eafff2', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', width: '100%', marginTop: '6px' }}>{podio[1].name}</p>
                 <p style={{ fontFamily: "'Oswald', sans-serif", fontSize: '16px', fontWeight: 700, color: '#cbd5e1', marginTop: '2px' }}>{podio[1].points.toLocaleString()} {unit}</p>
                 <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.3)' }}>{podio[1].winRate} WR</span>
@@ -320,10 +324,11 @@ export default function GlobalRanking() {
               <div style={{
                 background: 'linear-gradient(180deg, rgba(251,191,36,0.1) 0%, rgba(4,20,11,0.9) 100%)',
                 border: '2px solid #fbbf24', borderRadius: '14px',
-                padding: '20px 10px', textAlign: 'center', height: '165px',
+                padding: '14px 8px', textAlign: 'center', minHeight: '195px', gap: '4px', minWidth: 0,
                 boxShadow: '0 0 25px rgba(251,191,36,0.25)', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', zIndex: 2
               }}>
-                <Trophy size={32} color={getMedalColor(1)} style={{ filter: 'drop-shadow(0 0 8px #fbbf24)' }} />
+                <Trophy size={24} color={getMedalColor(1)} style={{ filter: 'drop-shadow(0 0 8px #fbbf24)' }} />
+                <Avatar id={podio[0].avatarId} fallback={podio[0].name} size={48} />
                 <p style={{ fontFamily: "'Oswald', sans-serif", fontSize: '16px', fontWeight: 600, color: '#fff', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', width: '100%', marginTop: '6px' }}>{podio[0].name}</p>
                 <p style={{ fontFamily: "'Oswald', sans-serif", fontSize: '20px', fontWeight: 700, color: '#fbbf24', marginTop: '2px' }}>{podio[0].points.toLocaleString()} {unit}</p>
                 <span style={{ fontSize: '10px', color: 'rgba(251,191,36,0.6)', fontWeight: 600, letterSpacing: '1px' }}>{podio[0].winRate} VICTORIAS</span>
@@ -334,9 +339,10 @@ export default function GlobalRanking() {
               <div style={{
                 background: 'linear-gradient(180deg, rgba(180,83,9,0.06) 0%, rgba(4,20,11,0.8) 100%)',
                 border: '1px solid rgba(180,83,9,0.2)', borderRadius: '12px',
-                padding: '16px 10px', textAlign: 'center', height: '130px', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center'
+                padding: '12px 8px', textAlign: 'center', minHeight: '160px', gap: '4px', minWidth: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center'
               }}>
-                <Medal size={24} color={getMedalColor(3)} />
+                <Medal size={20} color={getMedalColor(3)} />
+                <Avatar id={podio[2].avatarId} fallback={podio[2].name} size={40} />
                 <p style={{ fontFamily: "'Oswald', sans-serif", fontSize: '14px', color: '#eafff2', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', width: '100%', marginTop: '6px' }}>{podio[2].name}</p>
                 <p style={{ fontFamily: "'Oswald', sans-serif", fontSize: '16px', fontWeight: 700, color: '#b45309', marginTop: '2px' }}>{podio[2].points.toLocaleString()} {unit}</p>
                 <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.3)' }}>{podio[2].winRate} WR</span>
@@ -389,10 +395,12 @@ export default function GlobalRanking() {
                       {player.id}°
                     </div>
 
-                    <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <div style={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <Avatar id={player.avatarId} fallback={player.name} size={26} />
                       <span style={{
                         fontFamily: "'Oswald', sans-serif", fontSize: '14px', fontWeight: 600,
-                        color: isMe ? '#39ff8c' : '#eafff2', letterSpacing: '0.5px'
+                        color: isMe ? '#39ff8c' : '#eafff2', letterSpacing: '0.5px',
+                        minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                       }}>
                         {player.name}
                       </span>

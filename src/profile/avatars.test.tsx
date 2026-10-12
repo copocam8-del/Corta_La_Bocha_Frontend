@@ -2,18 +2,39 @@ import { describe, expect, it } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { Avatar, AvatarPicker } from './avatars';
 import { AVATARS, getAvatar } from './avatarData';
+import { buscarHinchas, HINCHAS, nombresDe, ordenarPorClub, varianteDe } from './hinchas';
+import HinchaSvg from './Hincha';
 import { winRate } from '../api/profile';
 import { getTokenUserId } from '../auth/session';
 
-// Mismos ids que AVATAR_IDS del backend (src/users/avatars.ts)
+// Mismos ids que BASE_AVATAR_IDS del backend (src/users/avatars.ts)
 const BACKEND_AVATAR_IDS = [
   'pelota', 'camiseta', 'arco', 'trofeo', 'medalla', 'corona',
   'escudo', 'estrella', 'bandera', 'rayo', 'fuego', 'botines',
 ];
 
+// Clubes de la Liga Profesional 2026 (tienen que estar todos)
+const LIGA_PROFESIONAL_2026 = [
+  'Aldosivi', 'Argentinos Juniors', 'Atlético Tucumán', 'Banfield', 'Barracas Central', 'Belgrano', 'Boca Juniors',
+  'Central Córdoba (SdE)', 'Defensa y Justicia', 'Deportivo Riestra', 'Estudiantes (La Plata)', 'Estudiantes (Río Cuarto)',
+  'Gimnasia (La Plata)', 'Gimnasia (Mendoza)', 'Huracán', 'Independiente', 'Independiente Rivadavia', 'Instituto', 'Lanús',
+  "Newell's Old Boys", 'Platense', 'Racing Club', 'River Plate', 'Rosario Central', 'San Lorenzo', 'Sarmiento (Junín)',
+  'Talleres (Córdoba)', 'Tigre', 'Unión (Santa Fe)', 'Vélez Sarsfield',
+];
+
 describe('avatares', () => {
-  it('el set coincide con el del backend', () => {
+  it('los clásicos coinciden con los del backend', () => {
     expect(AVATARS.map((a) => a.id)).toEqual(BACKEND_AVATAR_IDS);
+  });
+
+  // Si el repo del backend está al lado (como en la compu del equipo), los ids de los hinchas tienen que ser los mismos
+  // (import.meta.glob devuelve {} si el archivo no existe, ej. en un CI con un solo repo)
+  const back = Object.values(import.meta.glob('../../../Corta_La_Bocha_Backend/src/users/avatars.ts', { query: '?raw', import: 'default', eager: true }))[0] as string | undefined;
+  it.skipIf(!back)('los ids de los hinchas coinciden con CLUB_AVATAR_IDS del backend', () => {
+    const texto = back!;
+    const bloque = texto.slice(texto.indexOf('CLUB_AVATAR_IDS'), texto.indexOf('] as const', texto.indexOf('CLUB_AVATAR_IDS')));
+    const ids = [...bloque.matchAll(/'(hincha_[a-z0-9_]+)'/g)].map((m) => m[1]);
+    expect(ids).toEqual(HINCHAS.map((h) => h.id));
   });
 
   it('todos tienen nombre en español y no se repiten', () => {
@@ -34,6 +55,131 @@ describe('avatares', () => {
     const html = renderToStaticMarkup(<AvatarPicker value="fuego" onChange={() => {}} />);
     expect(html.match(/aria-checked="true"/g)).toHaveLength(1);
     expect(html).toContain('aria-checked="true" title="Fuego"');
+  });
+});
+
+describe('hinchas de clubes', () => {
+  it('están todos los de la Liga Profesional 2026, más históricos, Real Madrid y Barcelona (como principal o en "otros")', () => {
+    const clubes = HINCHAS.flatMap(nombresDe);
+    for (const c of LIGA_PROFESIONAL_2026) expect(clubes).toContain(c);
+    for (const c of ['All Boys', 'Chacarita Juniors', 'Nueva Chicago', 'Ferro Carril Oeste', 'Quilmes', 'Almagro', 'Real Madrid', 'Barcelona']) {
+      expect(clubes).toContain(c);
+    }
+    expect(clubes).toHaveLength(45); // los 45 clubes, sin perder ninguno al juntar los repetidos
+    expect(new Set(clubes).size).toBe(45); // y cada club en un solo avatar
+  });
+
+  it('no hay dos avatares con la misma camiseta (mismo diseño y colores, aunque cambie el fondo)', () => {
+    expect(HINCHAS).toHaveLength(29);
+    const camiseta = (h: (typeof HINCHAS)[number]) => `${h.diseno}|${[...h.camiseta].join(',')}`;
+    expect(new Set(HINCHAS.map(camiseta)).size).toBe(HINCHAS.length);
+    // Las mitades rojo y negro son la misma camiseta aunque estén al revés (Newell's y Colón)
+    const espejo = (h: (typeof HINCHAS)[number]) => (h.diseno === 'mitades' ? [...h.camiseta].sort().join(',') : camiseta(h));
+    expect(new Set(HINCHAS.map(espejo)).size).toBe(HINCHAS.length);
+    // Lisas: no puede haber dos con el mismo color principal (ej. blancas o verdes lisas)
+    const lisas = HINCHAS.filter((h) => h.diseno === 'lisa').map((h) => h.camiseta[0]);
+    expect(new Set(lisas).size).toBe(lisas.length);
+  });
+
+  it('los clubes que se juntaron comparten avatar y el buscador los encuentra por cualquier nombre', () => {
+    const de = (texto: string) => buscarHinchas(texto).map((h) => h.id);
+    expect(de('instituto')).toEqual(['hincha_estudiantes_lp']);
+    expect(de('union')).toEqual(['hincha_estudiantes_lp']);
+    expect(de('barracas')).toEqual(['hincha_estudiantes_lp']);
+    expect(de('tucuman')).toEqual(['hincha_racing']);
+    expect(de('colon')).toEqual(['hincha_newells']);
+    expect(de('huracan')).toEqual(['hincha_real_madrid']);
+    expect(de('sarmiento')).toEqual(['hincha_ferro']);
+    expect(de('san martin')).toEqual(['hincha_nueva_chicago']);
+    expect(de('godoy')).toEqual(['hincha_talleres']);
+    expect(de('atlanta')).toEqual(['hincha_rosario_central']);
+    expect(de('argentinos')).toEqual(['hincha_independiente']);
+    expect(de('temperley')).toEqual(['hincha_belgrano']);
+  });
+
+  it('ids únicos que entran en la base (máx. 30), en orden alfabético y con colores válidos', () => {
+    expect(new Set(HINCHAS.map((h) => h.id)).size).toBe(HINCHAS.length);
+    expect(HINCHAS.map((h) => h.id)).toEqual(ordenarPorClub(HINCHAS).map((h) => h.id));
+    const color = /^#[0-9a-f]{6}$/i;
+    for (const h of HINCHAS) {
+      expect(h.id).toMatch(/^hincha_[a-z0-9_]+$/);
+      expect(h.id.length).toBeLessThanOrEqual(30);
+      for (const c of [...h.camiseta, h.short, h.medias, h.fondo]) expect(c).toMatch(color);
+      expect(h.fondo).not.toBe(h.camiseta[0]); // el fondo contrasta con la camiseta
+    }
+  });
+
+  it('cada club tiene un avatar que se dibuja (grande y chiquito)', () => {
+    for (const h of HINCHAS) {
+      const grande = renderToStaticMarkup(<Avatar id={h.id} fallback="x" size={84} />);
+      expect(grande).toContain(`Avatar: hincha de ${nombresDe(h).join(', ').replace(/'/g, '&#x27;')}`);
+      expect(grande).toContain('<svg');
+      expect(grande).toContain(h.fondo);
+      expect(renderToStaticMarkup(<Avatar id={h.id} fallback="x" size={26} />)).toContain('<svg');
+    }
+  });
+
+  it('ningún dibujo tiene texto (ni nombres de clubes, ni números, ni marcas)', () => {
+    for (const h of HINCHAS) {
+      for (const size of [26, 84]) {
+        const svg = renderToStaticMarkup(<HinchaSvg hincha={h} size={size} />);
+        expect(svg).not.toMatch(/<(text|tspan|textPath|title|desc|foreignObject|image)\b/);
+        expect(svg.replace(/<[^>]*>/g, '').trim()).toBe(''); // sin texto entre las etiquetas
+        for (const n of nombresDe(h)) expect(svg).not.toContain(n);
+      }
+    }
+  });
+
+  it('no son todos iguales: poses, caras, tonos de piel, pelos, barba/bigote y accesorios', () => {
+    const v = HINCHAS.map((h) => varianteDe(h.id));
+    expect(new Set(v.map((x) => x.pose)).size).toBe(6);
+    expect(new Set(v.map((x) => x.espejo)).size).toBe(2);
+    expect(new Set(v.map((x) => x.cara)).size).toBe(3);
+    expect(new Set(v.map((x) => x.piel)).size).toBe(4);
+    expect(new Set(v.map((x) => x.pelo)).size).toBe(4);
+    expect(new Set(v.map((x) => x.vello)).size).toBe(3);
+    expect(new Set(v.map((x) => x.accesorio)).size).toBe(3);
+  });
+
+  it('ningún SVG tiene texto: ningún hincha, en ningún tamaño, ni el avatar completo', () => {
+    for (const h of HINCHAS) {
+      for (const size of [20, 26, 36, 47, 48, 60, 84, 104]) {
+        const svg = renderToStaticMarkup(<HinchaSvg hincha={h} size={size} />);
+        expect(svg.startsWith('<svg')).toBe(true);
+        // ni elementos de texto…
+        expect(svg).not.toMatch(/<(text|tspan|textPath|title|desc|foreignObject|image|use|a)[\s>/]/);
+        // …ni texto suelto entre etiquetas
+        expect(svg.replace(/<[^>]*>/g, '')).toBe('');
+        // …ni el nombre del club escondido en algún atributo
+        for (const n of nombresDe(h)) expect(svg.toLowerCase()).not.toContain(n.toLowerCase());
+      }
+      const avatar = renderToStaticMarkup(<Avatar id={h.id} fallback="Lionel" size={84} />);
+      expect(avatar.replace(/<[^>]*>/g, '')).toBe(''); // el nombre va sólo en aria-label, no se dibuja
+    }
+  });
+
+  it('sin gorro: el personaje no tiene piluso', () => {
+    for (const h of HINCHAS) expect(Object.keys(h)).not.toContain('piluso');
+  });
+
+  it('el vaso es de fernet con coca: bebida casi negra con espuma clara', () => {
+    const svg = renderToStaticMarkup(<HinchaSvg hincha={HINCHAS[0]} size={84} />);
+    expect(svg).toContain('#120705'); // bebida
+    expect(svg).toContain('#f3e8cf'); // espuma
+  });
+
+  it('el selector tiene la sección Clubes, alfabética, con el nombre debajo y buscador', () => {
+    const html = renderToStaticMarkup(<AvatarPicker value="hincha_boca" onChange={() => {}} />);
+    expect(html).toContain('Clubes');
+    expect(html).toContain('Buscá tu club');
+    expect(html.indexOf('Aldosivi')).toBeLessThan(html.indexOf('Vélez Sarsfield'));
+    expect(html.match(/aria-checked="true"/g)).toHaveLength(1);
+    expect(buscarHinchas('velez').map((h) => h.club)).toEqual(['Vélez Sarsfield']);
+    expect(buscarHinchas('GIMNASIA').length).toBe(2); // La Plata y Mendoza (con Central Córdoba)
+    // Debajo de la miniatura, los otros clubes con la misma camiseta
+    expect(html).toContain('Instituto · Unión (Santa Fe) · Barracas Central');
+    expect(html).toContain('Huracán · Quilmes · All Boys');
+    expect(buscarHinchas('').length).toBe(HINCHAS.length);
   });
 });
 
