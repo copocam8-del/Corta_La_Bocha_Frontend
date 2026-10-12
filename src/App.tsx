@@ -16,6 +16,7 @@ import GlobalRanking from './pages/GlobalRanking';
 import Ahorcado from './pages/Ahorcado';
 import Trivia from './pages/Trivia';
 import DesafioDiario from './pages/DesafioDiario';
+import SopaDeLetras from './pages/SopaDeLetras';
 import ProtectedRoute from './components/ProtectedRoute';
 import Privacidad from './pages/legal/Privacidad';
 import Terminos from './pages/legal/Terminos';
@@ -77,6 +78,7 @@ export default function App() {
         <Route path="/ahorcado" element={<ProtectedRoute><Ahorcado /></ProtectedRoute>} />
         <Route path="/trivia" element={<ProtectedRoute><Trivia /></ProtectedRoute>} />
         <Route path="/desafio-diario" element={<ProtectedRoute><DesafioDiario /></ProtectedRoute>} />
+        <Route path="/sopa-de-letras" element={<ProtectedRoute><SopaDeLetras /></ProtectedRoute>} />
         <Route path="/global-ranking" element={<ProtectedRoute><GlobalRanking /></ProtectedRoute>} />
         <Route path="/ranking" element={<ProtectedRoute><GlobalRanking /></ProtectedRoute>} />
       </Routes>
