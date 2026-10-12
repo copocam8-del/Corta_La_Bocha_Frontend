@@ -6,6 +6,7 @@ export const PASSWORD_MAX = 72;
 export const USERNAME_MIN = 3;
 export const USERNAME_MAX = 30;
 export const USERNAME_REGEX = /^[a-zA-Z0-9_]+$/;
+export const NAME_MAX = 50; // nombre y apellido (backend: NAME_MAX en auth-rules.ts)
 export const MIN_AGE = 13;
 
 export type FieldErrors = Record<string, string>;
@@ -44,6 +45,23 @@ export function maxBirthDate(today = new Date()): string {
   return d.toISOString().slice(0, 10);
 }
 
+// Nombre o apellido: obligatorio y hasta NAME_MAX caracteres (mismas reglas en el registro y en el perfil)
+export function validateName(value: string, campo: 'nombre' | 'apellido'): string | undefined {
+  const v = value.trim();
+  if (!v) return campo === 'nombre' ? 'Ingresá tu nombre' : 'Ingresá tu apellido';
+  if (v.length > NAME_MAX) return `El ${campo} puede tener hasta ${NAME_MAX} caracteres`;
+}
+
+// "Editar perfil": nombre y apellido (los errores usan los nombres de campo del backend)
+export function validateProfileNames(firstName: string, lastName: string): FieldErrors {
+  const errors: FieldErrors = {};
+  const nombre = validateName(firstName, 'nombre');
+  if (nombre) errors.first_name = nombre;
+  const apellido = validateName(lastName, 'apellido');
+  if (apellido) errors.last_name = apellido;
+  return errors;
+}
+
 function validateEmail(email: string): string | undefined {
   if (!email.trim()) return 'Ingresá tu email';
   if (!EMAIL_REGEX.test(email.trim())) return 'El email no es válido';
@@ -53,8 +71,10 @@ export function validateRegister(form: RegisterForm, today = new Date()): FieldE
   const errors: FieldErrors = {};
   const username = form.username.trim();
 
-  if (!form.name.trim()) errors.name = 'Ingresá tu nombre';
-  if (!form.lastName.trim()) errors.lastName = 'Ingresá tu apellido';
+  const nombre = validateName(form.name, 'nombre');
+  if (nombre) errors.name = nombre;
+  const apellido = validateName(form.lastName, 'apellido');
+  if (apellido) errors.lastName = apellido;
 
   // El usuario es opcional: si queda vacío, el backend genera uno a partir del nombre
   if (!username) {

@@ -18,7 +18,7 @@ import {
 } from 'lucide-react';
 import { clearSession } from '../auth/session';
 import { parseAuthError } from '../auth/apiErrors';
-import type { FieldErrors } from '../auth/rules';
+import { NAME_MAX, validateProfileNames, type FieldErrors } from '../auth/rules';
 import FieldError from '../components/FieldError';
 import BackButton from '../components/BackButton';
 import { Avatar, AvatarPicker } from '../profile/avatars';
@@ -50,6 +50,8 @@ export default function Profile() {
   const [monthly, setMonthly] = useState<MyRanking | null>(null);
   const [achievements, setAchievements] = useState<Achievement[] | null>(null);
   const [editing, setEditing] = useState(false);
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [username, setUsername] = useState('');
   const [bio, setBio] = useState('');
   const [avatarId, setAvatarId] = useState<string | null>(null);
@@ -74,6 +76,8 @@ export default function Profile() {
 
   // Carga el formulario con los datos guardados
   const fillForm = (data: MyProfile) => {
+    setFirstName(data.first_name || '');
+    setLastName(data.last_name || '');
     setUsername(data.username || '');
     setBio(data.profile?.bio || '');
     setAvatarId(data.profile?.avatar_id || null);
@@ -116,9 +120,18 @@ export default function Profile() {
     setError('');
     setFieldErrors({});
     setSuccess(false);
+    // Nombre y apellido: se avisa antes de enviar (el backend vuelve a validar)
+    const nameErrors = validateProfileNames(firstName, lastName);
+    if (Object.keys(nameErrors).length) {
+      setFieldErrors(nameErrors);
+      setSaving(false);
+      return;
+    }
     try {
-      // Un campo vacío ("") le indica al backend que lo borre
+      // Un campo vacío ("") le indica al backend que lo borre (salvo nombre y apellido, que no se borran)
       const data = await updateMyProfile({
+        first_name: firstName.trim(),
+        last_name: lastName.trim(),
         username: username.trim(),
         bio,
         avatar_id: avatarId,
@@ -129,6 +142,8 @@ export default function Profile() {
       setProfile(data);
       fillForm(data);
       if (data.username) localStorage.setItem('username', data.username);
+      // El saludo de la app usa el nombre guardado al iniciar sesión: lo actualizamos
+      if (data.first_name) localStorage.setItem('name', data.first_name);
       setSuccess(true);
       setEditing(false);
     } catch (err) {
@@ -646,6 +661,36 @@ export default function Profile() {
                       <span className="field-label">Avatar</span>
                       <AvatarPicker value={avatarId} onChange={setAvatarId} />
                       <FieldError id="profile-avatar-error" message={fieldErrors.avatar_id} />
+                    </div>
+                    <div>
+                      <label className="field-label" htmlFor="profile-first-name">Nombre</label>
+                      <input
+                        id="profile-first-name"
+                        className="field-input"
+                        type="text"
+                        autoComplete="given-name"
+                        value={firstName}
+                        onChange={(e) => setFirstName(e.target.value)}
+                        maxLength={NAME_MAX}
+                        aria-invalid={!!fieldErrors.first_name}
+                        aria-describedby="profile-first-name-error"
+                      />
+                      <FieldError id="profile-first-name-error" message={fieldErrors.first_name} />
+                    </div>
+                    <div>
+                      <label className="field-label" htmlFor="profile-last-name">Apellido</label>
+                      <input
+                        id="profile-last-name"
+                        className="field-input"
+                        type="text"
+                        autoComplete="family-name"
+                        value={lastName}
+                        onChange={(e) => setLastName(e.target.value)}
+                        maxLength={NAME_MAX}
+                        aria-invalid={!!fieldErrors.last_name}
+                        aria-describedby="profile-last-name-error"
+                      />
+                      <FieldError id="profile-last-name-error" message={fieldErrors.last_name} />
                     </div>
                     <div>
                       <label className="field-label" htmlFor="profile-username">Nombre de usuario</label>

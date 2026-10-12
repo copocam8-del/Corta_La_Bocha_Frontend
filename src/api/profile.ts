@@ -31,6 +31,8 @@ export interface MyProfile {
 }
 
 export interface ProfileUpdate {
+  first_name?: string;
+  last_name?: string;
   username?: string;
   bio?: string;
   avatar_id?: string | null;
