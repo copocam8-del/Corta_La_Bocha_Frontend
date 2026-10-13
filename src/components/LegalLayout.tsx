@@ -6,7 +6,7 @@ import { getToken } from '../auth/session';
 // Marco común de las páginas legales (/privacidad, /terminos, /cookies),
 // con el mismo estilo de cancha nocturna del Login.
 
-const LEGAL_LAST_UPDATE = '12 de octubre de 2026';
+const LEGAL_LAST_UPDATE = '13 de octubre de 2026';
 
 const LEGAL_LINKS = [
   { to: '/privacidad', label: 'Privacidad' },
