@@ -142,7 +142,14 @@ src/
     mensaje del servidor.
 - Avatares (`profile/avatars.tsx` → `<Avatar id size>` y `<AvatarPicker>`): los clásicos (íconos, `profile/avatarData.ts`)
   y los **hinchas de clubes** (`profile/hinchas.ts` = datos de cada club; `profile/Hincha.tsx` = el personaje en SVG).
-  - El hincha es un personaje PROPIO armado en código, caricatura de hincha de barrio: flaco y desgarbado, cabeza
+  - **Desde octubre 2026 se ven ilustraciones**: una imagen por avatar en `public/avatars/hinchas/<id>.webp` (384×384,
+    ~18 KB). Salen de UNA ilustración base propia (hecha por Camila con IA: el hincha con el mate, ropa en verde, magenta y
+    celeste puros) que un script recolorea por club: camiseta con el diseño (rayas, franja, banda, mitades, V), short,
+    medias y piluso con un color del club, sobre fondo gris liso (sin círculo). `<Avatar>` muestra la imagen (`hinchaImagen(id)`);
+    chiquito la agranda ×1,9 y la centra en cara y pecho. Si la imagen no carga, usa el SVG de `Hincha.tsx` (respaldo).
+    Las imágenes tampoco pueden tener texto, escudos, logos ni sponsors. Un test controla que haya una por hincha.
+    Para un club nuevo hay que generar su imagen con el mismo script (pedírselo a Claude con la imagen base).
+  - El SVG de respaldo es un personaje PROPIO armado en código, caricatura de hincha de barrio: flaco y desgarbado, cabeza
     grande, pelo largo (flequillo, desprolijo, raya al medio o rulos), sonrisa enorme con dientes y ojos achinados. En una
     mano el vaso de fernet con coca (casi negro, espuma clara; sin marcas); con la otra señala, hace pulgar arriba o la
     apoya en la cintura. Camiseta un poco grande, short corto, medias bajas, zapatillas blancas grandes. Sin gorro.

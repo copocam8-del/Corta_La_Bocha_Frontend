@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { Avatar, AvatarPicker } from './avatars';
+import { Avatar, AvatarPicker, hinchaImagen } from './avatars';
 import { AVATARS, getAvatar } from './avatarData';
 import { buscarHinchas, HINCHAS, nombresDe, ordenarPorClub, varianteDe } from './hinchas';
 import HinchaSvg from './Hincha';
@@ -109,14 +109,21 @@ describe('hinchas de clubes', () => {
     }
   });
 
-  it('cada club tiene un avatar que se dibuja (grande y chiquito)', () => {
+  it('cada club tiene su imagen ilustrada (grande y chiquito); el SVG queda de respaldo', () => {
     for (const h of HINCHAS) {
       const grande = renderToStaticMarkup(<Avatar id={h.id} fallback="x" size={84} />);
       expect(grande).toContain(`Avatar: hincha de ${nombresDe(h).join(', ').replace(/'/g, '&#x27;')}`);
-      expect(grande).toContain('<svg');
+      expect(grande).toContain(`src="${hinchaImagen(h.id)}"`);
+      expect(grande).toContain('alt=""'); // el nombre va en el aria-label del contenedor
       expect(grande).toContain(h.fondo);
-      expect(renderToStaticMarkup(<Avatar id={h.id} fallback="x" size={26} />)).toContain('<svg');
+      expect(renderToStaticMarkup(<Avatar id={h.id} fallback="x" size={26} />)).toContain(`src="${hinchaImagen(h.id)}"`);
     }
+  });
+
+  it('hay una imagen por hincha en public/avatars/hinchas y ninguna de más', () => {
+    // Sin eager: sólo lista los archivos, no los importa (lo que está en public/ no se importa desde JS)
+    const archivos = Object.keys(import.meta.glob('../../public/avatars/hinchas/*.webp')).map((p) => p.split('/').pop()).sort();
+    expect(archivos).toEqual(HINCHAS.map((h) => `${h.id}.webp`).sort());
   });
 
   it('ningún dibujo tiene texto (ni nombres de clubes, ni números, ni marcas)', () => {
