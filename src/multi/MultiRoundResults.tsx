@@ -1,4 +1,4 @@
-import { Crown, Medal, User } from 'lucide-react';
+import { Crown, Handshake, Medal, User } from 'lucide-react';
 import { STATUS_COLOR, STATUS_LABEL, recognizedName } from '../game/answerStatus';
 import type { RoundResult, Standing } from './types';
 
@@ -65,14 +65,15 @@ export function Standings({ standings, me }: { standings: Standing[]; me: string
   return (
     <div data-testid="posiciones" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
       {standings.map((s) => (
-        <div key={s.userId} className="player-row" style={{ borderColor: s.won ? 'rgba(251,191,36,0.6)' : undefined }}>
+        <div key={s.userId} className="player-row" style={{ borderColor: s.won || s.result === 'draw' ? 'rgba(251,191,36,0.6)' : undefined }}>
           <div className="avatar" style={{ color: MEDAL[s.position - 1] ?? '#39ff8c' }}>{s.position}</div>
           <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '6px' }}>
             <span style={{ fontFamily: "'Oswald', sans-serif", fontSize: '14px', fontWeight: 600 }}>
               {s.userId === me ? `${s.username} (vos)` : s.username}
             </span>
             {s.won && <Crown size={13} color="#fbbf24" aria-label="Ganador" />}
-            {s.position <= 3 && !s.abandoned && !s.won && <Medal size={13} color={MEDAL[s.position - 1]} />}
+            {s.result === 'draw' && <Handshake size={13} color="#fbbf24" aria-label="Empató" />}
+            {s.position <= 3 && !s.abandoned && !s.won && s.result !== 'draw' && <Medal size={13} color={MEDAL[s.position - 1]} />}
             {s.abandoned && <span style={{ fontSize: '10px', color: '#f87171', textTransform: 'uppercase' }}>abandonó</span>}
           </div>
           <span style={{ fontFamily: "'Oswald', sans-serif", fontSize: '15px', fontWeight: 700, color: '#39ff8c' }}>{s.points} pts</span>

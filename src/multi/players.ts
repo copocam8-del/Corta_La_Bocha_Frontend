@@ -23,3 +23,11 @@ export function rondaLabel(state: RoomSnapshot) {
     default: return 'Ronda';
   }
 }
+
+// "Ana", "Ana y Beto", "Ana, Beto y Caro" (con "e" antes de un nombre que suena "i": "Ana e Ignacio")
+export function listaNombres(nombres: string[]): string {
+  if (nombres.length <= 1) return nombres[0] ?? '';
+  const ultimo = nombres[nombres.length - 1];
+  const y = /^h?[ií](?![aeoáéó])/i.test(ultimo) ? 'e' : 'y';
+  return `${nombres.slice(0, -1).join(', ')} ${y} ${ultimo}`;
+}

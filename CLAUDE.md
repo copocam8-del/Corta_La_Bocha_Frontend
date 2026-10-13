@@ -194,6 +194,10 @@ src/
     `queue:matched` → `/room/:code`.
   - Partes comunes (encabezado, marcador, cuenta regresiva y final con logros) en `multi/MultiParts.tsx`; colores y
     nombres de los jugadores en `multi/players.ts`; estilos en `multi/MultiShell.tsx`.
+  - **Empate en el primer puesto** (el backend manda `final.empate` y `final.empatados`, y `result: 'draw'` en cada
+    posición): nadie gana. Los que empataron ven "¡Empate!" con `Handshake` en amarillo (como el empate contra la
+    máquina) y abajo "Empataron X e Y"; los demás ven "Empataron X, Y y Z" en vez de "Ganó…". En las posiciones, los
+    empatados llevan el apretón de manos (nunca "Ganador"). Los nombres se unen con `listaNombres` (`players.ts`).
 - Resultado de la partida solo (`game/RoundResults.tsx`): por cada categoría, tu respuesta y la de la máquina con su
   estado (Válida / No vale / Sin respuesta / Sin validar), puntos, motivo y el nombre que reconoció la IA. Si
   `validationIncomplete` es true se muestra un aviso: la IA no respondió y la partida no cuenta para estadísticas.

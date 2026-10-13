@@ -38,7 +38,8 @@ export interface Standing {
   username: string;
   points: number;
   position: number;
-  won: boolean;
+  won: boolean; // sólo el único primero: un empate arriba NO es victoria
+  result?: 'win' | 'draw' | 'loss'; // draw = empató en el primer puesto
   abandoned: boolean;
 }
 
@@ -82,6 +83,9 @@ export interface RoomSnapshot {
     reason: 'completed' | 'not_enough_players';
     countsForStats: boolean;
     standings: Standing[];
+    // Empate en el primer puesto: nadie gana (nombres de los empatados)
+    empate?: boolean;
+    empatados?: string[];
     newAchievements: NewAchievement[];
   };
   notice: string | null;

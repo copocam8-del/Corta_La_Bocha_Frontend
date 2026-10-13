@@ -1,8 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { clockOffset, secondsUntil } from './clock';
+import { MemoryRouter } from 'react-router-dom';
 import { MultiRoundResults, Standings } from './MultiRoundResults';
-import type { RoundResult } from './types';
+import { MultiFinal } from './MultiParts';
+import { listaNombres } from './players';
+import type { RoomApi } from './useRoom';
+import type { RoomSnapshot, RoundResult, Standing } from './types';
 
 describe('reloj sincronizado con el servidor', () => {
   it('corrige la diferencia entre el reloj de la compu y el del servidor', () => {
@@ -66,5 +70,63 @@ describe('resultados del multijugador', () => {
     expect(html).toContain('Beto (vos)');
     expect(html).toContain('abandonó');
     expect(html).toContain('50 pts');
+  });
+});
+
+describe('empate en el primer puesto', () => {
+  const fila = (userId: string, username: string, points: number, position: number, result: Standing['result']): Standing => ({
+    userId, username, points, position, won: result === 'win', result, abandoned: false,
+  });
+  const empate3 = [fila('a', 'Ana', 50, 1, 'draw'), fila('b', 'Beto', 50, 1, 'draw'), fila('c', 'Caro', 50, 1, 'draw'), fila('d', 'Dani', 10, 4, 'loss')];
+
+  const final = (me: string, standings: Standing[], empatados: string[]) =>
+    renderToStaticMarkup(
+      <MemoryRouter>
+        <MultiFinal
+          room={{} as RoomApi}
+          state={{
+            me, game: 'trivia', isPrivate: true, hostUserId: 'a', history: [], notice: null,
+            final: { reason: 'completed', countsForStats: true, standings, empate: empatados.length > 0, empatados, newAchievements: [] },
+          } as unknown as RoomSnapshot}
+        />
+      </MemoryRouter>,
+    );
+
+  it('nombres: "X y Y", "X, Y y Z" y "e" antes de un nombre que suena "i"', () => {
+    expect(listaNombres(['Ana', 'Beto'])).toBe('Ana y Beto');
+    expect(listaNombres(['Ana', 'Beto', 'Caro'])).toBe('Ana, Beto y Caro');
+    expect(listaNombres(['Ana', 'Ignacio'])).toBe('Ana e Ignacio');
+    expect(listaNombres(['Ana', 'Hilda'])).toBe('Ana e Hilda');
+    expect(listaNombres(['Ana', 'Iara'])).toBe('Ana y Iara'); // "ia" no suena "i"
+  });
+
+  it('a los que empataron arriba: "¡Empate!" con apretón de manos y quiénes empataron', () => {
+    const html = final('a', empate3.slice(0, 2).concat(fila('c', 'Caro', 10, 3, 'loss')), ['Ana', 'Beto']);
+    expect(html).toContain('¡Empate!');
+    expect(html).toContain('Empataron Ana y Beto');
+    expect(html).toContain('lucide-handshake');
+    expect(html).toContain('#fbbf24');
+    expect(html).not.toContain('Ganaste');
+    expect(html).not.toContain('Ganó');
+    expect(html).not.toContain('Ganador');
+  });
+
+  it('a los demás: "Empataron X, Y y Z" en vez de "Ganó…"', () => {
+    const html = final('d', empate3, ['Ana', 'Beto', 'Caro']);
+    expect(html).toContain('Empataron Ana, Beto y Caro');
+    expect(html).not.toContain('¡Empate!');
+    expect(html).not.toContain('Ganó');
+  });
+
+  it('sin empate arriba sigue igual: "Ganó X"', () => {
+    const html = final('b', [fila('a', 'Ana', 50, 1, 'win'), fila('b', 'Beto', 20, 2, 'loss'), fila('c', 'Caro', 20, 2, 'loss')], []);
+    expect(html).toContain('Ganó Ana');
+    expect(html).not.toContain('Empat');
+  });
+
+  it('posiciones: los empatados sin "Ganador" (con apretón de manos)', () => {
+    const html = renderToStaticMarkup(<Standings me="d" standings={empate3} />);
+    expect(html).not.toContain('Ganador');
+    expect(html.match(/aria-label="Empató"/g)).toHaveLength(3);
   });
 });
