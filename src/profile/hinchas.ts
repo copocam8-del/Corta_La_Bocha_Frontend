@@ -43,6 +43,7 @@ const AMARILLO = '#ffd200';
 const CELESTE = '#3fa9f5';
 const VERDE = '#00a443';
 const GRANATE = '#8c0f2a';
+const VIOLETA_LEPRA = '#5b2a9e'; // Independiente Rivadavia
 
 // Fondos fuertes
 const NARANJA = '#ff7a00';
@@ -72,7 +73,7 @@ export const HINCHAS: Hincha[] = [
   { id: 'hincha_ferro', club: 'Ferro Carril Oeste', otros: ['Sarmiento (Junín)'], diseno: 'lisa', camiseta: ['#007a33', BLANCO], short: BLANCO, medias: '#007a33', fondo: NARANJA, liga: 'historico' },
   { id: 'hincha_gimnasia_lp', club: 'Gimnasia (La Plata)', diseno: 'franja', camiseta: [BLANCO, AZUL_MARINO], short: BLANCO, medias: BLANCO, fondo: AMARILLO_F, liga: 'lpf' },
   { id: 'hincha_independiente', club: 'Independiente', otros: ['Argentinos Juniors'], diseno: 'lisa', camiseta: [ROJO, BLANCO], short: AZUL_MARINO, medias: ROJO, fondo: PETROLEO, liga: 'lpf' },
-  { id: 'hincha_ind_rivadavia', club: 'Independiente Rivadavia', diseno: 'lisa', camiseta: [AZUL, BLANCO], short: AZUL, medias: AZUL, fondo: AMARILLO_F, liga: 'lpf' },
+  { id: 'hincha_ind_rivadavia', club: 'Independiente Rivadavia', diseno: 'lisa', camiseta: [VIOLETA_LEPRA, BLANCO], short: VIOLETA_LEPRA, medias: VIOLETA_LEPRA, fondo: AMARILLO_F, liga: 'lpf' },
   { id: 'hincha_lanus', club: 'Lanús', diseno: 'lisa', camiseta: [GRANATE, BLANCO], short: GRANATE, medias: GRANATE, fondo: TURQUESA, liga: 'lpf' },
   { id: 'hincha_newells', club: "Newell's Old Boys", otros: ['Colón'], diseno: 'mitades', camiseta: [ROJO, NEGRO], short: NEGRO, medias: ROJO, fondo: AMARILLO_F, liga: 'lpf' },
   { id: 'hincha_nueva_chicago', club: 'Nueva Chicago', otros: ['San Martín (San Juan)'], diseno: 'rayas', camiseta: [VERDE, NEGRO], short: NEGRO, medias: VERDE, fondo: NARANJA, liga: 'historico' },
@@ -88,7 +89,19 @@ export const HINCHAS: Hincha[] = [
   { id: 'hincha_velez', club: 'Vélez Sarsfield', diseno: 'v', camiseta: [BLANCO, AZUL], short: AZUL, medias: BLANCO, fondo: CORAL, liga: 'lpf' },
 ];
 
-export const getHincha = (id: string | null | undefined) => HINCHAS.find((h) => h.id === id);
+// Cada hincha tiene dos poses: la 1 (con el mate) usa el id del club y la 2 (festejando con los brazos arriba)
+// el mismo id + "_2". Los dos ids están en el backend (CLUB_AVATAR_IDS y CLUB_AVATAR_IDS_2).
+export type PoseHincha = 1 | 2;
+export const POSES_HINCHA: PoseHincha[] = [1, 2];
+export const avatarIdDe = (h: Hincha, pose: PoseHincha) => (pose === 1 ? h.id : `${h.id}_2`);
+export const HINCHA_AVATAR_IDS = HINCHAS.flatMap((h) => POSES_HINCHA.map((p) => avatarIdDe(h, p)));
+export const poseDe = (id: string): PoseHincha => (id.endsWith('_2') ? 2 : 1);
+
+// Sirve con los dos ids (pose 1 o 2): devuelve el club
+export const getHincha = (id: string | null | undefined) => {
+  if (!id) return undefined;
+  return HINCHAS.find((h) => h.id === id || `${h.id}_2` === id);
+};
 
 // Todos los clubes de un avatar: el principal y los que tienen la misma camiseta
 export const nombresDe = (h: Hincha) => [h.club, ...(h.otros ?? [])];

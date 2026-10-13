@@ -1,9 +1,9 @@
 import { useMemo, useState } from 'react';
 import { Search } from 'lucide-react';
 import { AVATARS, getAvatar } from './avatarData';
-import { buscarHinchas, getHincha, HINCHAS, nombresDe, ordenarPorClub } from './hinchas';
+import { avatarIdDe, buscarHinchas, getHincha, HINCHAS, nombresDe, ordenarPorClub, POSES_HINCHA, poseDe } from './hinchas';
 import HinchaSvg, { CHICO } from './Hincha';
-import type { Hincha } from './hinchas';
+import type { Hincha, PoseHincha } from './hinchas';
 
 // Componentes de avatar: los clásicos (íconos, avatarData.ts) y los hinchas de clubes (hinchas.ts +
 // Hincha.tsx). Los ids de los dos sets tienen que coincidir con AVATAR_IDS del backend.
@@ -17,7 +17,7 @@ export function Avatar({ id, fallback, size = 84 }: { id?: string | null; fallba
   } as const;
 
   const hincha = getHincha(id);
-  if (hincha) return <HinchaAvatar hincha={hincha} size={size} />;
+  if (hincha && id) return <HinchaAvatar hincha={hincha} avatarId={id} size={size} />;
 
   const avatar = getAvatar(id);
   if (!avatar) {
@@ -40,22 +40,25 @@ export function Avatar({ id, fallback, size = 84 }: { id?: string | null; fallba
   );
 }
 
-// Hinchas ilustrados: una imagen por avatar en public/avatars/hinchas/<id>.webp (384×384, el círculo de color
-// toca el borde). Si la imagen no carga, se usa el dibujo SVG de Hincha.tsx como respaldo.
+// Hinchas ilustrados: una imagen por avatar (dos por club) en public/avatars/hinchas/<id>.webp (384×384, fondo gris). Si la imagen no carga, se usa el dibujo SVG de Hincha.tsx como respaldo.
 export const hinchaImagen = (id: string) => `/avatars/hinchas/${id}.webp`;
 // Chiquito (ranking, salas, marcador): se agranda la imagen y se centra en la cara y el pecho
 const ZOOM_CHICO = 1.9;
-const CENTRO_CHICO = { x: 0.53, y: 0.31 }; // punto de la imagen (0 a 1) que queda en el centro
+// Punto de la imagen (0 a 1) que queda en el centro, según la pose (1: con el mate; 2: festejando)
+const CENTRO_CHICO: Record<PoseHincha, { x: number; y: number }> = {
+  1: { x: 0.53, y: 0.31 },
+  2: { x: 0.5, y: 0.3 },
+};
 
-function HinchaAvatar({ hincha, size }: { hincha: Hincha; size: number }) {
+function HinchaAvatar({ hincha, avatarId, size }: { hincha: Hincha; avatarId: string; size: number }) {
   const [sinImagen, setSinImagen] = useState(false);
   const lado = size < CHICO ? size * ZOOM_CHICO : size;
-  const centro = size < CHICO ? CENTRO_CHICO : { x: 0.5, y: 0.5 };
+  const centro = size < CHICO ? CENTRO_CHICO[poseDe(avatarId)] : { x: 0.5, y: 0.5 };
   return (
     <div
       role="img"
       aria-label={`Avatar: hincha de ${nombresDe(hincha).join(', ')}`}
-      data-avatar={hincha.id}
+      data-avatar={avatarId}
       style={{
         width: size, height: size, borderRadius: '50%', flexShrink: 0, overflow: 'hidden',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -66,7 +69,7 @@ function HinchaAvatar({ hincha, size }: { hincha: Hincha; size: number }) {
         <HinchaSvg hincha={hincha} size={size} />
       ) : (
         <img
-          src={hinchaImagen(hincha.id)}
+          src={hinchaImagen(avatarId)}
           alt=""
           aria-hidden="true"
           loading="lazy"
@@ -147,9 +150,13 @@ export function AvatarPicker({ value, onChange }: { value: string | null; onChan
         display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(68px, 1fr))', gap: '6px',
         maxHeight: '320px', overflowY: 'auto', paddingRight: '2px',
       }}>
-        {clubes.map((h) => (
-          <Opcion key={h.id} id={h.id} label={h.club} otros={h.otros} selected={h.id === value} onChange={onChange} size={60} />
-        ))}
+        {/* Dos por club: con el mate y festejando */}
+        {clubes.flatMap((h) => POSES_HINCHA.map((pose) => {
+          const avatarId = avatarIdDe(h, pose);
+          return (
+            <Opcion key={avatarId} id={avatarId} label={h.club} otros={h.otros} selected={avatarId === value} onChange={onChange} size={60} />
+          );
+        }))}
         {clubes.length === 0 && (
           <p style={{ gridColumn: '1 / -1', fontSize: '12px', color: 'rgba(180,255,205,0.6)' }}>No encontramos ese club.</p>
         )}
