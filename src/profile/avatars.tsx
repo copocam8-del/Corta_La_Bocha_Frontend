@@ -2,7 +2,8 @@ import { useMemo, useState } from 'react';
 import { Search } from 'lucide-react';
 import { AVATARS, getAvatar } from './avatarData';
 import { buscarHinchas, getHincha, HINCHAS, nombresDe, ordenarPorClub } from './hinchas';
-import HinchaSvg from './Hincha';
+import HinchaSvg, { CHICO } from './Hincha';
+import type { Hincha } from './hinchas';
 
 // Componentes de avatar: los clásicos (íconos, avatarData.ts) y los hinchas de clubes (hinchas.ts +
 // Hincha.tsx). Los ids de los dos sets tienen que coincidir con AVATAR_IDS del backend.
@@ -16,13 +17,7 @@ export function Avatar({ id, fallback, size = 84 }: { id?: string | null; fallba
   } as const;
 
   const hincha = getHincha(id);
-  if (hincha) {
-    return (
-      <div role="img" aria-label={`Avatar: hincha de ${nombresDe(hincha).join(', ')}`} data-avatar={hincha.id} style={{ ...base, background: hincha.fondo }}>
-        <HinchaSvg hincha={hincha} size={size} />
-      </div>
-    );
-  }
+  if (hincha) return <HinchaAvatar hincha={hincha} size={size} />;
 
   const avatar = getAvatar(id);
   if (!avatar) {
@@ -41,6 +36,49 @@ export function Avatar({ id, fallback, size = 84 }: { id?: string | null; fallba
       ...base, background: `linear-gradient(135deg, ${avatar.from}, ${avatar.to})`,
     }}>
       <Icon size={Math.round(size * 0.5)} strokeWidth={2} color="#ffffff" />
+    </div>
+  );
+}
+
+// Hinchas ilustrados: una imagen por avatar en public/avatars/hinchas/<id>.webp (384×384, el círculo de color
+// toca el borde). Si la imagen no carga, se usa el dibujo SVG de Hincha.tsx como respaldo.
+export const hinchaImagen = (id: string) => `/avatars/hinchas/${id}.webp`;
+// Chiquito (ranking, salas, marcador): se agranda la imagen y se centra en la cara y el pecho
+const ZOOM_CHICO = 1.9;
+const CENTRO_CHICO = { x: 0.53, y: 0.31 }; // punto de la imagen (0 a 1) que queda en el centro
+
+function HinchaAvatar({ hincha, size }: { hincha: Hincha; size: number }) {
+  const [sinImagen, setSinImagen] = useState(false);
+  const lado = size < CHICO ? size * ZOOM_CHICO : size;
+  const centro = size < CHICO ? CENTRO_CHICO : { x: 0.5, y: 0.5 };
+  return (
+    <div
+      role="img"
+      aria-label={`Avatar: hincha de ${nombresDe(hincha).join(', ')}`}
+      data-avatar={hincha.id}
+      style={{
+        width: size, height: size, borderRadius: '50%', flexShrink: 0, overflow: 'hidden',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        position: 'relative', background: hincha.fondo,
+      }}
+    >
+      {sinImagen ? (
+        <HinchaSvg hincha={hincha} size={size} />
+      ) : (
+        <img
+          src={hinchaImagen(hincha.id)}
+          alt=""
+          aria-hidden="true"
+          loading="lazy"
+          decoding="async"
+          draggable={false}
+          onError={() => setSinImagen(true)}
+          style={{
+            position: 'absolute', display: 'block', width: lado, height: lado, maxWidth: 'none',
+            left: size / 2 - centro.x * lado, top: size / 2 - centro.y * lado,
+          }}
+        />
+      )}
     </div>
   );
 }
