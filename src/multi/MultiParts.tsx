@@ -1,10 +1,10 @@
 import type { ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Trophy, Users, WifiOff } from 'lucide-react';
+import { Handshake, Trophy, Users, WifiOff } from 'lucide-react';
 import type { RoomApi } from './useRoom';
 import type { RoomSnapshot } from './types';
 import { Standings } from './MultiRoundResults';
-import { rondaLabel } from './players';
+import { listaNombres, rondaLabel } from './players';
 import { Avatar } from '../profile/avatars';
 import { secondsUntil } from './clock';
 import { achievementIcon } from '../profile/achievementIcons';
@@ -79,20 +79,32 @@ export function Notices({ room, state, local }: { room: RoomApi; state: RoomSnap
   );
 }
 
-// Pantalla final: ganador, posiciones, logros nuevos y qué hacer después
+// Pantalla final: ganador (o empate arriba), posiciones, logros nuevos y qué hacer después
 export function MultiFinal({ room, state, children }: { room: RoomApi; state: RoomSnapshot; children?: ReactNode }) {
   const navigate = useNavigate();
   if (!state.final) return null;
   const meStanding = state.final.standings.find((s) => s.userId === state.me);
   const winners = state.final.standings.filter((s) => s.won);
   const isHost = state.hostUserId === state.me;
+  // Empate en el primer puesto: nadie gana. Amarillo y apretón de manos, como el empate contra la máquina
+  const empatados = state.final.empate ? (state.final.empatados ?? []) : [];
+  const empate = empatados.length > 0;
+  const empateYo = empate && meStanding?.result === 'draw';
+  const titulo = empate
+    ? empateYo ? '¡Empate!' : `Empataron ${listaNombres(empatados)}`
+    : meStanding?.won ? '¡Ganaste!' : winners.length ? `Ganó ${winners.map((w) => w.username).join(' y ')}` : 'Terminó la partida';
   return (
     <>
       <div className="card pulse" style={{ textAlign: 'center' }} data-testid="final">
-        <Trophy size={28} color="#fbbf24" />
-        <h1 className="neon-title" style={{ fontSize: '26px', margin: '6px 0' }}>
-          {meStanding?.won ? '¡Ganaste!' : winners.length ? `Ganó ${winners.map((w) => w.username).join(' y ')}` : 'Terminó la partida'}
+        {empate ? <Handshake size={28} color="#fbbf24" aria-label="Empate" /> : <Trophy size={28} color="#fbbf24" />}
+        <h1 className="neon-title" style={{ fontSize: '26px', margin: '6px 0', ...(empate ? { color: '#fbbf24', textShadow: '0 0 16px #fbbf24' } : {}) }}>
+          {titulo}
         </h1>
+        {empateYo && (
+          <p data-testid="empatados" style={{ fontSize: '14px', color: '#fde68a', marginBottom: '8px' }}>
+            Empataron {listaNombres(empatados)}
+          </p>
+        )}
         {state.notice && <p style={{ fontSize: '12px', color: '#fde68a', marginBottom: '8px' }}>{state.notice}</p>}
         <Standings standings={state.final.standings} me={state.me} />
         {!state.final.countsForStats && (
