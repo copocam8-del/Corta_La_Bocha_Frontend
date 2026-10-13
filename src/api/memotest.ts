@@ -36,6 +36,8 @@ export const TEMAS_MEMOTEST = [
   { id: 'clubes_apodos', nombre: 'Clubes y apodos' },
   { id: 'jugadores_selecciones', nombre: 'Jugadores y selecciones' },
   { id: 'estadios_clubes', nombre: 'Estadios y clubes' },
+  { id: 'jugadores_apodos', nombre: 'Jugadores y apodos' },
+  { id: 'selecciones_apodos', nombre: 'Selecciones y apodos' },
 ];
 
 export const empezarMemotest = (tema: string, nivel: NivelMemotest) =>
