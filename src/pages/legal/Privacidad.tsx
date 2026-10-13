@@ -26,7 +26,8 @@ export default function Privacidad() {
           </thead>
           <tbody>
             <tr>
-              <td>Email y contraseña (o identificador de tu cuenta de Google)</td>
+              <td>Email y contraseña. Si entrás con Google: tu nombre, tu email y el identificador de tu cuenta
+                de Google (no tu contraseña de Google)</td>
               <td>Al registrarte o al entrar con Google</td>
               <td>Identificarte e iniciar sesión. La contraseña se guarda cifrada (con bcrypt): nadie, ni
                 siquiera nosotros, puede leerla.</td>
@@ -88,16 +89,16 @@ export default function Privacidad() {
             otros datos de tu cuenta.
           </li>
           <li>
-            <strong>Un servicio de envío de emails</strong> (<Falta>PROVEEDOR DE EMAIL, ej. Resend</Falta>): sólo si
-            pedís recuperar tu contraseña, le pasamos tu email para mandarte el link. El link vence en una hora y
-            sirve una sola vez.
+            <strong>Brevo (Sendinblue)</strong>, servicio de envío de emails: sólo si pedís recuperar tu contraseña,
+            le pasamos tu email para mandarte el link. El link vence en una hora y sirve una sola vez.
           </li>
           <li><strong>Google Fonts</strong>: sirve las tipografías de la página; tu navegador se conecta a sus
             servidores para descargarlas.</li>
           <li>
-            <strong>Google (inicio de sesión)</strong>: si elegís "Continuar con Google", Google nos confirma tu
-            email, tu nombre y un identificador de tu cuenta de Google, que guardamos para reconocerte la
-            próxima vez. No recibimos tu contraseña de Google.
+            <strong>Google (inicio de sesión)</strong>: podés registrarte y entrar con tu cuenta de Google. En ese
+            caso, el inicio de sesión lo hace Google, que nos confirma quién sos; nosotros guardamos tu nombre, tu
+            email y el identificador de tu cuenta de Google para reconocerte la próxima vez. No recibimos tu
+            contraseña de Google.
           </li>
         </ul>
         <p>

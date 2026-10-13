@@ -19,7 +19,16 @@ describe('páginas legales', () => {
 
   it('la política de privacidad nombra a todos los proveedores que reciben datos', () => {
     const html = render(<Privacidad />, '/privacidad');
-    for (const proveedor of ['Vercel', 'Render', 'Supabase', 'OpenAI', 'Google (inicio de sesión)']) expect(html).toContain(proveedor);
+    for (const proveedor of ['Vercel', 'Render', 'Supabase', 'OpenAI', 'Google (inicio de sesión)', 'Brevo (Sendinblue)']) expect(html).toContain(proveedor);
+    expect(html).not.toContain('PROVEEDOR DE EMAIL'); // ya está completo
+  });
+
+  it('explica qué guardamos si entrás con Google', () => {
+    const html = render(<Privacidad />, '/privacidad');
+    expect(html).toContain('podés registrarte y entrar con tu cuenta de Google');
+    expect(html).toContain('guardamos tu nombre, tu');
+    expect(html).toContain('identificador de tu cuenta de Google');
+    expect(html).toContain('13 de octubre de 2026');
   });
 
   it('la política de cookies describe lo que se guarda en localStorage', () => {
