@@ -31,10 +31,12 @@ export interface PartidaSopa {
 
 export const TEMATICAS_SOPA = [
   { id: 'clubes_argentinos', nombre: 'Clubes argentinos' },
+  { id: 'clubes_del_mundo', nombre: 'Clubes del mundo' },
   { id: 'selecciones', nombre: 'Selecciones' },
   { id: 'jugadores', nombre: 'Jugadores' },
   { id: 'estadios', nombre: 'Estadios' },
   { id: 'tecnicos', nombre: 'Directores técnicos' },
+  { id: 'palabras_futboleras', nombre: 'Palabras futboleras' },
 ];
 
 export const empezarSopa = (tematica: string, dificultad: DificultadSopa) =>
