@@ -14,6 +14,8 @@ import TriviaMulti from '../multi/juegos/TriviaMulti';
 import AhorcadoMulti from '../multi/juegos/AhorcadoMulti';
 import SopaMulti from '../multi/juegos/SopaMulti';
 import MemotestMulti from '../multi/juegos/MemotestMulti';
+import { usePantallaMemotest } from '../games/usePantallaMemotest';
+import { MESA_PC } from '../api/memotest';
 
 // Sala multijugador de cualquier juego (/room/:code). Muestra el lobby o la partida según lo que
 // diga el servidor: si recargás la página en medio de una ronda, volvés exactamente a donde estabas.
@@ -172,6 +174,7 @@ export default function Room() {
   const { code = '' } = useParams<{ code: string }>();
   const room = useRoom(code.toUpperCase());
   const { state, error } = room;
+  const pantalla = usePantallaMemotest();
 
   let content;
   if (!state) {
@@ -221,5 +224,7 @@ export default function Room() {
     />
   );
 
-  return <MultiShell maxWidth={state && state.phase !== 'lobby' ? 720 : 480}>{back}{content}</MultiShell>;
+  // El memotest en la PC usa una mesa más ancha (tablero horizontal, ver usePantallaMemotest)
+  const ancho = !state || state.phase === 'lobby' ? 480 : state.game === 'memotest' && state.phase !== 'finished' && pantalla.orientacion === 'horizontal' ? MESA_PC : 720;
+  return <MultiShell maxWidth={ancho}>{back}{content}</MultiShell>;
 }

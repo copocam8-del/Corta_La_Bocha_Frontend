@@ -126,6 +126,13 @@ src/
   "pega" a la dirección recta más cercana (`games/sopaLinea.ts`). El servidor verifica.
 - **Memotest** (`/memotest`, `pages/Memotest.tsx`, `api/memotest.ts`): cartas con texto e íconos de lucide (escudo,
   etiqueta, persona, bandera, estadio). Si dos cartas no son par, se ven 0,9 s y se tapan.
+  - **El tablero se adapta a la pantalla** (solo y multijugador): `columnasMemotest(cartas, orientacion, ancho)` en
+    `api/memotest.ts` arma siempre una grilla completa. PC (horizontal): 12 = 6×2, 16 = 8×2 (4×4 si la ventana mide
+    menos de 900 px), 20 = 5×4. Celular (vertical): 12 = 3×4, 16 = 4×4, 20 = 4×5. "Celular" = ventana de menos de
+    700 px o más alta que ancha (`orientacionDe`). `games/usePantallaMemotest.ts` escucha `resize` y `matchMedia`
+    (girar el celular, achicar la ventana) y saca los listeners al desmontar. En la PC la mesa llega a 960 px
+    (`MESA_PC`; en la sala, `Room.tsx`) y las cartas son apaisadas (4/3); en el celular, paradas (3/4). Letra e ícono
+    según `medidasCarta`; columnas con `minmax(0, 1fr)` y el texto corta palabras largas, así nunca hay scroll horizontal.
 - Ojo en Windows: no puede haber dos archivos que sólo difieren en mayúsculas (`Pelota.tsx` y `pelota.ts` chocan).
 
 ## Perfil, partidas y ranking

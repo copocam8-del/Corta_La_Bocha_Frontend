@@ -7,8 +7,9 @@ import { menuPath } from '../games/multiConfig';
 import GameResult from '../games/GameResult';
 import { useNow } from '../multi/useNow';
 import { secondsLeft } from '../game/round';
+import { usePantallaMemotest } from '../games/usePantallaMemotest';
 import {
-  columnasMemotest, empezarMemotest, rendirseMemotest, TEMAS_MEMOTEST, voltearCarta,
+  columnasMemotest, empezarMemotest, medidasCarta, MESA_PC, rendirseMemotest, TEMAS_MEMOTEST, voltearCarta,
   type CartaVista, type IconoCarta, type NivelMemotest, type PartidaMemotest,
 } from '../api/memotest';
 
@@ -21,6 +22,7 @@ const mensajeError = (e: unknown) =>
   (e as { response?: { data?: { message?: string } } })?.response?.data?.message ?? 'No se pudo conectar con el servidor. Probá de nuevo.';
 
 export default function Memotest() {
+  const pantalla = usePantallaMemotest();
   const [tema, setTema] = useState('clubes_apodos');
   const [nivel, setNivel] = useState<NivelMemotest>('facil');
   const [partida, setPartida] = useState<PartidaMemotest | null>(null);
@@ -106,9 +108,11 @@ export default function Memotest() {
   }
 
   const restantes = partida.terminada ? 0 : Math.min(partida.segundos, secondsLeft(fin, now));
+  const columnas = columnasMemotest(partida.cartas, pantalla.orientacion, pantalla.ancho);
+  const medidas = medidasCarta(pantalla.orientacion, columnas);
   const descubiertas = new Map(partida.descubiertas.map((d) => [d.indice, d]));
   return (
-    <MultiShell maxWidth={560}>
+    <MultiShell maxWidth={pantalla.orientacion === 'horizontal' ? MESA_PC : 560}>
       {/* En medio de la partida, salir = rendirse (cuenta como perdida) */}
       <BackButton to={menuPath('memotest')} confirm={partida.terminada ? null : ABANDONAR}
         onLeave={() => (partida.terminada ? undefined : rendirseMemotest(partida.matchId))} />
@@ -119,7 +123,8 @@ export default function Memotest() {
         </span>
       </div>
 
-      <div data-testid="mesa" style={{ display: 'grid', gridTemplateColumns: `repeat(${columnasMemotest(partida.cartas)}, 1fr)`, gap: '8px' }}>
+      <div data-testid="mesa" data-columnas={columnas}
+        style={{ display: 'grid', gridTemplateColumns: `repeat(${columnas}, minmax(0, 1fr))`, gap: '8px' }}>
         {Array.from({ length: partida.cartas }, (_, i) => {
           const d = descubiertas.get(i);
           const v = d ?? visibles[i];
@@ -127,7 +132,7 @@ export default function Memotest() {
           return (
             <button key={i} data-carta={i} onClick={() => void tocar(i)} aria-label={v ? v.texto : 'Carta boca abajo'}
               style={{
-                aspectRatio: '3 / 4', borderRadius: '10px', cursor: v ? 'default' : 'pointer', padding: '6px',
+                aspectRatio: medidas.aspectRatio, minWidth: 0, borderRadius: '10px', cursor: v ? 'default' : 'pointer', padding: '6px',
                 display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '6px',
                 border: `1px solid ${d ? '#39ff8c' : v ? 'rgba(251,191,36,0.7)' : 'rgba(57,255,140,0.3)'}`,
                 background: d ? 'rgba(57,255,140,0.16)' : v ? 'rgba(251,191,36,0.12)' : 'repeating-linear-gradient(135deg, #052e16 0 10px, #064a22 10px 20px)',
@@ -135,8 +140,8 @@ export default function Memotest() {
               }}>
               {v && Icon ? (
                 <>
-                  <Icon size={20} color={d ? '#39ff8c' : '#fbbf24'} />
-                  <span style={{ fontSize: '12px', fontWeight: 600, lineHeight: 1.2, textAlign: 'center' }}>{v.texto}</span>
+                  <Icon size={medidas.icono} color={d ? '#39ff8c' : '#fbbf24'} style={{ flexShrink: 0 }} />
+                  <span style={{ fontSize: `${medidas.fontSize}px`, fontWeight: 600, lineHeight: 1.2, textAlign: 'center', overflowWrap: 'anywhere' }}>{v.texto}</span>
                 </>
               ) : (
                 <span style={{ fontFamily: "'Oswald', sans-serif", fontSize: '22px', color: 'rgba(124,255,178,0.35)' }}>?</span>
