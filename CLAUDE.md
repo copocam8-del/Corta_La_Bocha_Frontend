@@ -149,6 +149,9 @@ src/
     chiquito la agranda ×1,9 y la centra en cara y pecho. Si la imagen no carga, usa el SVG de `Hincha.tsx` (respaldo).
     Las imágenes tampoco pueden tener texto, escudos, logos ni sponsors. Un test controla que haya una por hincha.
     Para un club nuevo hay que generar su imagen con el mismo script (pedírselo a Claude con la imagen base).
+  - **Dos poses por club**: 1 = con el mate (id del club) y 2 = festejando con los brazos arriba (mismo id + `_2`;
+    `avatarIdDe`, `poseDe`, `HINCHA_AVATAR_IDS` en `hinchas.ts`; backend: `CLUB_AVATAR_IDS_2`). El selector muestra las
+    dos. `getHincha` acepta los dos ids. Chiquito, cada pose se centra distinto (`CENTRO_CHICO` en `avatars.tsx`).
   - El SVG de respaldo es un personaje PROPIO armado en código, caricatura de hincha de barrio: flaco y desgarbado, cabeza
     grande, pelo largo (flequillo, desprolijo, raya al medio o rulos), sonrisa enorme con dientes y ojos achinados. En una
     mano el vaso de fernet con coca (casi negro, espuma clara; sin marcas); con la otra señala, hace pulgar arriba o la

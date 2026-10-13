@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { Avatar, AvatarPicker, hinchaImagen } from './avatars';
 import { AVATARS, getAvatar } from './avatarData';
-import { buscarHinchas, HINCHAS, nombresDe, ordenarPorClub, varianteDe } from './hinchas';
+import { buscarHinchas, getHincha, HINCHA_AVATAR_IDS, HINCHAS, nombresDe, ordenarPorClub, varianteDe } from './hinchas';
 import HinchaSvg from './Hincha';
 import { winRate } from '../api/profile';
 import { getTokenUserId } from '../auth/session';
@@ -123,7 +123,21 @@ describe('hinchas de clubes', () => {
   it('hay una imagen por hincha en public/avatars/hinchas y ninguna de más', () => {
     // Sin eager: sólo lista los archivos, no los importa (lo que está en public/ no se importa desde JS)
     const archivos = Object.keys(import.meta.glob('../../public/avatars/hinchas/*.webp')).map((p) => p.split('/').pop()).sort();
-    expect(archivos).toEqual(HINCHAS.map((h) => `${h.id}.webp`).sort());
+    expect(archivos).toEqual(HINCHA_AVATAR_IDS.map((id) => `${id}.webp`).sort());
+  });
+
+  it('cada club tiene dos poses: el id del club y el mismo + "_2"', () => {
+    expect(HINCHA_AVATAR_IDS).toHaveLength(HINCHAS.length * 2);
+    for (const id of HINCHA_AVATAR_IDS) expect(id.length).toBeLessThanOrEqual(30);
+    expect(getHincha('hincha_boca_2')?.club).toBe('Boca Juniors');
+    expect(getHincha('hincha_boca')?.club).toBe('Boca Juniors');
+    expect(getHincha('pelota_2')).toBeUndefined();
+    const html = renderToStaticMarkup(<Avatar id="hincha_boca_2" fallback="x" size={84} />);
+    expect(html).toContain(`src="${hinchaImagen('hincha_boca_2')}"`);
+    expect(html).toContain('data-avatar="hincha_boca_2"');
+    const picker = renderToStaticMarkup(<AvatarPicker value="hincha_river_2" onChange={() => {}} />);
+    expect(picker.match(/aria-checked="true"/g)).toHaveLength(1);
+    expect(picker.match(/role="radio"/g)!.length).toBe(12 + HINCHA_AVATAR_IDS.length); // 12 clásicos + 2 por club
   });
 
   it('ningún dibujo tiene texto (ni nombres de clubes, ni números, ni marcas)', () => {
