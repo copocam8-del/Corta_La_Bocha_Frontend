@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { CircleUserRound, Flag, Landmark, Shield, Tag, type LucideIcon } from 'lucide-react';
-import { columnasMemotest, type IconoCarta } from '../../api/memotest';
+import { columnasMemotest, medidasCarta, type IconoCarta } from '../../api/memotest';
+import { usePantallaMemotest } from '../../games/usePantallaMemotest';
 import type { RoomApi } from '../useRoom';
 import type { RoomSnapshot } from '../types';
 import type { MemotestView } from '../gameViews';
@@ -20,6 +21,9 @@ export default function MemotestMulti({ room, state }: { room: RoomApi; state: R
   const now = useNow(phase !== 'finished' && phase !== 'lobby', 250);
   const offset = room.offset();
   const [error, setError] = useState<string | null>(null);
+  const pantalla = usePantallaMemotest();
+  const columnas = columnasMemotest(v.cartas, pantalla.orientacion, pantalla.ancho);
+  const medidas = medidasCarta(pantalla.orientacion, columnas);
 
   const header = <MultiHeader room={room} state={state} detail={`Memotest · ${v.tema}`} />;
 
@@ -72,7 +76,8 @@ export default function MemotestMulti({ room, state }: { room: RoomApi; state: R
         )}
       </div>
 
-      <div data-testid="mesa" style={{ display: 'grid', gridTemplateColumns: `repeat(${columnasMemotest(v.cartas)}, 1fr)`, gap: '8px' }}>
+      <div data-testid="mesa" data-columnas={columnas}
+        style={{ display: 'grid', gridTemplateColumns: `repeat(${columnas}, minmax(0, 1fr))`, gap: '8px' }}>
         {Array.from({ length: v.cartas }, (_, i) => {
           const d = descubiertas.get(i);
           const a = abiertas.get(i);
@@ -83,7 +88,7 @@ export default function MemotestMulti({ room, state }: { room: RoomApi; state: R
             <button key={i} data-carta={i} onClick={() => void tocar(i)} aria-label={vista ? vista.texto : 'Carta boca abajo'}
               disabled={!miTurno || !!vista}
               style={{
-                aspectRatio: '3 / 4', borderRadius: '10px', cursor: miTurno && !vista ? 'pointer' : 'default', padding: '6px',
+                aspectRatio: medidas.aspectRatio, minWidth: 0, borderRadius: '10px', cursor: miTurno && !vista ? 'pointer' : 'default', padding: '6px',
                 display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '6px',
                 border: `1px solid ${vista ? col : miTurno ? 'rgba(57,255,140,0.5)' : 'rgba(57,255,140,0.3)'}`,
                 background: vista ? `${col}26` : 'repeating-linear-gradient(135deg, #052e16 0 10px, #064a22 10px 20px)',
@@ -91,8 +96,8 @@ export default function MemotestMulti({ room, state }: { room: RoomApi; state: R
               }}>
               {vista && Icon ? (
                 <>
-                  <Icon size={20} color={col} />
-                  <span style={{ fontSize: '12px', fontWeight: 600, lineHeight: 1.2, textAlign: 'center' }}>{vista.texto}</span>
+                  <Icon size={medidas.icono} color={col} style={{ flexShrink: 0 }} />
+                  <span style={{ fontSize: `${medidas.fontSize}px`, fontWeight: 600, lineHeight: 1.2, textAlign: 'center', overflowWrap: 'anywhere' }}>{vista.texto}</span>
                 </>
               ) : (
                 <span style={{ fontFamily: "'Oswald', sans-serif", fontSize: '22px', color: 'rgba(124,255,178,0.35)' }}>?</span>
