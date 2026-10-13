@@ -47,7 +47,7 @@ const ZOOM_CHICO = 1.9;
 // Punto de la imagen (0 a 1) que queda en el centro, según la pose (1: con el mate; 2: festejando)
 const CENTRO_CHICO: Record<PoseHincha, { x: number; y: number }> = {
   1: { x: 0.53, y: 0.31 },
-  2: { x: 0.5, y: 0.3 },
+  2: { x: 0.5, y: 0.33 },
 };
 
 function HinchaAvatar({ hincha, avatarId, size }: { hincha: Hincha; avatarId: string; size: number }) {
