@@ -28,6 +28,7 @@ export interface MyProfile {
   country: string | null;
   created_at: string;
   profile: ProfileStats | null;
+  isAdmin?: boolean; // equipo con acceso al panel /admin (lo decide el backend)
 }
 
 export interface ProfileUpdate {
