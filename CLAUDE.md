@@ -145,7 +145,7 @@ src/
   - **Desde octubre 2026 se ven ilustraciones**: una imagen por avatar en `public/avatars/hinchas/<id>.webp` (384×384,
     ~18 KB). Salen de UNA ilustración base propia (hecha por Camila con IA: el hincha con el mate, ropa en verde, magenta y
     celeste puros) que un script recolorea por club: camiseta con el diseño (rayas, franja, banda, mitades, V), short,
-    medias, piluso con un color del club y el círculo con el `fondo`. `<Avatar>` muestra la imagen (`hinchaImagen(id)`);
+    medias y piluso con un color del club, sobre fondo gris liso (sin círculo). `<Avatar>` muestra la imagen (`hinchaImagen(id)`);
     chiquito la agranda ×1,9 y la centra en cara y pecho. Si la imagen no carga, usa el SVG de `Hincha.tsx` (respaldo).
     Las imágenes tampoco pueden tener texto, escudos, logos ni sponsors. Un test controla que haya una por hincha.
     Para un club nuevo hay que generar su imagen con el mismo script (pedírselo a Claude con la imagen base).
