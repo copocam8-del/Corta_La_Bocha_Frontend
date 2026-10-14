@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { LogOut, Trophy, User } from 'lucide-react';
+import { BarChart3, LogOut, Trophy, User } from 'lucide-react';
 import { getGames, getMyGameStats, type GameInfo, type GameStats } from '../api/games';
 import { clearSession } from '../auth/session';
 import BackButton from '../components/BackButton';
@@ -8,6 +8,8 @@ import MultiShell from '../multi/MultiShell';
 import LegalFooter from '../components/LegalFooter';
 import { gameIcon } from '../games/gameIcons';
 import AdSlot from '../ads/AdSlot';
+import { getMyProfile } from '../api/profile';
+import { esAdmin } from '../api/admin';
 
 // Pantalla de selección de juegos. El catálogo viene del servidor (GET /games): para sumar un
 // juego se agrega allá y aparece acá solo.
@@ -17,12 +19,14 @@ export default function Dashboard() {
   const [stats, setStats] = useState<Record<string, GameStats>>({});
   const [error, setError] = useState(false);
   const [username] = useState(() => localStorage.getItem('username'));
+  const [admin, setAdmin] = useState(false); // botón "Panel" sólo para el equipo (lo dice el backend)
 
   useEffect(() => {
     getGames().then(setGames).catch(() => setError(true));
     getMyGameStats()
       .then((list) => setStats(Object.fromEntries(list.map((s) => [s.game, s]))))
       .catch(() => setStats({}));
+    getMyProfile().then((p) => setAdmin(esAdmin(p))).catch(() => setAdmin(false));
   }, []);
 
   // Los juegos con multijugador abren su menú (Solo / Con amigos / Online); el desafío del día va directo
@@ -40,6 +44,7 @@ export default function Dashboard() {
           </h1>
         </div>
         <div style={{ display: 'flex', gap: '6px' }}>
+          <PanelButton visible={admin} onClick={() => navigate('/admin')} />
           <button className="option-btn" style={{ flex: 'none', display: 'inline-flex', alignItems: 'center', gap: '5px' }}
             onClick={() => navigate('/ranking', { state: { from: '/dashboard' } })} aria-label="Ranking" data-testid="ir-ranking">
             <Trophy size={14} /> Ranking
@@ -90,5 +95,16 @@ export default function Dashboard() {
       <AdSlot placement="seleccion-juegos" />
       <LegalFooter />
     </MultiShell>
+  );
+}
+
+// Botón "Panel" (administración): sólo para admins
+export function PanelButton({ visible, onClick }: { visible: boolean; onClick: () => void }) {
+  if (!visible) return null;
+  return (
+    <button className="option-btn" style={{ flex: 'none', display: 'inline-flex', alignItems: 'center', gap: '5px' }}
+      onClick={onClick} aria-label="Panel de administración" data-testid="ir-panel">
+      <BarChart3 size={14} /> Panel
+    </button>
   );
 }

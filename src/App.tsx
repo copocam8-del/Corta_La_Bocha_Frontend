@@ -21,6 +21,7 @@ import DesafioDiario from './pages/DesafioDiario';
 import SopaDeLetras from './pages/SopaDeLetras';
 import Memotest from './pages/Memotest';
 import ProtectedRoute from './components/ProtectedRoute';
+import Admin from './pages/Admin';
 import Privacidad from './pages/legal/Privacidad';
 import Terminos from './pages/legal/Terminos';
 import Cookies from './pages/legal/Cookies';
@@ -96,6 +97,8 @@ export default function App() {
         <Route path="/memotest" element={<ProtectedRoute><Memotest /></ProtectedRoute>} />
         <Route path="/global-ranking" element={<ProtectedRoute><GlobalRanking /></ProtectedRoute>} />
         <Route path="/ranking" element={<ProtectedRoute><GlobalRanking /></ProtectedRoute>} />
+        {/* Panel del equipo: si /users/me dice que no sos admin, vuelve al Dashboard */}
+        <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
       </Routes>
     </BrowserRouter>
   );

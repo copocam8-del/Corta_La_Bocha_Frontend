@@ -213,6 +213,20 @@ src/
   `profile/achievementIcons.ts`; grilla en `profile/AchievementsGrid.tsx` (bloqueados en gris). La partida solo
   muestra "¡Logro desbloqueado!" con los `newAchievements` que devuelve el backend.
 
+## Panel de administración (`/admin`, sólo lectura)
+
+- **Quién entra lo decide el backend** (`ADMIN_EMAILS` en Render). El frontend sólo usa `isAdmin` de `GET /users/me`:
+  el botón **"Panel"** del Dashboard (`PanelButton`) aparece sólo si es `true`, y `/admin` (`pages/Admin.tsx`) vuelve al
+  Dashboard si es `false` o si `/admin/*` responde 404 (no sos admin). Hasta confirmarlo no muestra nada.
+- Pestañas Usuarios / Partidas / IA / Contenido (`admin/AdminTabs.tsx`) y período Hoy / 7 días / 30 días / Todo. Cada
+  pestaña y período se pide una vez (`api/admin.ts`) y queda guardado mientras estás en la pantalla. El backend limita a
+  30 pedidos por minuto (429 → "Demasiados pedidos" con botón Reintentar).
+- Tarjetas con números grandes y gráficos hechos con SVG/CSS, **sin librerías** (`admin/AdminParts.tsx`: `BarrasPorDia`
+  apilado por juego, `BarrasHorizontales`, `Tabla` que en el celular se desplaza adentro de su caja). Colores por juego y
+  formatos (números y plata con coma, días "13 oct") en `admin/adminFormat.ts`.
+- `<meta name="robots" content="noindex, nofollow">` dentro de la pantalla (React 19 lo sube al `<head>`). "Volver" al
+  Dashboard. El panel no calcula nada: muestra lo que manda el servidor (incluido lo que la base no guarda).
+
 ## Login con Google
 
 - `components/GoogleButton.tsx` (en Login y Register) usa Google Identity Services (`auth/googleIdentity.ts`) y
