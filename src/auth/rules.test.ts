@@ -10,7 +10,7 @@ const valido: RegisterForm = {
   birthDate: '1987-06-24',
   country: 'Argentina',
   email: 'leo@mail.com',
-  password: 'contraseña123',
+  password: 'gambeta-de-potrero',
 };
 
 describe('validateRegister', () => {
@@ -32,7 +32,7 @@ describe('validateRegister', () => {
 
   it.each([
     ['1234567', true],
-    ['12345678', false],
+    ['Gambeta8', false],
     ['a'.repeat(72), false],
     ['a'.repeat(73), true],
   ])('contraseña de %s → error: %s', (password, hayError) => {
