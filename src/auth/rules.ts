@@ -1,5 +1,6 @@
 // Mismas reglas que el backend (src/auth/dto/auth-rules.ts en Corta_La_Bocha_Backend).
 // Acá sólo sirven para avisar antes de enviar el formulario; el backend es el que decide.
+import { COMMON_PASSWORDS } from './common-passwords';
 
 export const PASSWORD_MIN = 8;
 export const PASSWORD_MAX = 72;
@@ -21,12 +22,29 @@ export interface RegisterForm {
   password: string;
 }
 
+// Lo que se manda a POST /auth/register. captchaToken sólo va si hay captcha (VITE_TURNSTILE_SITE_KEY).
+export function registerPayload(form: RegisterForm, captchaToken?: string) {
+  return {
+    ...form,
+    name: form.name.trim(),
+    lastName: form.lastName.trim(),
+    username: form.username.trim(),
+    email: form.email.trim(),
+    ...(captchaToken ? { captchaToken } : {}),
+  };
+}
+
 export interface LoginForm {
   email: string;
   password: string;
 }
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+// Contraseñas de la lista de las más usadas (sin mayúsculas). Mismo mensaje que el backend.
+export const COMMON_PASSWORD_MESSAGE = 'Esa contraseña es muy común. Elegí otra más difícil de adivinar.';
+const COMMON_SET = new Set(COMMON_PASSWORDS);
+export const isCommonPassword = (password: string) => COMMON_SET.has(password.toLowerCase());
 
 export function ageFrom(birthDate: string, today = new Date()): number {
   const birth = new Date(birthDate);
@@ -97,6 +115,7 @@ export function validateRegister(form: RegisterForm, today = new Date()): FieldE
   if (!form.password) errors.password = 'Ingresá una contraseña';
   else if (form.password.length < PASSWORD_MIN || form.password.length > PASSWORD_MAX)
     errors.password = `La contraseña debe tener entre ${PASSWORD_MIN} y ${PASSWORD_MAX} caracteres`;
+  else if (isCommonPassword(form.password)) errors.password = COMMON_PASSWORD_MESSAGE;
 
   return errors;
 }
@@ -107,6 +126,7 @@ export function validateNewPassword(password: string, confirm: string): FieldErr
   if (!password) errors.password = 'Ingresá una contraseña';
   else if (password.length < PASSWORD_MIN || password.length > PASSWORD_MAX)
     errors.password = `La contraseña debe tener entre ${PASSWORD_MIN} y ${PASSWORD_MAX} caracteres`;
+  else if (isCommonPassword(password)) errors.password = COMMON_PASSWORD_MESSAGE;
   if (!errors.password && password !== confirm) errors.confirm = 'Las contraseñas no coinciden';
   return errors;
 }

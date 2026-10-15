@@ -6,8 +6,10 @@ import { User, Mail, Lock, Calendar, Globe2, ArrowRight, ShieldCheck } from 'luc
 import FieldError from '../components/FieldError';
 import LegalFooter from '../components/LegalFooter';
 import GoogleButton from '../components/GoogleButton';
-import { maxBirthDate, validateRegister, PASSWORD_MIN, PASSWORD_MAX, type FieldErrors, type RegisterForm } from '../auth/rules';
+import { maxBirthDate, registerPayload, validateRegister, PASSWORD_MIN, PASSWORD_MAX, type FieldErrors, type RegisterForm } from '../auth/rules';
 import { parseAuthError } from '../auth/apiErrors';
+import TurnstileWidget from '../components/TurnstileWidget';
+import { CAPTCHA_ERROR, CaptchaToken, TURNSTILE_SITE_KEY } from '../auth/turnstile';
 
 const PAISES = [
   "Argentina", "Brasil", "Uruguay", "España", "Francia",
@@ -26,6 +28,7 @@ export default function Register() {
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [loading, setLoading] = useState(false);
   const [entered, setEntered] = useState(false);
+  const captcha = useMemo(() => new CaptchaToken(), []);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -69,13 +72,17 @@ export default function Register() {
 
     setLoading(true);
     try {
-      await api.post('/auth/register', {
-        ...form,
-        name: form.name.trim(),
-        lastName: form.lastName.trim(),
-        username: form.username.trim(),
-        email: form.email.trim(),
-      });
+      // Con captcha: esperamos el token del widget (casi siempre ya llegó mientras completaba el formulario)
+      let captchaToken: string | undefined;
+      if (TURNSTILE_SITE_KEY) {
+        const token = await captcha.get();
+        if (!token) {
+          setError(CAPTCHA_ERROR);
+          return;
+        }
+        captchaToken = token;
+      }
+      await api.post('/auth/register', registerPayload(form, captchaToken));
       navigate('/login?registered=1');
     } catch (err) {
       // 400 → errores por campo, 409 → email/usuario repetido, sin respuesta → backend dormido (Render) o CORS
@@ -83,6 +90,8 @@ export default function Register() {
       setFieldErrors(parsed.fieldErrors);
       setError(parsed.message);
     } finally {
+      // El token del captcha sirve una sola vez: pedimos otro por si hay que volver a enviar
+      if (TURNSTILE_SITE_KEY) captcha.reset();
       setLoading(false);
     }
   };
@@ -526,6 +535,10 @@ export default function Register() {
                 </span>
               </label>
               <FieldError id="register-terms-error" message={fieldErrors.terms} />
+
+              {/* Captcha invisible: sólo si VITE_TURNSTILE_SITE_KEY está configurado */}
+              <TurnstileWidget captcha={captcha} />
+              <FieldError id="register-captchaToken-error" message={fieldErrors.captchaToken} />
 
               <button type="submit" className="submit-btn" disabled={loading} style={{ marginTop: '6px' }}>
                 {loading ? 'Creando cuenta...' : (<>¡A jugar! <ArrowRight size={16} strokeWidth={2} /></>)}

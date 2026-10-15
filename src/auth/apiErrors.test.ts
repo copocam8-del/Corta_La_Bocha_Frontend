@@ -41,6 +41,24 @@ describe('parseAuthError', () => {
     );
   });
 
+  it('429 por email: muestra cuánto esperar (15 minutos)', () => {
+    const msg = 'Demasiados intentos con este email. Esperá 15 minutos y probá de nuevo.';
+    expect(parseAuthError(respuesta(429, { statusCode: 429, message: msg })).message).toBe(msg);
+  });
+
+  it('400 del captcha: queda en el campo captchaToken', () => {
+    const err = respuesta(400, { message: 'Datos inválidos', errors: { captchaToken: ['No pudimos verificar que seas una persona.'] } });
+    expect(parseAuthError(err).fieldErrors).toEqual({ captchaToken: 'No pudimos verificar que seas una persona.' });
+  });
+
+  it('503 del captcha: muestra el mensaje del backend', () => {
+    const msg = 'No pudimos verificar el captcha. Probá de nuevo en un rato.';
+    expect(parseAuthError(respuesta(503, { message: msg })).message).toBe(msg);
+    expect(parseAuthError(respuesta(503, { message: 'upstream connect error' })).message).toBe(
+      'El servidor tuvo un problema. Probá de nuevo en un rato.',
+    );
+  });
+
   it('500: mensaje genérico en español, sin detalles técnicos', () => {
     expect(parseAuthError(respuesta(500, { message: 'Internal server error' })).message).toBe(
       'El servidor tuvo un problema. Probá de nuevo en un rato.',
