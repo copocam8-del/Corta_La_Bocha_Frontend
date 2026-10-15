@@ -33,6 +33,8 @@ src/
   auth/
     session.ts               token en localStorage, lectura de "exp" del JWT
     rules.ts                 reglas de registro/login (copia de las del backend)
+    common-passwords.ts      contraseñas demasiado comunes (copia exacta de la lista del backend)
+    turnstile.ts             captcha de Cloudflare Turnstile (carga del script + CaptchaToken)
     apiErrors.ts             traduce errores del backend a errores por campo
   components/
     ProtectedRoute.tsx       sin token o token vencido → /login
@@ -57,6 +59,26 @@ src/
 - `GET /users` y `GET /users/:id` devuelven sólo datos públicos (usuario, país, perfil de juego).
   Email, fecha de nacimiento y nombre real sólo vienen en `GET /users/me`.
 - Para cerrar sesión usar `clearSession()` (borra token, username y name), no `removeItem('token')`.
+- Contraseñas: el registro y "contraseña nueva" avisan si está en la lista de las más comunes
+  (`auth/common-passwords.ts`, **copia exacta** de `src/auth/dto/common-passwords.ts` del backend: un test del
+  backend compara las dos). Mismo mensaje que el backend ("Esa contraseña es muy común…").
+- 429: `parseAuthError` muestra el mensaje del backend, que dice cuánto esperar (1 minuto por IP, 15 por email).
+
+## Seguridad
+
+Checklist pre-producción (rama `feat/seguridad`, octubre 2026; el detalle completo está en el CLAUDE.md del backend).
+
+| Punto | Estado | Dónde |
+|---|---|---|
+| Cabeceras HTTP | ✅ | `vercel.json`, para todas las rutas: HSTS 1 año + subdominios, `nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy: strict-origin-when-cross-origin`, `Permissions-Policy` (cámara, micrófono y ubicación apagados). Un test (`src/vercelHeaders.test.ts`) las controla |
+| CSP | ⚠️ Report-Only | `Content-Security-Policy-Report-Only` en `vercel.json`: **avisa en la consola del navegador pero no bloquea nada**. Permite el backend de Render (https y wss), Google Identity (`accounts.google.com/gsi/…`), Cloudflare Turnstile (`challenges.cloudflare.com`), Google Fonts y los estilos inline (las páginas usan `style={{…}}` y bloques `<style>`). Scripts inline, `eval` y plugins NO están permitidos (el build no los usa). **Si agregás un servicio externo, sumalo a la CSP.** Cuando pase un tiempo sin avisos en la consola, se puede cambiar a `Content-Security-Policy` (que sí bloquea) |
+| Contraseñas comunes | ✅ | ver "Auth en el frontend" |
+| Captcha Turnstile | ⚠️ falta cargar la clave | `components/TurnstileWidget.tsx` en Register: con `VITE_TURNSTILE_SITE_KEY` muestra el widget **invisible** (`appearance: interaction-only`: sólo aparece si Cloudflare necesita que la persona haga algo) y manda `captchaToken`. Cada token sirve una vez: después de cada envío se pide otro (`captcha.reset()`). Sin la variable, nada cambia |
+| CI | ✅ | `.github/workflows/ci.yml` en cada PR: `npm ci`, `npm test`, `npm run build`, `npm audit --audit-level=high --omit=dev` y gitleaks sobre todo el historial. Hoy 0 vulnerabilidades (nada ignorado). `.github/dependabot.yml`: npm y github-actions semanal, con 14 días de espera |
+
+- **Token Bearer en `localStorage`, no cookies (a propósito)**: el navegador no lo manda solo, así que no hace falta
+  protección CSRF. La contra es que un XSS podría leerlo: por eso no usamos `dangerouslySetInnerHTML` y hay CSP.
+- **No hay uploads**: la app no sube archivos (los avatares son de una lista fija).
 
 ## Recuperar contraseña
 
@@ -252,6 +274,8 @@ nada salvo que `VITE_ADS_ENABLED=true`. No hay ninguna red de anuncios integrada
   En producción está cargado en Vercel (proyecto **corta-la-bocha-frontend**, tipo Config) y en Render como `GOOGLE_CLIENT_ID`.
   Al cambiar una variable `VITE_` en Vercel hay que volver a publicar, porque se leen en el build.
 - `VITE_ADS_ENABLED`: `true` muestra el espacio de publicidad (por defecto apagado). Ver `docs/PUBLICIDAD.md`.
+- `VITE_TURNSTILE_SITE_KEY`: "Site Key" del widget de Cloudflare Turnstile (opcional, es pública). Va con
+  `TURNSTILE_SECRET_KEY` del backend (Render). Sin ella, el registro funciona sin captcha.
 - `.env.production` tiene las URLs de Render (son públicas, no secretos).
 
 ## Reglas para trabajar
