@@ -27,7 +27,14 @@ export function parseAuthError(err: unknown): ParsedApiError {
   }
 
   if (status === 429) {
-    return { fieldErrors: {}, message: 'Demasiados intentos. Esperá un minuto y probá de nuevo.' };
+    // El backend dice cuánto esperar: 1 minuto (límite por IP) o 15 (límite por email)
+    const propio = typeof backendMessage === 'string' && /^Demasiados intentos/.test(backendMessage);
+    return { fieldErrors: {}, message: propio ? backendMessage : 'Demasiados intentos. Esperá un minuto y probá de nuevo.' };
+  }
+
+  // 503 del captcha o de Google: el backend manda un mensaje en español para el usuario
+  if (status === 503 && typeof backendMessage === 'string' && /captcha|Google/.test(backendMessage)) {
+    return { fieldErrors: {}, message: backendMessage };
   }
 
   if (status === 401) return { fieldErrors: {}, message: 'Email o contraseña incorrectos' };

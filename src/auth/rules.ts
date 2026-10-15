@@ -22,6 +22,18 @@ export interface RegisterForm {
   password: string;
 }
 
+// Lo que se manda a POST /auth/register. captchaToken sólo va si hay captcha (VITE_TURNSTILE_SITE_KEY).
+export function registerPayload(form: RegisterForm, captchaToken?: string) {
+  return {
+    ...form,
+    name: form.name.trim(),
+    lastName: form.lastName.trim(),
+    username: form.username.trim(),
+    email: form.email.trim(),
+    ...(captchaToken ? { captchaToken } : {}),
+  };
+}
+
 export interface LoginForm {
   email: string;
   password: string;
