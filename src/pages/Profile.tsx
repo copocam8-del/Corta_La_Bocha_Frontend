@@ -207,6 +207,10 @@ export default function Profile() {
            los logros con los grupos de a 3 por fila (3, abajo otros 3…) y "Editar perfil". */
         @media (min-width: 900px) and (min-aspect-ratio: 1/1) {
           .perfil-layout { max-width: 1280px; }
+          /* "Editar perfil" arriba de todo, justo debajo de la foto y el nombre */
+          .perfil-ident { order: 0; }
+          .perfil-edit { order: 1; }
+          .perfil-main { order: 2; }
           .perfil-layout .logros-grupos { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; gap: 16px !important; }
         }
 
