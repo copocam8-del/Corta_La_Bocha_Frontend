@@ -202,24 +202,12 @@ export default function Profile() {
         .perfil-main { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
         .perfil-ident { text-align: center; }
 
-        /* Compu (ventana ancha y horizontal): tres columnas una al lado de la otra.
-           1) avatar, nombre y "Editar perfil" · 2) estadísticas · 3) logros */
+        /* Compu (ventana ancha y horizontal): todo a lo ancho de la pantalla.
+           Arriba, en el centro, la foto y el nombre. Abajo las estadísticas en una fila,
+           los logros con los grupos de a 3 por fila (3, abajo otros 3…) y "Editar perfil". */
         @media (min-width: 900px) and (min-aspect-ratio: 1/1) {
-          .perfil-layout {
-            max-width: 1280px;
-            display: grid;
-            grid-template-columns: 300px minmax(0, 1fr) minmax(0, 1fr);
-            grid-template-areas: "ident stats logros" "edit stats logros";
-            grid-template-rows: auto 1fr;
-            column-gap: 20px;
-            row-gap: 14px;
-            align-items: start;
-          }
-          .perfil-main { display: contents; }
-          .perfil-ident { grid-area: ident; }
-          .perfil-stats { grid-area: stats; }
-          .perfil-logros { grid-area: logros; }
-          .perfil-edit { grid-area: edit; }
+          .perfil-layout { max-width: 1280px; }
+          .perfil-layout .logros-grupos { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; gap: 16px !important; }
         }
 
         .back-corner {
@@ -540,7 +528,7 @@ export default function Profile() {
                   }}>
                   <Medal size={14} /> Ver ranking
                 </button>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(96px, 1fr))', gap: '8px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(96px, 1fr))', gap: '8px' }}>
                   <div className="stat-box">
                     <Gamepad2 size={16} color="#39ff8c" />
                     <span className="stat-value">{stats.matches_played}</span>
