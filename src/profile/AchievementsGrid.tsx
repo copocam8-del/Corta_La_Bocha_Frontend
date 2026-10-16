@@ -15,7 +15,8 @@ export default function AchievementsGrid({ achievements }: { achievements: Achie
   }
   if (groups.size <= 1) return <Grid achievements={achievements} />;
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+    // className "logros-grupos": en la compu el perfil los acomoda de a 3 por fila (ver Profile.tsx)
+    <div className="logros-grupos" style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr)', gap: '12px' }}>
       {[...groups.entries()].map(([game, list]) => (
         <div key={game || 'generales'}>
           <p style={{ fontFamily: "'Oswald', sans-serif", fontSize: '11px', letterSpacing: '2px', textTransform: 'uppercase', color: 'rgba(124,255,178,0.6)', margin: '0 0 6px' }}>
