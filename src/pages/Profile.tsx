@@ -202,21 +202,23 @@ export default function Profile() {
         .perfil-main { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
         .perfil-ident { text-align: center; }
 
-        /* Compu (ventana ancha y horizontal): dos columnas.
-           Izquierda: avatar, nombre y "Editar perfil". Derecha: estadísticas y logros. */
+        /* Compu (ventana ancha y horizontal): tres columnas una al lado de la otra.
+           1) avatar, nombre y "Editar perfil" · 2) estadísticas · 3) logros */
         @media (min-width: 900px) and (min-aspect-ratio: 1/1) {
           .perfil-layout {
-            max-width: 1080px;
+            max-width: 1280px;
             display: grid;
-            grid-template-columns: 360px minmax(0, 1fr);
-            grid-template-areas: "ident main" "edit main";
+            grid-template-columns: 300px minmax(0, 1fr) minmax(0, 1fr);
+            grid-template-areas: "ident stats logros" "edit stats logros";
             grid-template-rows: auto 1fr;
-            column-gap: 24px;
+            column-gap: 20px;
             row-gap: 14px;
             align-items: start;
           }
+          .perfil-main { display: contents; }
           .perfil-ident { grid-area: ident; }
-          .perfil-main { grid-area: main; }
+          .perfil-stats { grid-area: stats; }
+          .perfil-logros { grid-area: logros; }
           .perfil-edit { grid-area: edit; }
         }
 
@@ -511,7 +513,7 @@ export default function Profile() {
               {/* Columna principal: estadísticas y logros */}
               <div className="perfil-main">
               {/* Estadísticas */}
-              <div className="profile-card" style={{
+              <div className="profile-card perfil-stats" style={{
                 opacity: entered ? 1 : 0,
                 animation: entered ? 'riseIn 0.6s ease 0.1s both' : 'none',
               }}>
@@ -616,7 +618,7 @@ export default function Profile() {
 
               {/* Logros */}
               {achievements && (
-                <div className="profile-card" style={{
+                <div className="profile-card perfil-logros" style={{
                   opacity: entered ? 1 : 0,
                   animation: entered ? 'riseIn 0.6s ease 0.14s both' : 'none',
                 }}>
