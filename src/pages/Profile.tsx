@@ -206,7 +206,9 @@ export default function Profile() {
            Arriba, en el centro, la foto y el nombre. Abajo las estadísticas en una fila,
            los logros con los grupos de a 3 por fila (3, abajo otros 3…) y "Editar perfil". */
         @media (min-width: 900px) and (min-aspect-ratio: 1/1) {
-          .perfil-layout { max-width: 1280px; }
+          /* Letra (y todo el contenido) un poco más grande: zoom 1.15. El ancho máximo va dividido
+             por el zoom para que en la pantalla siga ocupando unos 1280 px */
+          .perfil-layout { max-width: 1110px; zoom: 1.15; }
           /* "Editar perfil" arriba de todo, justo debajo de la foto y el nombre */
           .perfil-ident { order: 0; }
           .perfil-edit { order: 1; }
