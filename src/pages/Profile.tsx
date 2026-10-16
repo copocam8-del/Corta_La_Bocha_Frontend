@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Gamepad2,
@@ -101,19 +101,6 @@ export default function Profile() {
     getMyAchievements().then(setAchievements).catch(() => setAchievements(null));
   }, [navigate]);
 
-  const sparks = useMemo(
-    () =>
-      Array.from({ length: 14 }).map((_, i) => ({
-        id: i,
-        left: Math.random() * 100,
-        size: 2 + Math.random() * 3,
-        duration: 6 + Math.random() * 5,
-        delay: Math.random() * 7,
-        dx: (Math.random() - 0.5) * 40,
-      })),
-    []
-  );
-
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
@@ -178,23 +165,6 @@ export default function Profile() {
       <style>{`
         * { box-sizing: border-box; margin: 0; padding: 0; }
 
-        @keyframes kenBurns {
-          0%   { transform: scale(1) translate(0, 0); }
-          100% { transform: scale(1.06) translate(-1%, -1%); }
-        }
-        @keyframes floodPulse {
-          0%, 100% { opacity: 0.5; }
-          50%      { opacity: 0.9; }
-        }
-        @keyframes lineGlow {
-          0%, 100% { opacity: 0.4; }
-          50%      { opacity: 0.85; }
-        }
-        @keyframes drift {
-          0%   { transform: translate(0, 0); opacity: 0; }
-          15%  { opacity: 0.9; }
-          100% { transform: translate(var(--dx), -160px); opacity: 0; }
-        }
         @keyframes riseIn {
           0%   { opacity: 0; transform: translateY(15px); }
           100% { opacity: 1; transform: translateY(0); }
@@ -217,6 +187,38 @@ export default function Profile() {
         }
 
         .neon-title { animation: titleGlow 2.6s ease-in-out infinite; }
+
+        /* Celular (o ventana angosta / vertical): una columna, como siempre */
+        .perfil-layout {
+          width: 100%;
+          max-width: 440px;
+          position: relative;
+          z-index: 2;
+          padding: 56px 0 24px;
+          display: flex;
+          flex-direction: column;
+          gap: 14px;
+        }
+        .perfil-main { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+        .perfil-ident { text-align: center; }
+
+        /* Compu (ventana ancha y horizontal): dos columnas.
+           Izquierda: avatar, nombre y "Editar perfil". Derecha: estadísticas y logros. */
+        @media (min-width: 900px) and (min-aspect-ratio: 1/1) {
+          .perfil-layout {
+            max-width: 1080px;
+            display: grid;
+            grid-template-columns: 360px minmax(0, 1fr);
+            grid-template-areas: "ident main" "edit main";
+            grid-template-rows: auto 1fr;
+            column-gap: 24px;
+            row-gap: 14px;
+            align-items: start;
+          }
+          .perfil-ident { grid-area: ident; }
+          .perfil-main { grid-area: main; }
+          .perfil-edit { grid-area: edit; }
+        }
 
         .back-corner {
           position: absolute;
@@ -388,10 +390,9 @@ export default function Profile() {
         fontFamily: "'Inter', sans-serif",
       }}>
 
-        {/* CANCHA de fondo */}
-        <div style={{
-          position: 'absolute', inset: '-3%',
-          animation: 'kenBurns 24s ease-in-out infinite alternate',
+        {/* CANCHA de fondo: fija (no se mueve al hacer scroll) y quieta (sin animaciones) */}
+        <div data-testid="perfil-fondo" style={{
+          position: 'fixed', inset: 0,
           pointerEvents: 'none',
         }}>
           <div style={{
@@ -414,7 +415,7 @@ export default function Profile() {
           <svg
             viewBox="0 0 1600 900"
             preserveAspectRatio="xMidYMid slice"
-            style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', opacity: 0.55, animation: 'lineGlow 4.5s ease-in-out infinite' }}
+            style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', opacity: 0.55 }}
           >
             <defs>
               <filter id="neonLine" x="-50%" y="-50%" width="200%" height="200%">
@@ -440,33 +441,19 @@ export default function Profile() {
             position: 'absolute', top: '-8%', left: '4%',
             width: '34%', height: '34%', borderRadius: '50%',
             background: 'radial-gradient(circle, rgba(120,255,180,0.5) 0%, transparent 70%)',
-            animation: 'floodPulse 5s ease-in-out infinite',
+            opacity: 0.7,
           }}/>
           <div style={{
             position: 'absolute', top: '-8%', right: '4%',
             width: '34%', height: '34%', borderRadius: '50%',
             background: 'radial-gradient(circle, rgba(120,255,180,0.45) 0%, transparent 70%)',
-            animation: 'floodPulse 5s ease-in-out 1s infinite',
+            opacity: 0.7,
           }}/>
           <div style={{
             position: 'absolute', inset: 0,
             background: 'radial-gradient(ellipse 70% 70% at 50% 48%, transparent 35%, rgba(0,4,2,0.78) 100%)',
           }}/>
         </div>
-
-        {/* motas de luz */}
-        {sparks.map(s => (
-          <div key={s.id} style={{
-            position: 'absolute', bottom: '30%', left: `${s.left}%`,
-            width: `${s.size}px`, height: `${s.size}px`,
-            borderRadius: '50%',
-            background: 'rgba(160,255,200,0.9)',
-            boxShadow: '0 0 8px rgba(57,255,140,0.8)',
-            animation: `drift ${s.duration}s ease-out ${s.delay}s infinite`,
-            '--dx': `${s.dx}px`,
-            pointerEvents: 'none',
-          } as React.CSSProperties}/>
-        ))}
 
         {/* Volver */}
         <BackButton to="/dashboard" />
@@ -486,7 +473,7 @@ export default function Profile() {
         </button>
 
         {/* CONTENIDO */}
-        <div style={{ width: '100%', maxWidth: '440px', position: 'relative', zIndex: 2, padding: '56px 0 24px' }}>
+        <div className="perfil-layout" data-testid="perfil-layout">
 
           {!profile ? (
             <p style={{ textAlign: 'center', color: 'rgba(180,255,205,0.6)', fontSize: '13px' }}>
@@ -495,8 +482,7 @@ export default function Profile() {
           ) : (
             <>
               {/* Encabezado identidad */}
-              <div style={{
-                textAlign: 'center', marginBottom: '16px',
+              <div className="perfil-ident" style={{
                 opacity: entered ? 1 : 0,
                 animation: entered ? 'riseIn 0.6s ease both' : 'none',
               }}>
@@ -522,11 +508,12 @@ export default function Profile() {
                 )}
               </div>
 
+              {/* Columna principal: estadísticas y logros */}
+              <div className="perfil-main">
               {/* Estadísticas */}
               <div className="profile-card" style={{
                 opacity: entered ? 1 : 0,
                 animation: entered ? 'riseIn 0.6s ease 0.1s both' : 'none',
-                marginBottom: '14px',
               }}>
                 <p className="section-label">Estadísticas</p>
                 {ranking && (
@@ -632,7 +619,6 @@ export default function Profile() {
                 <div className="profile-card" style={{
                   opacity: entered ? 1 : 0,
                   animation: entered ? 'riseIn 0.6s ease 0.14s both' : 'none',
-                  marginBottom: '14px',
                 }}>
                   <p className="section-label">
                     Logros · {achievements.filter(a => a.unlocked).length}/{achievements.length}
@@ -641,8 +627,10 @@ export default function Profile() {
                 </div>
               )}
 
+              </div>
+
               {/* Editar perfil */}
-              <div className="profile-card" style={{
+              <div className="profile-card perfil-edit" style={{
                 opacity: entered ? 1 : 0,
                 animation: entered ? 'riseIn 0.6s ease 0.18s both' : 'none',
               }}>
