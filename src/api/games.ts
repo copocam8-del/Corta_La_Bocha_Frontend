@@ -2,7 +2,7 @@ import api from './axios';
 
 // Catálogo de juegos y estadísticas por juego (backend: GET /games y GET /users/me/games)
 
-export type GameId = 'tutti_frutti' | 'ahorcado' | 'trivia' | 'trivia_diaria' | 'sopa_de_letras' | 'memotest';
+export type GameId = 'tutti_frutti' | 'ahorcado' | 'trivia' | 'trivia_diaria' | 'sopa_de_letras' | 'memotest' | 'impostor';
 
 export interface GameInfo {
   id: GameId;
