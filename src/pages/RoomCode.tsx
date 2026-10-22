@@ -3,7 +3,7 @@ import { Navigate, useNavigate, useLocation, useParams } from 'react-router-dom'
 import { Copy, Share2, ChevronRight, Check } from 'lucide-react';
 import BackButton from '../components/BackButton';
 import { gameName } from '../games/gameIcons';
-import { isMultiGame, menuPath } from '../games/multiConfig';
+import { isMultiGame, menuOnlinePath } from '../games/multiConfig';
 
 // Muestra el código de la sala que creó el servidor, para compartirlo
 export default function RoomCode() {
@@ -61,11 +61,11 @@ export default function RoomCode() {
     navigate(`/room/${code}`);
   };
 
-  if (!code) return <Navigate to={menuPath(game)} replace />;
+  if (!code) return <Navigate to={menuOnlinePath(game)} replace />;
 
   return (
     <>
-      <BackButton to={menuPath(game)} />
+      <BackButton to={menuOnlinePath(game)} />
       <style>{`
         * { box-sizing: border-box; margin: 0; padding: 0; }
 

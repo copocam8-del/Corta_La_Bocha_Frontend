@@ -42,6 +42,7 @@ src/
     BackButton.tsx           botón "Volver" (fijo arriba a la izquierda) + ventana "¿Seguro?" (textos en abandonar.ts)
   games/multiConfig.ts       menú y opciones de las salas de cada juego (copia del backend)
   multi/juegos/              pantallas de partida multijugador de trivia, ahorcado, sopa, memotest y El Impostor
+  games/impostor/            El Impostor "En persona": reglas que corren en el navegador (presencial.ts)
   pages/                     una página por pantalla (Login, Register, Dashboard, GameMenu, Game, Room…)
 ```
 
@@ -124,6 +125,9 @@ Checklist pre-producción (rama `feat/seguridad`, octubre 2026; el detalle compl
 - `/juego/:game` (`pages/GameMenu.tsx`, el viejo Lobby): "¿Cómo querés jugar?" → **Solo** (Tutti Frutti: "Contra la
   IA"; los demás: "Jugar solo"; El Impostor no tiene: `solo` es opcional en `multiConfig`), **Con amigos** (crear sala privada / unirse con código) y **Online** (partida
   pública). El ranking está en el Dashboard y en el perfil (ya no en este menú).
+- Juegos con `enPersona` en `multiConfig` (hoy sólo El Impostor): `/juego/:game` pregunta primero **"¿Cómo juegan?"**
+  → "En persona" (`enPersona.path`) u "Online", que es el menú de siempre en `/juego/:game/online`. Las pantallas
+  online (crear sala, código, pública, sala) vuelven ahí con `menuOnlinePath(game)` (en los demás juegos es `menuPath`).
 - Rutas del multijugador por juego: `/juego/:game/crear-sala`, `/juego/:game/codigo`, `/juego/:game/publica`,
   `/juego/:game/buscando` y la sala `/room/:code` (el juego lo dice el servidor: `state.game`). Las rutas viejas de
   Tutti Frutti (`/lobby`, `/create-room`, `/public-setup`) redirigen al menú nuevo.
@@ -164,6 +168,17 @@ Checklist pre-producción (rama `feat/seguridad`, octubre 2026; el detalle compl
   En la compu, acciones y pistas van en dos columnas. El servidor nunca le manda la palabra al impostor: la pantalla sólo
   muestra lo que llega. `multi/impostor.test.tsx` controla el menú, lo que ve cada uno y que las opciones sean las del backend.
   En el catálogo sigue "Próximamente" (`available: false`): para probarlo se entra directo a `/juego/impostor`.
+- **El Impostor "En persona"** (`/juego/impostor/en-persona`, `pages/ImpostorPresencial.tsx`, reglas en
+  `games/impostor/presencial.ts`, API en `api/impostor.ts`): **un solo celular que se pasan**. Preparación: nombres
+  (de 3 a 12, hasta 20 caracteres, sin repetidos sin importar tildes ni mayúsculas; los últimos se recuerdan en
+  `localStorage` con try/catch), temática y rondas (las de `multiConfig`). "¡Jugar!" pide las palabras a
+  `POST /impostor/local` (una por ronda) y **todo lo demás pasa en el navegador**: el impostor de cada ronda rota (el
+  que menos veces fue tiene prioridad, `armarRondas`), "Pasale el celu a X" → "Ver mi palabra" → la palabra grande (o
+  "Sos el impostor" + la categoría) → "Listo, tapar" (la palabra sólo se dibuja mientras la mira cada uno), "Empieza X"
+  con el orden de las pistas (dos vueltas, en voz alta), "¡A votar!" → "Voten en voz alta" → "Revelar" (con animación,
+  sin animación con `prefers-reduced-motion`) → siguiente ronda o el final con la palabra y el impostor de cada ronda y
+  "Jugar de nuevo". **No cuenta** para estadísticas, ELO, ligas ni logros. Volver en plena partida pregunta antes
+  (`SALIR_EN_PERSONA`). Tests en `games/impostor/impostorPresencial.test.tsx`.
 - Ojo en Windows: no puede haber dos archivos que sólo difieren en mayúsculas (`Pelota.tsx` y `pelota.ts` chocan).
 
 ## Perfil, partidas y ranking

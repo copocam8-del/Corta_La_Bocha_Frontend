@@ -20,6 +20,7 @@ import Trivia from './pages/Trivia';
 import DesafioDiario from './pages/DesafioDiario';
 import SopaDeLetras from './pages/SopaDeLetras';
 import Memotest from './pages/Memotest';
+import ImpostorPresencial from './pages/ImpostorPresencial';
 import ProtectedRoute from './components/ProtectedRoute';
 import Admin from './pages/Admin';
 import Privacidad from './pages/legal/Privacidad';
@@ -77,6 +78,8 @@ export default function App() {
         {/* Menú "¿Cómo querés jugar?" de cada juego y multijugador (necesita sesión: el socket se
             autentica con el token) */}
         <Route path="/juego/:game" element={<ProtectedRoute><GameMenu /></ProtectedRoute>} />
+        <Route path="/juego/:game/online" element={<ProtectedRoute><GameMenu online /></ProtectedRoute>} />
+        <Route path="/juego/impostor/en-persona" element={<ProtectedRoute><ImpostorPresencial /></ProtectedRoute>} />
         <Route path="/juego/:game/crear-sala" element={<ProtectedRoute><CreateRoom /></ProtectedRoute>} />
         <Route path="/juego/:game/codigo" element={<ProtectedRoute><RoomCode /></ProtectedRoute>} />
         <Route path="/juego/:game/publica" element={<ProtectedRoute><PublicSetup /></ProtectedRoute>} />

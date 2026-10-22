@@ -5,7 +5,7 @@ import { ChevronRight } from 'lucide-react';
 import { createRoom } from '../api/rooms';
 import BackButton from '../components/BackButton';
 import { gameName } from '../games/gameIcons';
-import { isMultiGame, menuPath, MULTI_CONFIG, tiempoLabel } from '../games/multiConfig';
+import { isMultiGame, menuOnlinePath, menuPath, MULTI_CONFIG, tiempoLabel } from '../games/multiConfig';
 
 // Crear sala privada de cualquier juego (/juego/:game/crear-sala): el servidor la crea y devuelve
 // el código. El anfitrión elige las opciones del juego (temática, dificultad, rondas y tiempo); en
@@ -55,7 +55,7 @@ export default function CreateRoom() {
 
   return (
     <>
-      <BackButton to={menuPath(game)} />
+      <BackButton to={menuOnlinePath(game)} />
       <style>{`
         * { box-sizing: border-box; margin: 0; padding: 0; }
 

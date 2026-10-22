@@ -9,7 +9,7 @@ import { Avatar } from '../profile/avatars';
 import { secondsUntil } from './clock';
 import { achievementIcon } from '../profile/achievementIcons';
 import { gameName } from '../games/gameIcons';
-import { menuPath, publicaPath } from '../games/multiConfig';
+import { menuOnlinePath, publicaPath } from '../games/multiConfig';
 import AdSlot from '../ads/AdSlot';
 
 // Partes comunes de las partidas multijugador de todos los juegos: encabezado, marcador, cuenta
@@ -151,7 +151,7 @@ export function MultiFinal({ room, state, children }: { room: RoomApi; state: Ro
           Buscar otra partida
         </button>
       )}
-      <button className="ghost-btn" onClick={() => { void room.leave(); navigate(menuPath(state.game)); }}>Volver al menú</button>
+      <button className="ghost-btn" onClick={() => { void room.leave(); navigate(menuOnlinePath(state.game)); }}>Volver al menú</button>
       <AdSlot placement="resultado" />
     </>
   );
