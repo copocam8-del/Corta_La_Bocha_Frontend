@@ -440,18 +440,22 @@ function Menu({ game }: { game: keyof typeof MULTI_CONFIG }) {
             display: 'flex', flexDirection: 'column', gap: '8px',
           }}>
 
-            {/* Solo */}
-            <p className="section-label">Solo</p>
-            <button className="mode-card" data-testid="modo-solo" onClick={() => navigate(config.solo.path)}>
-              <span className="mode-card-icon">{soloIcon}</span>
-              <div>
-                <div style={{ fontWeight: 600, fontSize: '13px' }}>{config.solo.titulo}</div>
-                <div style={{ fontSize: '11px', color: 'rgba(180,255,205,0.5)', marginTop: '1px' }}>{config.solo.descripcion}</div>
-              </div>
-            </button>
+            {/* Solo (El Impostor no tiene: es sólo multijugador) */}
+            {config.solo && (
+              <>
+                <p className="section-label">Solo</p>
+                <button className="mode-card" data-testid="modo-solo" onClick={() => navigate(config.solo!.path)}>
+                  <span className="mode-card-icon">{soloIcon}</span>
+                  <div>
+                    <div style={{ fontWeight: 600, fontSize: '13px' }}>{config.solo.titulo}</div>
+                    <div style={{ fontSize: '11px', color: 'rgba(180,255,205,0.5)', marginTop: '1px' }}>{config.solo.descripcion}</div>
+                  </div>
+                </button>
+              </>
+            )}
 
             {/* Con amigos */}
-            <p className="section-label" style={{ marginTop: '4px' }}>Con amigos</p>
+            <p className="section-label" style={{ marginTop: config.solo ? '4px' : 0 }}>Con amigos</p>
 
             <button className="mode-card" data-testid="modo-crear-sala" onClick={() => navigate(crearSalaPath(game))}>
               <span className="mode-card-icon"><Home size={24} strokeWidth={1.5} /></span>

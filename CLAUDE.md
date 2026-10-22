@@ -41,7 +41,7 @@ src/
     FieldError.tsx           mensaje de error debajo de un input
     BackButton.tsx           botón "Volver" (fijo arriba a la izquierda) + ventana "¿Seguro?" (textos en abandonar.ts)
   games/multiConfig.ts       menú y opciones de las salas de cada juego (copia del backend)
-  multi/juegos/              pantallas de partida multijugador de trivia, ahorcado, sopa y memotest
+  multi/juegos/              pantallas de partida multijugador de trivia, ahorcado, sopa, memotest y El Impostor
   pages/                     una página por pantalla (Login, Register, Dashboard, GameMenu, Game, Room…)
 ```
 
@@ -122,13 +122,14 @@ Checklist pre-producción (rama `feat/seguridad`, octubre 2026; el detalle compl
   cada tarjeta muestra tus estadísticas de ese juego (`GET /users/me/games`). Después del login (Welcome) se va ahí.
   Los juegos con `multiplayer: true` abren su menú `/juego/:game`; el desafío del día va directo a su pantalla.
 - `/juego/:game` (`pages/GameMenu.tsx`, el viejo Lobby): "¿Cómo querés jugar?" → **Solo** (Tutti Frutti: "Contra la
-  IA"; los demás: "Jugar solo"), **Con amigos** (crear sala privada / unirse con código) y **Online** (partida
+  IA"; los demás: "Jugar solo"; El Impostor no tiene: `solo` es opcional en `multiConfig`), **Con amigos** (crear sala privada / unirse con código) y **Online** (partida
   pública). El ranking está en el Dashboard y en el perfil (ya no en este menú).
 - Rutas del multijugador por juego: `/juego/:game/crear-sala`, `/juego/:game/codigo`, `/juego/:game/publica`,
   `/juego/:game/buscando` y la sala `/room/:code` (el juego lo dice el servidor: `state.game`). Las rutas viejas de
   Tutti Frutti (`/lobby`, `/create-room`, `/public-setup`) redirigen al menú nuevo.
-- Opciones de cada juego (temática, dificultad, rondas, tiempo, máximo de jugadores, pública) en
-  `games/multiConfig.ts`: **copia de `src/rooms/modes/*.mode.ts` del backend**; si cambia una, cambiala en los dos.
+- Opciones de cada juego (temática, dificultad, rondas, tiempo, mínimo y máximo de jugadores, pública, explicación del
+  lobby) en `games/multiConfig.ts`: **copia de `src/rooms/modes/*.mode.ts` del backend**; si cambia una, cambiala en los dos.
+  `explicacion` (opcional) se muestra en la sala de espera ("Cómo se juega"); `publica.rangos` cambia el "2 a 4 jugadores".
 - Íconos y nombres de cada juego en `games/gameIcons.ts` (íconos de lucide, sin logos de terceros).
 - El ranking tiene filtro por juego (el ELO es general); el perfil muestra estadísticas por juego y los logros
   agrupados (generales y de cada juego).
@@ -155,6 +156,14 @@ Checklist pre-producción (rama `feat/seguridad`, octubre 2026; el detalle compl
     (girar el celular, achicar la ventana) y saca los listeners al desmontar. En la PC la mesa llega a 960 px
     (`MESA_PC`; en la sala, `Room.tsx`) y las cartas son apaisadas (4/3); en el celular, paradas (3/4). Letra e ícono
     según `medidasCarta`; columnas con `minmax(0, 1fr)` y el texto corta palabras largas, así nunca hay scroll horizontal.
+- **El Impostor** (sólo multijugador, de 3 a 8; `multi/juegos/ImpostorMulti.tsx`, tipos en `multi/gameViews.ts` → `ImpostorView`):
+  arriba, tu palabra bien grande (o "Sos el impostor" + la categoría), con botón para taparla; abajo la etapa con el reloj
+  (pista de quién / ¡A votar! / ¡Descubrieron a X!), el campo de la pista sólo en tu turno (máx. 30), la lista de pistas
+  por jugador, la votación con un botón por cada uno de los demás y, si te descubren, el campo para adivinar. La
+  revelación (quién era, la palabra, los votos y los puntos) tiene animación (sin animación con `prefers-reduced-motion`).
+  En la compu, acciones y pistas van en dos columnas. El servidor nunca le manda la palabra al impostor: la pantalla sólo
+  muestra lo que llega. `multi/impostor.test.tsx` controla el menú, lo que ve cada uno y que las opciones sean las del backend.
+  En el catálogo sigue "Próximamente" (`available: false`): para probarlo se entra directo a `/juego/impostor`.
 - Ojo en Windows: no puede haber dos archivos que sólo difieren en mayúsculas (`Pelota.tsx` y `pelota.ts` chocan).
 
 ## Perfil, partidas y ranking

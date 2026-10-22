@@ -1,7 +1,7 @@
 import type { ComponentType } from 'react';
 import {
   Award, BookOpen, Bot, Brain, BrainCircuit, Layers, Puzzle, CalendarCheck, CalendarHeart, Eye, Grid3x3, Search, Sparkles, CheckCheck, CircleDot, Coins, Crown, Flame, Footprints, Gem, Goal, GraduationCap, Medal,
-  Lightbulb, Rocket, ScanSearch, Shirt, Swords, Trophy, UsersRound, Wind, Zap,
+  Lightbulb, Rocket, ScanSearch, Shirt, Swords, Trophy, UsersRound, Wind, Zap, VenetianMask, Ghost, Fingerprint,
 } from 'lucide-react';
 
 type IconType = ComponentType<{ size?: number; strokeWidth?: number; color?: string }>;
@@ -44,6 +44,10 @@ const ICONS: Record<string, IconType> = {
   memotest_dificil: Layers,
   memotest_diez: Puzzle,
   memotest_multi: UsersRound,
+  // El Impostor
+  impostor_multi: VenetianMask,
+  impostor_invisible: Ghost,
+  impostor_detective: Fingerprint,
 };
 
 // Si el backend agrega un logro nuevo antes que el frontend, se muestra con un ícono genérico

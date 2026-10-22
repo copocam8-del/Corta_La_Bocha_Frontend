@@ -311,7 +311,7 @@ export default function PublicSetup() {
                     <span style={{
                       fontFamily: "'Inter', sans-serif", fontSize: '11px',
                       color: cantidad === c.id ? 'rgba(57,255,140,0.7)' : 'rgba(180,255,205,0.4)',
-                    }}>{c.desc}</span>
+                    }}>{publica.rangos?.[c.id as 'pocos' | 'muchos'] ?? c.desc}</span>
                   </div>
                 ))}
               </div>

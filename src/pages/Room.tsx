@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Check, Clock, Copy, Crown, Gauge, Globe, Hash, LogOut, Play, Users } from 'lucide-react';
+import { Check, Clock, Copy, Crown, Gauge, Globe, Hash, Info, LogOut, Play, Users } from 'lucide-react';
 import MultiShell from '../multi/MultiShell';
 import { useRoom, type RoomApi } from '../multi/useRoom';
 import type { Phase, RoomSnapshot } from '../multi/types';
@@ -14,6 +14,7 @@ import TriviaMulti from '../multi/juegos/TriviaMulti';
 import AhorcadoMulti from '../multi/juegos/AhorcadoMulti';
 import SopaMulti from '../multi/juegos/SopaMulti';
 import MemotestMulti from '../multi/juegos/MemotestMulti';
+import ImpostorMulti from '../multi/juegos/ImpostorMulti';
 import { usePantallaMemotest } from '../games/usePantallaMemotest';
 import { MESA_PC } from '../api/memotest';
 
@@ -60,6 +61,15 @@ function Lobby({ room, state }: { room: RoomApi; state: RoomSnapshot }) {
           </button>
         )}
       </div>
+
+      {config.explicacion && (
+        <div className="card" data-testid="como-se-juega" style={{ padding: '12px 16px' }}>
+          <p className="section-label"><Info size={11} /> Cómo se juega</p>
+          <ol style={{ margin: 0, paddingLeft: '18px', display: 'flex', flexDirection: 'column', gap: '4px', fontSize: '13px', color: 'rgba(220,255,232,0.85)', lineHeight: 1.4 }}>
+            {config.explicacion.map((linea) => <li key={linea}>{linea}</li>)}
+          </ol>
+        </div>
+      )}
 
       <div className="card pulse">
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
@@ -208,6 +218,8 @@ export default function Room() {
     content = <SopaMulti room={room} state={state} />;
   } else if (state.game === 'memotest') {
     content = <MemotestMulti room={room} state={state} />;
+  } else if (state.game === 'impostor') {
+    content = <ImpostorMulti room={room} state={state} />;
   } else {
     content = <GameMulti room={room} state={state} />;
   }
