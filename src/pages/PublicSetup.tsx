@@ -5,7 +5,7 @@ import { ChevronRight, Users } from 'lucide-react';
 import { TEMATICAS_MULTI as TEMATICAS } from '../multi/types';
 import BackButton from '../components/BackButton';
 import { gameName } from '../games/gameIcons';
-import { isMultiGame, menuPath, MULTI_CONFIG } from '../games/multiConfig';
+import { isMultiGame, menuOnlinePath, menuPath, MULTI_CONFIG } from '../games/multiConfig';
 
 const CANTIDADES = [
   { id: 'pocos',  label: 'Pocos',  desc: '2 a 4 jugadores' },
@@ -47,7 +47,7 @@ export default function PublicSetup() {
 
   return (
     <>
-      <BackButton to={menuPath(game)} />
+      <BackButton to={menuOnlinePath(game)} />
       <style>{`
         * { box-sizing: border-box; margin: 0; padding: 0; }
 

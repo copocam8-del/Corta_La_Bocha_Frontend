@@ -29,6 +29,9 @@ export interface MultiConfig {
   publica: { eligeTematica: boolean; descripcion: string; tamanos: ('pocos' | 'muchos')[]; rangos?: { pocos: string; muchos: string } };
   // Cómo se juega, en pocas líneas (se muestra en la sala de espera)
   explicacion?: string[];
+  // Modo "En persona" (un solo celular que se pasan). Si está, el menú pregunta primero "¿Cómo juegan?"
+  // y lo de siempre (con amigos y partida pública) pasa a "Online" (/juego/:game/online)
+  enPersona?: { path: string; descripcion: string };
 }
 
 const DIFICULTADES: Opcion[] = [
@@ -91,6 +94,7 @@ export const MULTI_CONFIG: Record<MultiGameId, MultiConfig> = {
     publica: { eligeTematica: false, descripcion: 'Las partidas públicas son de un tablero de 16 cartas (tema al azar), 15 segundos por turno.', tamanos: ['pocos'] },
   },
   impostor: {
+    enPersona: { path: '/juego/impostor/en-persona', descripcion: 'Un solo celular que se pasan' },
     tematicas: {
       titulo: 'Temática',
       opciones: [
@@ -125,6 +129,8 @@ export const MULTI_CONFIG: Record<MultiGameId, MultiConfig> = {
 export const menuPath = (game: string) => `/juego/${isMultiGame(game) ? game : 'tutti_frutti'}`;
 export const crearSalaPath = (game: string) => `${menuPath(game)}/crear-sala`;
 export const publicaPath = (game: string) => `${menuPath(game)}/publica`;
+// Menú de lo online (con amigos y partida pública): en los juegos con "En persona" es /juego/:game/online
+export const menuOnlinePath = (game: string) => (isMultiGame(game) && MULTI_CONFIG[game].enPersona ? `${menuPath(game)}/online` : menuPath(game));
 
 // "120" → "2 min" (los tiempos largos se leen mejor en minutos)
 export const tiempoLabel = (s: number) => (s >= 120 && s % 60 === 0 ? `${s / 60} min` : `${s}s`);

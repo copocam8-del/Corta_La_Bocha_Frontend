@@ -8,7 +8,7 @@ import BackButton from '../components/BackButton';
 import { Avatar } from '../profile/avatars';
 import { ABANDONAR } from '../components/abandonar';
 import { gameName } from '../games/gameIcons';
-import { menuPath, MULTI_CONFIG, publicaPath, tiempoLabel } from '../games/multiConfig';
+import { menuOnlinePath, MULTI_CONFIG, publicaPath, tiempoLabel } from '../games/multiConfig';
 import GameMulti from './GameMulti';
 import TriviaMulti from '../multi/juegos/TriviaMulti';
 import AhorcadoMulti from '../multi/juegos/AhorcadoMulti';
@@ -41,7 +41,7 @@ function Lobby({ room, state }: { room: RoomApi; state: RoomSnapshot }) {
 
   const salir = async () => {
     await room.leave();
-    navigate(menuPath(state.game));
+    navigate(menuOnlinePath(state.game));
   };
 
   return (
@@ -203,7 +203,7 @@ export default function Room() {
     content = (
       <div className="card" style={{ textAlign: 'center' }}>
         <p className="notice">{state.notice ?? 'La sala se cerró.'}</p>
-        <button className="main-btn" style={{ marginTop: '12px' }} onClick={() => navigate(state.isPrivate ? menuPath(state.game) : publicaPath(state.game))}>
+        <button className="main-btn" style={{ marginTop: '12px' }} onClick={() => navigate(state.isPrivate ? menuOnlinePath(state.game) : publicaPath(state.game))}>
           {state.isPrivate ? 'Volver al menú' : 'Buscar otra partida'}
         </button>
       </div>
@@ -230,7 +230,7 @@ export default function Room() {
   const enPartida = !!state && EN_PARTIDA.includes(state.phase) && !meLeft;
   const back = (
     <BackButton
-      to={state ? menuPath(state.game) : '/dashboard'}
+      to={state ? menuOnlinePath(state.game) : '/dashboard'}
       confirm={enPartida ? ABANDONAR : null}
       onLeave={() => (state ? room.leave() : undefined)}
     />

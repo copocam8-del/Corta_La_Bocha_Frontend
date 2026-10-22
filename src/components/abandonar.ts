@@ -12,3 +12,10 @@ export const ABANDONAR: ConfirmText = {
   message: 'La partida cuenta como perdida.',
   confirmLabel: 'Abandonar',
 };
+
+// El Impostor en persona: no cuenta para estadísticas, pero se pierde la partida en curso
+export const SALIR_EN_PERSONA: ConfirmText = {
+  title: '¿Salir de la partida?',
+  message: 'Se pierde la partida en curso (no cuenta para las estadísticas).',
+  confirmLabel: 'Salir',
+};

@@ -38,10 +38,10 @@ const pantalla = (me: string, v: ImpostorView, phase: RoomSnapshot['phase'] = 'p
   );
 
 describe('El Impostor: menú y opciones', () => {
-  it('el menú no tiene "Solo": sólo con amigos y online', () => {
+  it('el menú online no tiene "Solo": sólo con amigos y partida pública', () => {
     const html = renderToStaticMarkup(
-      <MemoryRouter initialEntries={['/juego/impostor']}>
-        <Routes><Route path="/juego/:game" element={<GameMenu />} /></Routes>
+      <MemoryRouter initialEntries={['/juego/impostor/online']}>
+        <Routes><Route path="/juego/:game/online" element={<GameMenu online />} /></Routes>
       </MemoryRouter>,
     );
     expect(html).toContain('El Impostor');
