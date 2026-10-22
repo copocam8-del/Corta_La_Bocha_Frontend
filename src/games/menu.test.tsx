@@ -19,8 +19,8 @@ const menu = (game: string) =>
   );
 
 describe('menú "¿Cómo querés jugar?" de cada juego', () => {
-  it('existe para Tutti Frutti, ahorcado, trivia, sopa y memotest (no para el desafío del día)', () => {
-    expect(MULTI_GAMES).toEqual(['tutti_frutti', 'ahorcado', 'trivia', 'sopa_de_letras', 'memotest']);
+  it('existe para Tutti Frutti, ahorcado, trivia, sopa, memotest y El Impostor (no para el desafío del día)', () => {
+    expect(MULTI_GAMES).toEqual(['tutti_frutti', 'ahorcado', 'trivia', 'sopa_de_letras', 'memotest', 'impostor']);
     expect(isMultiGame('trivia_diaria')).toBe(false);
     expect(menu('trivia_diaria')).not.toContain('¿Cómo querés jugar?'); // sin menú: redirige a los juegos
   });

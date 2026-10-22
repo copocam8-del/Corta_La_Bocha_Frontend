@@ -80,4 +80,39 @@ export interface MemotestView extends Base {
   revelada: null | { numero: number; paresPor: Record<string, number> };
 }
 
-export type GameView = TriviaView | AhorcadoView | SopaView | MemotestView;
+export interface ImpostorView extends Base {
+  kind: 'impostor';
+  tematica: string;
+  segundosTurno: number;
+  maxPista: number;
+  etapa: 'pistas' | 'votacion' | 'adivinanza' | null;
+  // Lo propio: el impostor nunca recibe la palabra (palabra = null y rol = 'impostor')
+  categoria: string | null;
+  rol: 'impostor' | 'grupo' | null;
+  palabra: string | null;
+  orden: string[]; // orden de los turnos de pistas
+  turno: string | null;
+  turnoHasta: number | null;
+  vuelta: number | null;
+  vueltas: number;
+  pistas: { userId: string; vuelta: number; texto: string | null }[];
+  hasta: number | null; // fin de la votación o de la adivinanza
+  votaron: string[]; // quiénes ya votaron (nunca a quién)
+  miVoto: string | null;
+  descubierto: string | null; // lo descubrieron: está adivinando
+  revelada: null | {
+    numero: number;
+    palabra: string;
+    categoria: string;
+    impostor: string;
+    votos: { de: string; a: string }[];
+    acusado: string | null;
+    adivinanza: string | null;
+    acerto: boolean | null;
+    ganador: 'grupo' | 'impostor';
+    motivo: 'zafo' | 'adivino' | 'descubierto' | 'abandono';
+    puntos: Record<string, number>;
+  };
+}
+
+export type GameView = TriviaView | AhorcadoView | SopaView | MemotestView | ImpostorView;
