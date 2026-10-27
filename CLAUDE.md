@@ -94,7 +94,7 @@ Checklist pre-producción (rama `feat/seguridad`, octubre 2026; el detalle compl
 | Cabeceras HTTP | ✅ | `vercel.json`, para todas las rutas: HSTS 1 año + subdominios, `nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy: strict-origin-when-cross-origin`, `Permissions-Policy` (cámara, micrófono y ubicación apagados). Un test (`src/vercelHeaders.test.ts`) las controla |
 | CSP | ⚠️ Report-Only | `Content-Security-Policy-Report-Only` en `vercel.json`: **avisa en la consola del navegador pero no bloquea nada**. Permite el backend de Render (https y wss), Google Identity (`accounts.google.com/gsi/…`), Cloudflare Turnstile (`challenges.cloudflare.com`), Google Fonts y los estilos inline (las páginas usan `style={{…}}` y bloques `<style>`). Scripts inline, `eval` y plugins NO están permitidos (el build no los usa). **Si agregás un servicio externo, sumalo a la CSP.** Cuando pase un tiempo sin avisos en la consola, se puede cambiar a `Content-Security-Policy` (que sí bloquea) |
 | Contraseñas comunes | ✅ | ver "Auth en el frontend" |
-| Captcha Turnstile | ⚠️ falta cargar la clave | `components/TurnstileWidget.tsx` en Register: con `VITE_TURNSTILE_SITE_KEY` muestra el widget **invisible** (`appearance: interaction-only`: sólo aparece si Cloudflare necesita que la persona haga algo) y manda `captchaToken`. Cada token sirve una vez: después de cada envío se pide otro (`captcha.reset()`). Sin la variable, nada cambia |
+| Captcha Turnstile | ✅ activo desde el 27/10/2026 | `components/TurnstileWidget.tsx` en Register: con `VITE_TURNSTILE_SITE_KEY` muestra el widget **invisible** (`appearance: interaction-only`: sólo aparece si Cloudflare necesita que la persona haga algo) y manda `captchaToken`. Cada token sirve una vez: después de cada envío se pide otro (`captcha.reset()`). Sin la variable, nada cambia. `VITE_TURNSTILE_SITE_KEY` está en Vercel (Production, tipo Config) |
 | CI | ✅ | `.github/workflows/ci.yml` en cada PR: `npm ci`, `npm test`, `npm run build`, `npm audit --audit-level=high --omit=dev` y gitleaks sobre todo el historial. Hoy 0 vulnerabilidades (nada ignorado). `.github/dependabot.yml`: npm y github-actions semanal, con 14 días de espera |
 
 - **Token Bearer en `localStorage`, no cookies (a propósito)**: el navegador no lo manda solo, así que no hace falta
@@ -246,7 +246,7 @@ Checklist pre-producción (rama `feat/seguridad`, octubre 2026; el detalle compl
   el "?" lo pone `ImpostorMulti` (la sala no lo repite). El servidor nunca le manda la palabra al impostor: la pantalla sólo muestra lo que llega.
   **El online tiene UN solo impostor** (varios impostores es sólo de "En persona": en el online habría que cambiar el modo del
   backend, la votación y los puntos). `multi/impostor.test.tsx` controla el menú, lo que ve cada uno y que las opciones sean las del backend.
-  En el catálogo sigue "Próximamente" (`available: false`): para probarlo se entra directo a `/juego/impostor`.
+  Lanzado el 26/10/2026 (`available: true` en el catálogo).
 - **El Impostor "En persona"** (`/juego/impostor/en-persona`, `pages/ImpostorPresencial.tsx`, reglas en
   `games/impostor/presencial.ts`, API en `api/impostor.ts`): **un solo celular que se pasan**. Pantallas:
   1. **Configuración** como "lista de ajustes" (filas con ícono a la izquierda y valor a la derecha): **Jugadores** (abre una
