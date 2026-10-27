@@ -6,23 +6,13 @@ import { getToken } from '../auth/session';
 // Marco común de las páginas legales (/privacidad, /terminos, /cookies),
 // con el mismo estilo de cancha nocturna del Login.
 
-const LEGAL_LAST_UPDATE = '13 de octubre de 2026';
+export const LEGAL_LAST_UPDATE = '27 de octubre de 2026';
 
 const LEGAL_LINKS = [
   { to: '/privacidad', label: 'Privacidad' },
   { to: '/terminos', label: 'Términos' },
   { to: '/cookies', label: 'Cookies' },
 ];
-
-// Marca un dato que el equipo todavía tiene que completar, ej. <Falta>EMAIL DE CONTACTO</Falta>
-export function Falta({ children }: { children: ReactNode }) {
-  return (
-    <mark style={{
-      background: 'rgba(250,204,21,0.18)', color: '#fde68a',
-      border: '1px dashed rgba(250,204,21,0.6)', borderRadius: '4px', padding: '0 4px',
-    }}>[{children}]</mark>
-  );
-}
 
 export function Section({ title, children }: { title: string; children: ReactNode }) {
   return (

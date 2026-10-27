@@ -24,9 +24,11 @@ export interface RegisterForm {
 }
 
 // Lo que se manda a POST /auth/register. captchaToken sólo va si hay captcha (VITE_TURNSTILE_SITE_KEY).
+// aceptaTerminos: el registro sólo se manda con la casilla marcada (el backend exige true y guarda fecha y versión).
 export function registerPayload(form: RegisterForm, captchaToken?: string) {
   return {
     ...form,
+    aceptaTerminos: true as const,
     name: form.name.trim(),
     lastName: form.lastName.trim(),
     username: form.username.trim(),

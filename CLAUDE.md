@@ -38,7 +38,7 @@ src/
     apiErrors.ts             traduce errores del backend a errores por campo
   moderacion/                filtro de malas palabras: palabras.ts + filtro.ts (COPIA EXACTA del backend)
   components/
-    ProtectedRoute.tsx       sin token o token vencido → /login
+    ProtectedRoute.tsx       sin token o token vencido → /login; Términos pendientes → AceptarTerminos.tsx
     FieldError.tsx           mensaje de error debajo de un input
     BackButton.tsx           botón "Volver" (fijo arriba a la izquierda) + ventana "¿Seguro?" (textos en abandonar.ts)
   games/multiConfig.ts       menú y opciones de las salas de cada juego (copia del backend)
@@ -117,10 +117,29 @@ Checklist pre-producción (rama `feat/seguridad`, octubre 2026; el detalle compl
 ## Páginas legales
 
 - `/privacidad`, `/terminos` y `/cookies` (en `src/pages/legal/`, públicas). Usan `components/LegalLayout.tsx`.
-- Los datos que faltan completar están marcados con `<Falta>…</Falta>` (se ven resaltados en amarillo).
+- Responsable: **CLB Devs (responsable: Camila Copo)**, Ciudad Autónoma de Buenos Aires; contacto
+  `clbdevelopers@outlook.es`; jurisdicción: tribunales ordinarios de la CABA. Ya no hay datos por completar (el marcador
+  `<Falta>` se borró y un test controla que no vuelva).
+- La Política de privacidad nombra a **todos** los proveedores y qué reciben: Supabase (base), Render (servidor), Vercel
+  (página), Google (login y Gemini, que recibe las respuestas del Tutti Frutti sin datos personales), Brevo (mails de
+  recuperar contraseña), Cloudflare Turnstile (captcha del registro), Google Fonts y los **backups** (copia diaria de la
+  base, cifrada, en Google Drive y GitHub, que se borra a los 30 días). Edad mínima: 13 años.
 - Si la app empieza a guardar un dato nuevo o a usar otro proveedor, **actualizá la Política de privacidad**
-  (y la fecha `LEGAL_LAST_UPDATE`).
-- El registro exige aceptar Términos y Privacidad (casilla obligatoria, consentimiento de la Ley 25.326).
+  (y la fecha `LEGAL_LAST_UPDATE`, hoy '27 de octubre de 2026'). Si el cambio es importante, subí también
+  `TERMS_VERSION` en el backend (`src/legal/terminos.ts`): todos tienen que volver a aceptar.
+
+## Aceptar los Términos (todos los usuarios)
+
+- Registro: la casilla obligatoria ya existía; `registerPayload` manda `aceptaTerminos: true` (el backend lo exige y guarda
+  fecha y versión). Si el backend responde el error en `aceptaTerminos`, se muestra debajo de la casilla.
+- **Cualquier pantalla privada** pasa por `ProtectedRoute` → `ConTerminos`: pregunta `GET /users/me` una vez por sesión
+  (`auth/terminos.ts` recuerda el token con los Términos al día; otro login vuelve a preguntar) y, si dice
+  `terminosPendientes` (usuarios de antes, los que entran con Google, o cuando cambia la versión), en lugar de la pantalla
+  muestra `components/AceptarTerminos.tsx`: "Actualizamos los Términos y la Política de privacidad", links a `/terminos` y
+  `/privacidad` **en otra pestaña** (no se pierde la pantalla), la casilla "Leí y acepto…", "Aceptar y seguir" fijo abajo
+  (desactivado sin la casilla) y "Cerrar sesión". Manda `POST /users/me/aceptar-terminos {version}` con la
+  `terminosVersion` que dio `/users/me`. Hasta aceptar no se ve ninguna pantalla privada (ni juegos ni salas). Mientras
+  pregunta muestra un spinner; si el servidor no responde, "Reintentar". Tests en `components/aceptarTerminos.test.tsx`.
 
 ## Botón "Volver"
 
