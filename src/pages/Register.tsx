@@ -87,7 +87,9 @@ export default function Register() {
     } catch (err) {
       // 400 → errores por campo, 409 → email/usuario repetido, sin respuesta → backend dormido (Render) o CORS
       const parsed = parseAuthError(err);
-      setFieldErrors(parsed.fieldErrors);
+      // El backend llama "aceptaTerminos" a la casilla de los Términos
+      const { aceptaTerminos, ...porCampo } = parsed.fieldErrors;
+      setFieldErrors(aceptaTerminos ? { ...porCampo, terms: aceptaTerminos } : porCampo);
       setError(parsed.message);
     } finally {
       // El token del captcha sirve una sola vez: pedimos otro por si hay que volver a enviar

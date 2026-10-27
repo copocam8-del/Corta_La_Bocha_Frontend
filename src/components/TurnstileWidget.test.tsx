@@ -31,7 +31,7 @@ describe('Register sin VITE_TURNSTILE_SITE_KEY', () => {
 
 describe('registerPayload', () => {
   it('sin captcha manda lo mismo que antes (sin captchaToken)', () => {
-    expect(registerPayload(form)).toEqual({ ...form, name: 'Leo', email: 'leo@mail.com' });
+    expect(registerPayload(form)).toEqual({ ...form, name: 'Leo', email: 'leo@mail.com', aceptaTerminos: true });
     expect(registerPayload(form)).not.toHaveProperty('captchaToken');
   });
 
