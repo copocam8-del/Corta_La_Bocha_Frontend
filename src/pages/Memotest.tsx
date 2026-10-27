@@ -1,15 +1,16 @@
-import { useEffect, useRef, useState } from 'react';
-import { CircleUserRound, Flag, Landmark, Shield, Tag, type LucideIcon } from 'lucide-react';
-import MultiShell from '../multi/MultiShell';
-import BackButton from '../components/BackButton';
+import { useEffect, useRef, useState, type CSSProperties } from 'react';
+import { CircleUserRound, Flag, Gauge, Landmark, Play, Shapes, Shield, Tag, type LucideIcon } from 'lucide-react';
 import { ABANDONAR } from '../components/abandonar';
 import { menuPath } from '../games/multiConfig';
 import GameResult from '../games/GameResult';
+import { gameIcon } from '../games/gameIcons';
+import { comoJugarDe } from '../games/comoJugar';
+import { AjusteElegible, Encabezado, PantallaJuego } from '../games/ui/JuegoUI';
 import { useNow } from '../multi/useNow';
 import { secondsLeft } from '../game/round';
 import { usePantallaMemotest } from '../games/usePantallaMemotest';
 import {
-  columnasMemotest, empezarMemotest, medidasCarta, MESA_PC, rendirseMemotest, TEMAS_MEMOTEST, voltearCarta,
+  anchoMesa, columnasMemotest, empezarMemotest, medidasCarta, rendirseMemotest, TEMAS_MEMOTEST, voltearCarta,
   type CartaVista, type IconoCarta, type NivelMemotest, type PartidaMemotest,
 } from '../api/memotest';
 
@@ -72,38 +73,34 @@ export default function Memotest() {
     ocupado.current = false;
   };
 
+  const salir = menuPath('memotest');
+  const ayuda = comoJugarDe('memotest');
+
   if (!partida) {
     return (
-      <MultiShell maxWidth={480}>
-        <BackButton to={menuPath('memotest')} />
-        <div style={{ textAlign: 'center' }}>
-          <p className="kicker">Memotest</p>
-          <h1 className="neon-title" style={{ fontSize: '28px', marginTop: '6px' }}>Encontrá los pares</h1>
-          <p style={{ fontSize: '13px', color: 'rgba(180,255,205,0.7)', marginTop: '8px' }}>
-            Da vuelta dos cartas: si van juntas (un club y su apodo, un jugador y su selección…) quedan a la vista.
-          </p>
-        </div>
-        <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-          <div>
-            <p className="section-label">Tema</p>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-              {TEMAS_MEMOTEST.map((t) => (
-                <button key={t.id} className={`option-btn${tema === t.id ? ' active' : ''}`} style={{ flex: 'none' }} onClick={() => setTema(t.id)}>{t.nombre}</button>
-              ))}
-            </div>
-          </div>
-          <div>
-            <p className="section-label">Nivel</p>
-            <div style={{ display: 'flex', gap: '6px' }}>
-              {([['facil', 'Fácil · 12'], ['medio', 'Medio · 16'], ['dificil', 'Difícil · 20']] as const).map(([id, label]) => (
-                <button key={id} className={`option-btn${nivel === id ? ' active' : ''}`} onClick={() => setNivel(id)}>{label}</button>
-              ))}
-            </div>
-          </div>
-          <button className="main-btn" data-testid="empezar-memotest" onClick={() => void empezar()}>¡Arrancar!</button>
+      <PantallaJuego
+        salir={{ to: salir }}
+        ayuda={ayuda}
+        barra={
+          <button className="ui-boton" data-testid="empezar-memotest" onClick={() => void empezar()}>
+            <Play size={20} fill="currentColor" /> ¡Arrancar!
+          </button>
+        }
+      >
+        <Encabezado icono={gameIcon('memotest')} kicker="Memotest" titulo="Encontrá los pares"
+          texto="Da vuelta dos cartas: si van juntas (un club y su apodo, un jugador y su selección…) quedan a la vista." />
+        <div className="card ui-filas">
+          <AjusteElegible icono={Shapes} titulo="Tema" opciones={TEMAS_MEMOTEST.map((t) => ({ id: t.id, label: t.nombre }))}
+            valor={tema} onElegir={setTema} testid="ajuste-tema" />
+          <AjusteElegible icono={Gauge} titulo="Nivel" valor={nivel} onElegir={(n) => setNivel(n as NivelMemotest)} testid="ajuste-nivel"
+            opciones={[
+              { id: 'facil', label: 'Fácil · 12', sub: '6 pares, 2 minutos' },
+              { id: 'medio', label: 'Medio · 16', sub: '8 pares, 3 minutos' },
+              { id: 'dificil', label: 'Difícil · 20', sub: '10 pares, 4 minutos' },
+            ]} />
         </div>
         {error && <div className="error">{error}</div>}
-      </MultiShell>
+      </PantallaJuego>
     );
   }
 
@@ -112,10 +109,10 @@ export default function Memotest() {
   const medidas = medidasCarta(pantalla.orientacion, columnas);
   const descubiertas = new Map(partida.descubiertas.map((d) => [d.indice, d]));
   return (
-    <MultiShell maxWidth={pantalla.orientacion === 'horizontal' ? MESA_PC : 560}>
-      {/* En medio de la partida, salir = rendirse (cuenta como perdida) */}
-      <BackButton to={menuPath('memotest')} confirm={partida.terminada ? null : ABANDONAR}
-        onLeave={() => (partida.terminada ? undefined : rendirseMemotest(partida.matchId))} />
+    // En medio de la partida, salir = rendirse (cuenta como perdida)
+    <PantallaJuego ayuda={ayuda} salir={{
+      to: salir, confirm: partida.terminada ? null : ABANDONAR, onLeave: () => (partida.terminada ? undefined : rendirseMemotest(partida.matchId)),
+    }}>
       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
         <span className="kicker">{partida.tema}</span>
         <span className="kicker" data-testid="estado-memotest">
@@ -123,8 +120,8 @@ export default function Memotest() {
         </span>
       </div>
 
-      <div data-testid="mesa" data-columnas={columnas}
-        style={{ display: 'grid', gridTemplateColumns: `repeat(${columnas}, minmax(0, 1fr))`, gap: '8px' }}>
+      <div data-testid="mesa" data-columnas={columnas} className="ui-ancho"
+        style={{ display: 'grid', gridTemplateColumns: `repeat(${columnas}, minmax(0, 1fr))`, gap: '8px', '--ancho': `${anchoMesa(pantalla.orientacion)}px` } as CSSProperties}>
         {Array.from({ length: partida.cartas }, (_, i) => {
           const d = descubiertas.get(i);
           const v = d ?? visibles[i];
@@ -162,6 +159,6 @@ export default function Memotest() {
         </button>
       )}
       {error && <div className="error">{error}</div>}
-    </MultiShell>
+    </PantallaJuego>
   );
 }

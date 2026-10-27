@@ -18,14 +18,9 @@ import AhorcadoMulti from '../multi/juegos/AhorcadoMulti';
 import SopaMulti from '../multi/juegos/SopaMulti';
 import MemotestMulti from '../multi/juegos/MemotestMulti';
 import ImpostorMulti from '../multi/juegos/ImpostorMulti';
-import { usePantallaMemotest } from '../games/usePantallaMemotest';
-import { MESA_PC } from '../api/memotest';
 
 // Sala multijugador de cualquier juego (/room/:code). Muestra el lobby o la partida según lo que
 // diga el servidor: si recargás la página en medio de una ronda, volvés exactamente a donde estabas.
-
-// Juegos que ya tienen el formato de El Impostor en la partida (los demás todavía usan la columna ancha)
-const COLUMNA_480: string[] = ['impostor', 'tutti_frutti', 'ahorcado', 'trivia', 'sopa_de_letras'];
 
 const EN_PARTIDA: Phase[] = ['countdown', 'playing', 'collecting', 'validating', 'results'];
 
@@ -135,7 +130,6 @@ export default function Room() {
 export function Sala({ room, code }: { room: RoomApi; code: string }) {
   const navigate = useNavigate();
   const { state, error } = room;
-  const pantalla = usePantallaMemotest();
 
   let content;
   if (!state) {
@@ -187,13 +181,11 @@ export function Sala({ room, code }: { room: RoomApi; code: string }) {
     />
   );
 
-  // Columna de 480 px (los tableros más anchos van en un .ui-ancho). El memotest en la PC usa una mesa más ancha
-  // (tablero horizontal, ver usePantallaMemotest)
-  const ancho = !state || state.phase === 'lobby' || COLUMNA_480.includes(state.game) ? 480 : state.game === 'memotest' && state.phase !== 'finished' && pantalla.orientacion === 'horizontal' ? MESA_PC : 720;
   // "?" con Cómo jugar de cada juego (en la partida del Impostor lo pone su propia pantalla)
   const ayuda = state && !(state.game === 'impostor' && state.phase !== 'lobby' && state.phase !== 'closed') ? comoJugarDe(state.game) : undefined;
   return (
-    <MultiShell maxWidth={ancho}>
+    // Columna de 480 px; los tableros (sopa, memotest, grilla de Tutti Frutti) se ensanchan con .ui-ancho
+    <MultiShell maxWidth={480}>
       <EstilosJuego />
       {back}
       {ayuda && <BotonAyuda pasos={ayuda} />}
