@@ -33,7 +33,7 @@ export default function TriviaMulti({ room, state }: { room: RoomApi; state: Roo
     return (
       <>
         {header}
-        <MultiFinal room={room} state={state}>
+        <MultiFinal room={room} state={state} abajo>
           {v.revelada && <Revelada state={state} v={v} />}
         </MultiFinal>
       </>
@@ -67,7 +67,7 @@ export default function TriviaMulti({ room, state }: { room: RoomApi; state: Roo
         onElegir={(i) => void responder(i)}
       />
       {enJuego ? (
-        <p role="status" style={{ textAlign: 'center', fontSize: '13px', color: 'rgba(180,255,205,0.75)' }} data-testid="estado-trivia">
+        <p role="status" className="ui-texto" style={{ fontSize: '14px' }} data-testid="estado-trivia">
           {respondi ? 'Respondiste. Esperando a los demás…' : 'Elegí una opción: suma más quien acierta más rápido.'}
           {' '}({v.respondieron.length}/{state.players.filter((p) => !p.left).length} respondieron)
         </p>
@@ -84,11 +84,11 @@ function Revelada({ state, v, siguienteEn = null }: { state: RoomSnapshot; v: Tr
   const r = v.revelada!;
   const filas = [...r.resultados].sort((a, b) => b.puntos - a.puntos);
   return (
-    <div className="card" data-testid="resultado-pregunta">
+    <div className="card ui-filas" data-testid="resultado-pregunta">
       <p className="kicker">Pregunta {r.numero}{siguienteEn !== null ? ` · Siguiente en ${siguienteEn} s` : ''}</p>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginTop: '8px' }}>
+      <div className="ui-filas">
         {filas.map((f) => (
-          <div key={f.userId} style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px' }}>
+          <div key={f.userId} className="ui-fila" style={{ minHeight: '48px', fontSize: '14px' }}>
             {f.correcta ? <Check size={15} color="#39ff8c" /> : f.opcion === null ? <Clock size={15} color="#fbbf24" /> : <X size={15} color="#f87171" />}
             <span style={{ flex: 1, fontWeight: f.userId === state.me ? 700 : 400 }}>{nameOf(state, f.userId)}</span>
             <span style={{ color: 'rgba(180,255,205,0.6)', fontSize: '12px' }}>

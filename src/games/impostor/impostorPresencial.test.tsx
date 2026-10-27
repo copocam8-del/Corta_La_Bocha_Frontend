@@ -4,7 +4,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import GameMenu from '../../pages/GameMenu';
 import ImpostorPresencial, { Configuracion, Final, HojaJugadores, PasarCelu, Pistas, Revelacion, Votar } from '../../pages/ImpostorPresencial';
-import { ComoJugar } from './ImpostorUI';
+import { ComoJugar } from '../ui/JuegoUI';
 import { COMO_JUGAR_EN_PERSONA } from './estilo';
 import { menuOnlinePath, menuPath } from '../multiConfig';
 import {
@@ -201,9 +201,9 @@ describe('pantallas en persona', () => {
   it('el aviso "Faltan…" va justo arriba del botón y abajo queda el lugar de la barra (nada queda tapado)', () => {
     const html = conRouter(<ImpostorPresencial />);
     // La barra fija tiene el aviso y después el botón
-    expect(html).toMatch(/data-testid="imp-barra"[\s\S]*Faltan 3 jugadores[\s\S]*data-testid="ep-jugar"/);
+    expect(html).toMatch(/data-testid="ui-barra"[\s\S]*Faltan 3 jugadores[\s\S]*data-testid="ep-jugar"/);
     // El espacio del alto de la barra va después de la última fila (Rondas), así haciendo scroll se ve todo
-    expect(html).toMatch(/Rondas[\s\S]*data-testid="imp-espacio-barra"[\s\S]*data-testid="imp-barra"/);
+    expect(html).toMatch(/Rondas[\s\S]*data-testid="ui-espacio-barra"[\s\S]*data-testid="ui-barra"/);
     // Con uno solo de menos, en singular
     const dos = conRouter(
       <Configuracion jugadores={['Ana', 'Beto']} setJugadores={nada} ajustes={{ impostores: 1, pista: true }} setAjustes={nada}

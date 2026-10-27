@@ -54,6 +54,8 @@ export type OrientacionMemotest = 'horizontal' | 'vertical';
 export const ANCHO_CELULAR = 700; // menos que esto (o la pantalla parada) = celular
 export const ANCHO_OCHO_COLUMNAS = 900; // 16 cartas en 8×2 sólo con lugar para cartas que se lean bien
 export const MESA_PC = 960; // ancho máximo de la mesa en la PC
+// Ancho máximo de la mesa sobre la columna de 480 px de los juegos (.ui-ancho): en la PC, la mesa ancha; en el celular, la columna
+export const anchoMesa = (orientacion: OrientacionMemotest) => (orientacion === 'horizontal' ? MESA_PC : 480);
 
 export function orientacionDe(ancho: number, alto: number): OrientacionMemotest {
   return ancho < ANCHO_CELULAR || alto > ancho ? 'vertical' : 'horizontal';

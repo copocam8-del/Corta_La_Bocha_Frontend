@@ -1,5 +1,5 @@
-import { useRef, useState } from 'react';
-import { celdasEntre, lineaRecta, type Celda } from '../../games/sopaLinea';
+import { useRef, useState, type CSSProperties } from 'react';
+import { celdasEntre, lineaRecta, SOPA_ANCHO, SOPA_LETRA, type Celda } from '../../games/sopaLinea';
 import type { RoomApi } from '../useRoom';
 import type { RoomSnapshot } from '../types';
 import type { SopaView } from '../gameViews';
@@ -28,7 +28,7 @@ export default function SopaMulti({ room, state }: { room: RoomApi; state: RoomS
     return (
       <>
         {header}
-        <MultiFinal room={room} state={state} />
+        <MultiFinal room={room} state={state} abajo />
       </>
     );
   }
@@ -110,14 +110,15 @@ export default function SopaMulti({ room, state }: { room: RoomApi; state: RoomS
 
       <div
         data-testid="grilla"
+        className="card ui-ancho"
         onPointerDown={onDown}
         onPointerMove={onMove}
         onPointerUp={onUp}
         onPointerCancel={onUp}
         style={{
-          display: 'grid', gridTemplateColumns: `repeat(${tamano}, 1fr)`, gap: '2px', touchAction: 'none', userSelect: 'none',
-          background: 'rgba(4,20,11,0.75)', border: '1px solid rgba(57,255,140,0.3)', borderRadius: '12px', padding: '6px',
-        }}
+          display: 'grid', gridTemplateColumns: `repeat(${tamano}, minmax(0, 1fr))`, gap: '2px', touchAction: 'none', userSelect: 'none',
+          padding: '8px', '--ancho': `${SOPA_ANCHO}px`, '--n': tamano,
+        } as CSSProperties}
       >
         {grilla.flatMap((fila, f) =>
           [...fila].map((letra, c) => {
@@ -127,7 +128,7 @@ export default function SopaMulti({ room, state }: { room: RoomApi; state: RoomS
             return (
               <div key={k} data-f={f} data-c={c} style={{
                 aspectRatio: '1', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '6px',
-                fontFamily: "'Oswald', sans-serif", fontWeight: 700, fontSize: tamano > 12 ? '13px' : '16px',
+                fontFamily: "'Oswald', sans-serif", fontWeight: 700, fontSize: SOPA_LETRA,
                 background: sel ? 'rgba(57,255,140,0.45)' : col ? `${col}33` : 'transparent',
                 color: sel ? '#04210f' : col ?? '#eafff2', cursor: jugando ? 'pointer' : 'default',
               }}>{letra}</div>
@@ -137,7 +138,7 @@ export default function SopaMulti({ room, state }: { room: RoomApi; state: RoomS
       </div>
 
       {mensaje && jugando && (
-        <p role="status" style={{ textAlign: 'center', fontSize: '13px', color: mensaje.ok ? '#39ff8c' : '#fca5a5' }}>{mensaje.texto}</p>
+        <p role="status" className="ui-texto" style={{ fontWeight: 600, color: mensaje.ok ? '#39ff8c' : '#fca5a5' }}>{mensaje.texto}</p>
       )}
 
       <div className="card" data-testid="palabras" style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', padding: '12px' }}>

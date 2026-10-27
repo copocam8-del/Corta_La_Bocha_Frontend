@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { StopCircle, Timer, WifiOff } from 'lucide-react';
 import type { RoomApi } from '../multi/useRoom';
 import type { RoomSnapshot } from '../multi/types';
@@ -8,6 +8,8 @@ import { useNow } from '../multi/useNow';
 import { MultiRoundResults } from '../multi/MultiRoundResults';
 import { MultiFinal, Scoreboard } from '../multi/MultiParts';
 import { missingCategories } from '../game/round';
+import { TF_CSS } from '../game/tuttiEstilo';
+import { BarraAbajo } from '../games/ui/JuegoUI';
 
 // Partida multijugador de Tutti Frutti en curso. Todo lo decide el servidor (letra, reloj, ¡Basta!,
 // validación y puntaje); acá se muestra el estado y se mandan las respuestas mientras el jugador escribe.
@@ -98,22 +100,16 @@ export default function GameMulti({ room, state }: { room: RoomApi; state: RoomS
     const cortada = phase !== 'playing';
     return (
       <>
+        <style>{TF_CSS}</style>
         {header}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <div style={{
-            width: '64px', height: '64px', display: 'flex', alignItems: 'center', justifyContent: 'center',
-            background: 'rgba(4,20,11,0.85)', border: '2px solid rgba(57,255,140,0.55)', borderRadius: '12px',
-            animation: 'letterPop 0.6s cubic-bezier(0.34,1.56,0.64,1) both',
-          }}>
-            <span data-testid="letra" style={{ fontFamily: "'Oswald', sans-serif", fontSize: '44px', fontWeight: 700, textShadow: '0 0 20px rgba(57,255,140,0.8)' }}>
-              {round.letter}
-            </span>
+        <div className="tf-cabecera">
+          <div>
+            <div className="tf-letra" data-testid="letra" style={{ margin: 0 }}>{round.letter}</div>
           </div>
           <div style={{ textAlign: 'right' }}>
-            <p style={{ fontSize: '10px', letterSpacing: '2px', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase' }}>Tiempo</p>
-            <p data-testid="reloj" style={{
-              fontFamily: "'Oswald', sans-serif", fontSize: '40px', fontWeight: 700, lineHeight: 1, color,
-              textShadow: `0 0 18px ${color}`, animation: !cortada && left <= 10 ? 'timerWarn 0.5s ease infinite' : 'none',
+            <p className="tf-dato">Tiempo</p>
+            <p data-testid="reloj" className="tf-reloj" style={{
+              color, textShadow: `0 0 18px ${color}`, animation: !cortada && left <= 10 ? 'timerWarn 0.5s ease infinite' : 'none',
             }}>{left}</p>
           </div>
         </div>
@@ -134,38 +130,40 @@ export default function GameMulti({ room, state }: { room: RoomApi; state: RoomS
           </div>
         )}
 
-        <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+        {/* Una tarjeta por categoría (en el celular de a dos; en la compu más anchas, sin scroll horizontal) */}
+        <div className="ui-ancho tf-grilla" data-testid="grilla-tutti" style={{ '--ancho': '860px' } as CSSProperties}>
           {round.categories.map((cat) => (
-            <label key={cat} style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-              <span className="section-label" style={{ marginBottom: 0 }}>{cat}</span>
+            <label key={cat} className="tf-celda">
+              <span className="tf-cat">{cat}</span>
               <input
-                className="grid-input"
+                className="ui-campo"
                 data-categoria={cat}
                 placeholder={`${round.letter ?? ''}...`}
                 value={answers[cat] ?? ''}
                 maxLength={150}
                 disabled={cortada}
+                autoComplete="off"
                 onChange={(e) => handleChange(cat, e.target.value)}
               />
             </label>
           ))}
         </div>
 
-        {!cortada && (
-          <>
-            <button className="main-btn" data-testid="basta" onClick={handleBasta} disabled={faltan > 0}>
-              <StopCircle size={18} /> ¡Basta!
-            </button>
-            {faltan > 0 && (
-              <p style={{ textAlign: 'center', fontSize: '11px', color: 'rgba(180,255,205,0.55)', marginTop: '-4px' }}>
-                Para cantar ¡Basta! completá todas las categorías ({faltan === 1 ? 'falta 1' : `faltan ${faltan}`}).
-              </p>
-            )}
-          </>
-        )}
         {room.error && <div className="error">{room.error}</div>}
         {state.notice && <div className="notice">{state.notice}</div>}
         <Scoreboard state={state} />
+        {!cortada && (
+          <BarraAbajo>
+            {faltan > 0 && (
+              <p className="ui-barra-nota">
+                Para cantar ¡Basta! completá todas las categorías ({faltan === 1 ? 'falta 1' : `faltan ${faltan}`}).
+              </p>
+            )}
+            <button className="ui-boton" data-testid="basta" onClick={handleBasta} disabled={faltan > 0}>
+              <StopCircle size={20} /> ¡Basta!
+            </button>
+          </BarraAbajo>
+        )}
       </>
     );
   }
@@ -194,7 +192,7 @@ export default function GameMulti({ room, state }: { room: RoomApi; state: RoomS
     return (
       <>
         {header}
-        <MultiFinal room={room} state={state}>
+        <MultiFinal room={room} state={state} abajo>
           {state.history.length > 0 && (
             <details className="card">
               <summary style={{ cursor: 'pointer', fontFamily: "'Oswald', sans-serif", letterSpacing: '2px', textTransform: 'uppercase', fontSize: '12px' }}>

@@ -1,11 +1,12 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ChevronRight, Users } from 'lucide-react';
+import { ChevronRight, Shapes, Users } from 'lucide-react';
 
 import { TEMATICAS_MULTI as TEMATICAS } from '../multi/types';
-import BackButton from '../components/BackButton';
-import { gameName } from '../games/gameIcons';
+import { gameIcon, gameName } from '../games/gameIcons';
 import { isMultiGame, menuOnlinePath, menuPath, MULTI_CONFIG } from '../games/multiConfig';
+import { comoJugarDe } from '../games/comoJugar';
+import { AjusteElegible, Encabezado, PantallaJuego } from '../games/ui/JuegoUI';
 
 const CANTIDADES = [
   { id: 'pocos',  label: 'Pocos',  desc: '2 a 4 jugadores' },
@@ -19,312 +20,38 @@ export default function PublicSetup() {
   const { game: param } = useParams<{ game: string }>();
   const game = isMultiGame(param) ? param : 'tutti_frutti';
   const publica = MULTI_CONFIG[game].publica;
-  const [entered,    setEntered]    = useState(false);
   const [tematica,   setTematica]   = useState('general');
   const [cantidad,   setCantidad]   = useState('pocos');
-
-  useEffect(() => {
-    const t = setTimeout(() => setEntered(true), 80);
-    return () => clearTimeout(t);
-  }, []);
-
-  const sparks = useMemo(
-    () =>
-      Array.from({ length: 16 }).map((_, i) => ({
-        id: i,
-        left: Math.random() * 100,
-        size: 2 + Math.random() * 3,
-        duration: 6 + Math.random() * 5,
-        delay: Math.random() * 7,
-        dx: (Math.random() - 0.5) * 40,
-      })),
-    []
-  );
 
   const handleBuscar = () => {
     navigate(`${menuPath(game)}/buscando`, { state: { game, tematica: publica.eligeTematica ? tematica : '', size: cantidad } });
   };
 
+  const cantidades = CANTIDADES.filter(c => publica.tamanos.includes(c.id as 'pocos' | 'muchos'))
+    .map(c => ({ id: c.id, label: c.label, sub: publica.rangos?.[c.id as 'pocos' | 'muchos'] ?? c.desc }));
+
   return (
-    <>
-      <BackButton to={menuOnlinePath(game)} />
-      <style>{`
-        * { box-sizing: border-box; margin: 0; padding: 0; }
+    <PantallaJuego
+      salir={{ to: menuOnlinePath(game) }}
+      ayuda={comoJugarDe(game)}
+      barra={
+        <button className="ui-boton" data-testid="buscar-partida" onClick={handleBuscar}>
+          Buscar partida
+          <ChevronRight size={20} strokeWidth={2.5}/>
+        </button>
+      }
+    >
+      <Encabezado icono={gameIcon(game)} kicker={`Partida pública · ${gameName(game)}`} titulo="Buscar partida" texto="Configurá cómo querés jugar" />
 
-        @keyframes kenBurns {
-          0%   { transform: scale(1) translate(0,0); }
-          100% { transform: scale(1.06) translate(-1%,-1%); }
-        }
-        @keyframes floodPulse {
-          0%, 100% { opacity: 0.5; }
-          50%      { opacity: 0.9; }
-        }
-        @keyframes lineGlow {
-          0%, 100% { opacity: 0.35; }
-          50%      { opacity: 0.75; }
-        }
-        @keyframes neonPulse {
-          0%, 100% {
-            box-shadow: 0 0 18px rgba(57,255,140,0.25), 0 0 40px rgba(57,255,140,0.1);
-            border-color: rgba(57,255,140,0.3);
-          }
-          50% {
-            box-shadow: 0 0 28px rgba(57,255,140,0.5), 0 0 60px rgba(57,255,140,0.2);
-            border-color: rgba(57,255,140,0.7);
-          }
-        }
-        @keyframes riseIn {
-          0%   { opacity: 0; transform: translateY(22px); }
-          100% { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes titleGlow {
-          0%, 100% { text-shadow: 0 0 16px rgba(57,255,140,0.45), 0 0 36px rgba(57,255,140,0.2); }
-          50%      { text-shadow: 0 0 24px rgba(57,255,140,0.75), 0 0 54px rgba(57,255,140,0.4); }
-        }
-        @keyframes drift {
-          0%   { transform: translate(0,0); opacity: 0; }
-          15%  { opacity: 0.9; }
-          100% { transform: translate(var(--dx),-160px); opacity: 0; }
-        }
-        @keyframes popIn {
-          0%   { opacity: 0; transform: scale(0.7) rotate(-15deg); }
-          100% { opacity: 1; transform: scale(1) rotate(0deg); }
-        }
-        @keyframes spin {
-          from { transform: rotate(0deg); }
-          to   { transform: rotate(360deg); }
-        }
-
-        .lobby-card { animation: neonPulse 4s ease-in-out infinite; }
-        .neon-title { animation: titleGlow 2.6s ease-in-out infinite; }
-
-        .section-label {
-          font-family: 'Oswald', sans-serif;
-          font-size: 11px; letter-spacing: 3px;
-          color: rgba(124,255,178,0.6); text-transform: uppercase;
-          margin-bottom: 8px;
-        }
-        .option-btn {
-          font-family: 'Oswald', sans-serif; font-size: 12px; font-weight: 600;
-          letter-spacing: 1.5px; text-transform: uppercase;
-          padding: 8px 12px; border-radius: 8px;
-          border: 1px solid rgba(57,255,140,0.2);
-          background: rgba(57,255,140,0.03);
-          color: rgba(180,255,205,0.55); cursor: pointer;
-          transition: all 0.18s ease; flex: 1; text-align: center;
-        }
-        .option-btn:hover {
-          border-color: rgba(57,255,140,0.5); background: rgba(57,255,140,0.07); color: #eafff2;
-        }
-        .option-btn.active {
-          border-color: #39ff8c; background: rgba(57,255,140,0.12);
-          color: #39ff8c; box-shadow: 0 0 12px rgba(57,255,140,0.2);
-        }
-
-        .cantidad-card {
-          flex: 1;
-          display: flex; flex-direction: column; align-items: center; justify-content: center;
-          gap: 4px; padding: 14px 10px;
-          border-radius: 10px;
-          border: 1px solid rgba(57,255,140,0.2);
-          background: rgba(57,255,140,0.03);
-          cursor: pointer; transition: all 0.18s ease; text-align: center;
-        }
-        .cantidad-card:hover {
-          border-color: rgba(57,255,140,0.5); background: rgba(57,255,140,0.07);
-        }
-        .cantidad-card.active {
-          border-color: #39ff8c; background: rgba(57,255,140,0.12);
-          box-shadow: 0 0 16px rgba(57,255,140,0.2);
-        }
-
-        .buscar-btn {
-          background: linear-gradient(135deg, #0fae5d, #39ff8c);
-          color: #04210f; font-family: 'Oswald', sans-serif; font-weight: 700;
-          font-size: 15px; letter-spacing: 3px; padding: 13px;
-          border-radius: 10px; border: none; cursor: pointer; width: 100%;
-          text-transform: uppercase; display: flex; align-items: center;
-          justify-content: center; gap: 8px; transition: all 0.2s ease;
-          box-shadow: 0 0 22px rgba(57,255,140,0.35);
-        }
-        .buscar-btn:hover {
-          filter: brightness(1.1); box-shadow: 0 0 36px rgba(57,255,140,0.55); transform: translateY(-1px);
-        }
-      `}</style>
-
-      {/* FONDO */}
-      <div style={{ position: 'fixed', inset: 0, zIndex: 0, overflow: 'hidden', background: '#010805' }}>
-        <div style={{
-          position: 'absolute', inset: '-3%',
-          animation: 'kenBurns 24s ease-in-out infinite alternate',
-          pointerEvents: 'none',
-        }}>
-          <div style={{
-            position: 'absolute', inset: 0,
-            background: `repeating-linear-gradient(115deg,#052e16 0px,#052e16 80px,#064a22 80px,#064a22 160px)`,
-          }}/>
-          <div style={{
-            position: 'absolute', inset: 0,
-            background: `
-              radial-gradient(ellipse 90% 70% at 15% 0%, rgba(57,255,140,0.45) 0%, transparent 60%),
-              radial-gradient(ellipse 90% 70% at 85% 0%, rgba(57,255,140,0.35) 0%, transparent 60%),
-              linear-gradient(180deg, rgba(2,10,6,0.55) 0%, rgba(2,8,5,0.35) 40%, rgba(1,5,3,0.7) 100%)
-            `,
-            mixBlendMode: 'screen',
-          }}/>
-          <svg viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice"
-            style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', opacity: 0.5, animation: 'lineGlow 4.5s ease-in-out infinite' }}>
-            <defs>
-              <filter id="neonLinePub" x="-50%" y="-50%" width="200%" height="200%">
-                <feGaussianBlur stdDeviation="3" result="blur"/>
-                <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
-              </filter>
-            </defs>
-            <g stroke="#7CFFB2" strokeWidth="4" fill="none" filter="url(#neonLinePub)">
-              <rect x="80" y="60" width="1440" height="780"/>
-              <line x1="800" y1="60" x2="800" y2="840"/>
-              <circle cx="800" cy="450" r="130"/>
-              <circle cx="800" cy="450" r="6" fill="#7CFFB2"/>
-              <rect x="80" y="290" width="240" height="320"/>
-              <path d="M 320,350 A 150,150 0 0,1 320,550"/>
-              <rect x="1280" y="290" width="240" height="320"/>
-              <path d="M 1280,350 A 150,150 0 0,0 1280,550"/>
-            </g>
-          </svg>
-          <div style={{
-            position: 'absolute', top: '-8%', left: '4%', width: '34%', height: '34%', borderRadius: '50%',
-            background: 'radial-gradient(circle, rgba(120,255,180,0.5) 0%, transparent 70%)',
-            animation: 'floodPulse 5s ease-in-out infinite',
-          }}/>
-          <div style={{
-            position: 'absolute', top: '-8%', right: '4%', width: '34%', height: '34%', borderRadius: '50%',
-            background: 'radial-gradient(circle, rgba(120,255,180,0.45) 0%, transparent 70%)',
-            animation: 'floodPulse 5s ease-in-out 1s infinite',
-          }}/>
-          <div style={{
-            position: 'absolute', inset: 0,
-            background: 'radial-gradient(ellipse 70% 70% at 50% 48%, transparent 35%, rgba(0,4,2,0.78) 100%)',
-          }}/>
-        </div>
-        {sparks.map(s => (
-          <div key={s.id} style={{
-            position: 'absolute', bottom: '30%', left: `${s.left}%`,
-            width: `${s.size}px`, height: `${s.size}px`, borderRadius: '50%',
-            background: 'rgba(160,255,200,0.9)', boxShadow: '0 0 8px rgba(57,255,140,0.8)',
-            animation: `drift ${s.duration}s ease-out ${s.delay}s infinite`,
-            '--dx': `${s.dx}px`, pointerEvents: 'none',
-          } as React.CSSProperties}/>
-        ))}
+      <div className="card ui-filas">
+        {/* Temática (sólo Tutti Frutti) */}
+        {publica.eligeTematica && (
+          <AjusteElegible icono={Shapes} titulo="Temática" opciones={TEMATICAS} valor={tematica} onElegir={setTematica} />
+        )}
+        <AjusteElegible icono={Users} titulo="Jugadores" opciones={cantidades} valor={cantidad} onElegir={setCantidad}
+          testid="ajuste-cantidad" />
+        <p className="ui-fila-sub" style={{ padding: '0 4px', lineHeight: 1.45 }}>{publica.descripcion}</p>
       </div>
-
-      {/* CONTENIDO */}
-      <div style={{
-        position: 'relative', zIndex: 1, minHeight: '100vh',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        padding: '68px 16px 24px', fontFamily: "'Inter', sans-serif", overflowY: 'auto',
-      }}>
-        <div style={{ width: '100%', maxWidth: '420px', position: 'relative', zIndex: 2 }}>
-
-          {/* Cabecera */}
-          <div style={{
-            textAlign: 'center', marginBottom: '26px',
-            opacity: entered ? 1 : 0,
-            animation: entered ? 'riseIn 0.6s ease both' : 'none',
-          }}>
-            <p style={{
-              fontFamily: "'Oswald', sans-serif", fontSize: '11px', letterSpacing: '3px',
-              color: '#7CFFB2', textTransform: 'uppercase', marginBottom: '12px',
-            }}>Partida Pública · {gameName(game)}</p>
-
-            <div style={{
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              width: '60px', height: '60px', margin: '0 auto 14px',
-              opacity: entered ? 1 : 0,
-              animation: entered ? 'popIn 0.5s cubic-bezier(0.34,1.56,0.64,1) 0.15s both' : 'none',
-              filter: 'drop-shadow(0 0 16px rgba(57,255,140,0.65))',
-            }}>
-              <svg viewBox="0 0 64 64" width="60" height="60" style={{ display: 'block', animation: 'spin 14s linear infinite' }}>
-                <circle cx="32" cy="32" r="29" fill="rgba(57,255,140,0.12)" stroke="#a8ffcb" strokeWidth="2.5"/>
-                <polygon points="32,19 44.4,28 39.6,42.5 24.4,42.5 19.6,28" fill="#a8ffcb"/>
-                <line x1="32" y1="19" x2="32" y2="5" stroke="#a8ffcb" strokeWidth="2"/>
-                <line x1="44.4" y1="28" x2="57.7" y2="23.7" stroke="#a8ffcb" strokeWidth="2"/>
-                <line x1="39.6" y1="42.5" x2="47.9" y2="53.8" stroke="#a8ffcb" strokeWidth="2"/>
-                <line x1="24.4" y1="42.5" x2="16.1" y2="53.8" stroke="#a8ffcb" strokeWidth="2"/>
-                <line x1="19.6" y1="28" x2="6.3" y2="23.7" stroke="#a8ffcb" strokeWidth="2"/>
-              </svg>
-            </div>
-
-            <h1 className="neon-title" style={{
-              fontFamily: "'Oswald', sans-serif", fontSize: '28px', fontWeight: 700,
-              letterSpacing: '1px', margin: '0 0 6px', color: '#eafff2', textTransform: 'uppercase',
-            }}>Buscar partida</h1>
-            <p style={{ fontSize: '13px', color: 'rgba(180,255,205,0.75)', margin: 0 }}>
-              Configurá cómo querés jugar
-            </p>
-          </div>
-
-          {/* Card */}
-          <div className="lobby-card" style={{
-            background: 'rgba(4,20,11,0.62)', backdropFilter: 'blur(18px)',
-            WebkitBackdropFilter: 'blur(18px)',
-            border: '1px solid rgba(57,255,140,0.3)',
-            borderTop: '2px solid rgba(57,255,140,0.7)',
-            borderRadius: '16px', padding: '24px',
-            boxShadow: '0 30px 60px -20px rgba(0,0,0,0.75)',
-            opacity: entered ? 1 : 0,
-            animation: entered ? 'riseIn 0.6s ease 0.1s both' : 'none',
-            display: 'flex', flexDirection: 'column', gap: '18px',
-          }}>
-
-            {/* Temática (sólo Tutti Frutti) */}
-            {publica.eligeTematica && <div>
-              <p className="section-label">Temática</p>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                {TEMATICAS.map(t => (
-                  <button key={t.id} className={`option-btn${tematica === t.id ? ' active' : ''}`}
-                    style={{ flex: 'none' }} onClick={() => setTematica(t.id)}>
-                    {t.label}
-                  </button>
-                ))}
-              </div>
-            </div>}
-
-            <p style={{ fontSize: '12px', color: 'rgba(180,255,205,0.6)', margin: publica.eligeTematica ? '-6px 0 0' : 0 }}>
-              {publica.descripcion}
-            </p>
-
-            {/* Cantidad */}
-            <div>
-              <p className="section-label">
-                <Users size={11} style={{ display: 'inline', verticalAlign: 'middle', marginRight: '6px' }}/>
-                Cantidad de jugadores
-              </p>
-              <div style={{ display: 'flex', gap: '10px' }}>
-                {CANTIDADES.filter(c => publica.tamanos.includes(c.id as 'pocos' | 'muchos')).map(c => (
-                  <div key={c.id} className={`cantidad-card${cantidad === c.id ? ' active' : ''}`}
-                    onClick={() => setCantidad(c.id)}>
-                    <span style={{
-                      fontFamily: "'Oswald', sans-serif", fontSize: '16px', fontWeight: 700,
-                      color: cantidad === c.id ? '#39ff8c' : 'rgba(180,255,205,0.7)',
-                      letterSpacing: '1px',
-                    }}>{c.label}</span>
-                    <span style={{
-                      fontFamily: "'Inter', sans-serif", fontSize: '11px',
-                      color: cantidad === c.id ? 'rgba(57,255,140,0.7)' : 'rgba(180,255,205,0.4)',
-                    }}>{publica.rangos?.[c.id as 'pocos' | 'muchos'] ?? c.desc}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Buscar */}
-            <button className="buscar-btn" data-testid="buscar-partida" onClick={handleBuscar}>
-              Buscar partida
-              <ChevronRight size={18} strokeWidth={2.5}/>
-            </button>
-          </div>
-        </div>
-      </div>
-    </>
+    </PantallaJuego>
   );
 }

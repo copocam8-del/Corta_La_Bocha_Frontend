@@ -1,10 +1,12 @@
-import { useEffect, useRef, useState } from 'react';
-import { Flag } from 'lucide-react';
-import MultiShell from '../multi/MultiShell';
-import BackButton from '../components/BackButton';
+import { useEffect, useRef, useState, type CSSProperties } from 'react';
+import { Flag, Gauge, Play, Shapes } from 'lucide-react';
 import { ABANDONAR } from '../components/abandonar';
 import { menuPath } from '../games/multiConfig';
 import GameResult from '../games/GameResult';
+import { gameIcon } from '../games/gameIcons';
+import { comoJugarDe } from '../games/comoJugar';
+import { AjusteElegible, Encabezado, PantallaJuego } from '../games/ui/JuegoUI';
+import { SOPA_ANCHO, SOPA_LETRA } from '../games/sopaLinea';
 import { useNow } from '../multi/useNow';
 import { secondsLeft } from '../game/round';
 import { celdasEntre, lineaRecta, type Celda } from '../games/sopaLinea';
@@ -113,50 +115,43 @@ export default function SopaDeLetras() {
   });
   const seleccion = new Set((desde ? celdasEntre(desde, hasta ?? desde) : []).map((c) => `${c.f},${c.c}`));
 
+  const salir = menuPath('sopa_de_letras');
+  const ayuda = comoJugarDe('sopa_de_letras');
+
   if (!partida) {
     return (
-      <MultiShell maxWidth={480}>
-        <BackButton to={menuPath('sopa_de_letras')} />
-        <div style={{ textAlign: 'center' }}>
-          <p className="kicker">Sopa de letras</p>
-          <h1 className="neon-title" style={{ fontSize: '28px', marginTop: '6px' }}>Buscá los nombres</h1>
-          <p style={{ fontSize: '13px', color: 'rgba(180,255,205,0.7)', marginTop: '8px' }}>
-            Arrastrá desde la primera hasta la última letra (o tocá la primera y después la última).
-          </p>
-        </div>
-        <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-          <div>
-            <p className="section-label">Temática</p>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-              {TEMATICAS_SOPA.map((t) => (
-                <button key={t.id} className={`option-btn${tematica === t.id ? ' active' : ''}`} style={{ flex: 'none' }} onClick={() => setTematica(t.id)}>{t.nombre}</button>
-              ))}
-            </div>
-          </div>
-          <div>
-            <p className="section-label">Dificultad</p>
-            <div style={{ display: 'flex', gap: '6px' }}>
-              {([['facil', 'Fácil'], ['medio', 'Medio'], ['dificil', 'Difícil']] as const).map(([id, label]) => (
-                <button key={id} className={`option-btn${dificultad === id ? ' active' : ''}`} onClick={() => setDificultad(id)}>{label}</button>
-              ))}
-            </div>
-            <p style={{ fontSize: '11px', color: 'rgba(180,255,205,0.55)', marginTop: '6px' }}>
-              {dificultad === 'facil' ? '10×10, horizontal y vertical, 3 minutos' : dificultad === 'medio' ? '12×12, también en diagonal, 4 minutos' : '14×14, en cualquier dirección y al revés, 5 minutos'}
-            </p>
-          </div>
-          <button className="main-btn" data-testid="empezar-sopa" onClick={() => void empezar()}>¡Arrancar!</button>
+      <PantallaJuego
+        salir={{ to: salir }}
+        ayuda={ayuda}
+        barra={
+          <button className="ui-boton" data-testid="empezar-sopa" onClick={() => void empezar()}>
+            <Play size={20} fill="currentColor" /> ¡Arrancar!
+          </button>
+        }
+      >
+        <Encabezado icono={gameIcon('sopa_de_letras')} kicker="Sopa de letras" titulo="Buscá los nombres"
+          texto="Arrastrá desde la primera hasta la última letra (o tocá la primera y después la última)." />
+        <div className="card ui-filas">
+          <AjusteElegible icono={Shapes} titulo="Temática" opciones={TEMATICAS_SOPA.map((t) => ({ id: t.id, label: t.nombre }))}
+            valor={tematica} onElegir={setTematica} testid="ajuste-tematica" />
+          <AjusteElegible icono={Gauge} titulo="Dificultad" valor={dificultad} onElegir={(d) => setDificultad(d as DificultadSopa)} testid="ajuste-dificultad"
+            opciones={[
+              { id: 'facil', label: 'Fácil', sub: '10×10, horizontal y vertical, 3 minutos' },
+              { id: 'medio', label: 'Medio', sub: '12×12, también en diagonal, 4 minutos' },
+              { id: 'dificil', label: 'Difícil', sub: '14×14, en cualquier dirección y al revés, 5 minutos' },
+            ]} />
         </div>
         {error && <div className="error">{error}</div>}
-      </MultiShell>
+      </PantallaJuego>
     );
   }
 
   const restantes = partida.terminada ? 0 : Math.min(partida.segundos, secondsLeft(fin, now));
   return (
-    <MultiShell maxWidth={560}>
-      {/* En medio de la partida, salir = terminarla con lo encontrado (no la ganás) */}
-      <BackButton to={menuPath('sopa_de_letras')} confirm={partida.terminada ? null : ABANDONAR}
-        onLeave={() => (partida.terminada ? undefined : terminarSopa(partida.matchId))} />
+    // En medio de la partida, salir = terminarla con lo encontrado (no la ganás)
+    <PantallaJuego ayuda={ayuda} salir={{
+      to: salir, confirm: partida.terminada ? null : ABANDONAR, onLeave: () => (partida.terminada ? undefined : terminarSopa(partida.matchId)),
+    }}>
       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
         <span className="kicker">{partida.tematica}</span>
         <span className="kicker" data-testid="reloj-sopa">{Math.floor(restantes / 60)}:{String(restantes % 60).padStart(2, '0')}</span>
@@ -164,14 +159,15 @@ export default function SopaDeLetras() {
 
       <div
         data-testid="grilla"
+        className="card ui-ancho"
         onPointerDown={onDown}
         onPointerMove={onMove}
         onPointerUp={onUp}
         onPointerCancel={onUp}
         style={{
-          display: 'grid', gridTemplateColumns: `repeat(${tamano}, 1fr)`, gap: '2px', touchAction: 'none', userSelect: 'none',
-          background: 'rgba(4,20,11,0.75)', border: '1px solid rgba(57,255,140,0.3)', borderRadius: '12px', padding: '6px',
-        }}
+          display: 'grid', gridTemplateColumns: `repeat(${tamano}, minmax(0, 1fr))`, gap: '2px', touchAction: 'none', userSelect: 'none',
+          padding: '8px', '--ancho': `${SOPA_ANCHO}px`, '--n': tamano,
+        } as CSSProperties}
       >
         {partida.grilla.flatMap((fila, f) =>
           [...fila].map((letra, c) => {
@@ -181,7 +177,7 @@ export default function SopaDeLetras() {
             return (
               <div key={k} data-f={f} data-c={c} style={{
                 aspectRatio: '1', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '6px',
-                fontFamily: "'Oswald', sans-serif", fontWeight: 700, fontSize: tamano > 12 ? '13px' : '16px',
+                fontFamily: "'Oswald', sans-serif", fontWeight: 700, fontSize: SOPA_LETRA,
                 background: sel ? 'rgba(57,255,140,0.45)' : col ? `${col}33` : 'transparent',
                 color: sel ? '#04210f' : col ?? '#eafff2', cursor: 'pointer',
               }}>{letra}</div>
@@ -190,7 +186,7 @@ export default function SopaDeLetras() {
         )}
       </div>
 
-      {mensaje && <p role="status" style={{ textAlign: 'center', fontSize: '13px', color: mensaje.startsWith('¡') ? '#39ff8c' : '#fca5a5' }}>{mensaje}</p>}
+      {mensaje && <p role="status" className="ui-texto" style={{ fontWeight: 600, color: mensaje.startsWith('¡') ? '#39ff8c' : '#fca5a5' }}>{mensaje}</p>}
 
       <div className="card" data-testid="palabras" style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', padding: '12px' }}>
         {partida.palabras.map((p) => {
@@ -215,6 +211,6 @@ export default function SopaDeLetras() {
         </button>
       )}
       {error && <div className="error">{error}</div>}
-    </MultiShell>
+    </PantallaJuego>
   );
 }

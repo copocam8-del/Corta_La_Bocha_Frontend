@@ -1,10 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import MultiShell from '../multi/MultiShell';
-import BackButton from '../components/BackButton';
+import { Gauge, Play, Shapes } from 'lucide-react';
 import { ABANDONAR } from '../components/abandonar';
 import { menuPath } from '../games/multiConfig';
 import GameResult from '../games/GameResult';
 import QuestionCard from '../games/QuestionCard';
+import { gameIcon } from '../games/gameIcons';
+import { comoJugarDe } from '../games/comoJugar';
+import { AjusteElegible, Encabezado, PantallaJuego } from '../games/ui/JuegoUI';
 import { secondsLeft } from '../game/round';
 import { useNow } from '../multi/useNow';
 import {
@@ -92,10 +94,12 @@ export default function Trivia() {
     return () => clearTimeout(t);
   }, [pregunta, revelada, finPregunta, responder]);
 
+  const salir = menuPath('trivia');
+  const ayuda = comoJugarDe('trivia');
+
   if (final) {
     return (
-      <MultiShell maxWidth={520}>
-        <BackButton to={menuPath('trivia')} />
+      <PantallaJuego salir={{ to: salir }} ayuda={ayuda}>
         <GameResult
           titulo={final.gano ? '¡Aprobaste!' : 'Te faltó un poco'}
           gano={!!final.gano}
@@ -107,50 +111,36 @@ export default function Trivia() {
             {final.aciertos} de {final.total} correctas · {final.promedioSegundos} s promedio
           </p>
         </GameResult>
-      </MultiShell>
+      </PantallaJuego>
     );
   }
 
   if (!matchId || !pregunta) {
     return (
-      <MultiShell maxWidth={480}>
-        <BackButton to={menuPath('trivia')} />
-        <div style={{ textAlign: 'center' }}>
-          <p className="kicker">Trivia futbolera</p>
-          <h1 className="neon-title" style={{ fontSize: '28px', marginTop: '6px' }}>¿Cuánto sabés?</h1>
-          <p style={{ fontSize: '13px', color: 'rgba(180,255,205,0.7)', marginTop: '8px' }}>
-            10 preguntas, 20 segundos cada una. Sumás por acertar y más si contestás rápido. Con 6 aciertos aprobás.
-          </p>
-        </div>
-        <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-          <div>
-            <p className="section-label">Categoría</p>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-              {['', ...CATEGORIAS_TRIVIA].map((c) => (
-                <button key={c || 'todas'} className={`option-btn${categoria === c ? ' active' : ''}`} style={{ flex: 'none' }} onClick={() => setCategoria(c)}>
-                  {c || 'Todas'}
-                </button>
-              ))}
-            </div>
-          </div>
-          <div>
-            <p className="section-label">Dificultad</p>
-            <div style={{ display: 'flex', gap: '6px' }}>
-              {([['', 'Mezcla'], ['facil', 'Fácil'], ['medio', 'Medio'], ['dificil', 'Difícil']] as const).map(([id, label]) => (
-                <button key={id || 'mezcla'} className={`option-btn${dificultad === id ? ' active' : ''}`} onClick={() => setDificultad(id)}>{label}</button>
-              ))}
-            </div>
-          </div>
-          <button className="main-btn" data-testid="empezar" disabled={cargando} onClick={() => void empezar()}>¡Arrancar!</button>
+      <PantallaJuego
+        salir={{ to: salir }}
+        ayuda={ayuda}
+        barra={
+          <button className="ui-boton" data-testid="empezar" disabled={cargando} onClick={() => void empezar()}>
+            <Play size={20} fill="currentColor" /> {cargando ? 'Preparando…' : '¡Arrancar!'}
+          </button>
+        }
+      >
+        <Encabezado icono={gameIcon('trivia')} kicker="Trivia futbolera" titulo="¿Cuánto sabés?"
+          texto="10 preguntas, 20 segundos cada una. Sumás por acertar y más si contestás rápido. Con 6 aciertos aprobás." />
+        <div className="card ui-filas">
+          <AjusteElegible icono={Shapes} titulo="Categoría" valor={categoria} onElegir={setCategoria} testid="ajuste-categoria"
+            opciones={['', ...CATEGORIAS_TRIVIA].map((c) => ({ id: c, label: c || 'Todas' }))} />
+          <AjusteElegible icono={Gauge} titulo="Dificultad" valor={dificultad} onElegir={(d) => setDificultad(d as DificultadTrivia | '')}
+            testid="ajuste-dificultad" opciones={[{ id: '', label: 'Mezcla' }, { id: 'facil', label: 'Fácil' }, { id: 'medio', label: 'Medio' }, { id: 'dificil', label: 'Difícil' }]} />
         </div>
         {error && <div className="error">{error}</div>}
-      </MultiShell>
+      </PantallaJuego>
     );
   }
 
   return (
-    <MultiShell maxWidth={560}>
-      <BackButton to={menuPath('trivia')} confirm={ABANDONAR} />
+    <PantallaJuego salir={{ to: salir, confirm: ABANDONAR }} ayuda={ayuda}>
       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
         <span className="kicker">Pregunta {pregunta.numero} de {total}</span>
         <span className="kicker" data-testid="marcador-trivia">{marcador.aciertos} ✓ · {marcador.puntos} pts</span>
@@ -164,11 +154,11 @@ export default function Trivia() {
         onElegir={(i) => void responder(i)}
       />
       {revelada && (
-        <p role="status" style={{ textAlign: 'center', fontSize: '14px', color: elegida === revelada.correcta ? '#39ff8c' : '#fca5a5' }}>
+        <p role="status" className="ui-texto" style={{ fontWeight: 600, color: elegida === revelada.correcta ? '#39ff8c' : '#fca5a5' }}>
           {elegida === null ? '¡Se acabó el tiempo!' : elegida === revelada.correcta ? '¡Correcto!' : 'No era esa.'}
         </p>
       )}
       {error && <div className="error">{error}</div>}
-    </MultiShell>
+    </PantallaJuego>
   );
 }

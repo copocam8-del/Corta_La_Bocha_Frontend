@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, type CSSProperties } from 'react';
 import { CircleUserRound, Flag, Landmark, Shield, Tag, type LucideIcon } from 'lucide-react';
-import { columnasMemotest, medidasCarta, type IconoCarta } from '../../api/memotest';
+import { anchoMesa, columnasMemotest, medidasCarta, type IconoCarta } from '../../api/memotest';
 import { usePantallaMemotest } from '../../games/usePantallaMemotest';
 import type { RoomApi } from '../useRoom';
 import type { RoomSnapshot } from '../types';
@@ -31,7 +31,7 @@ export default function MemotestMulti({ room, state }: { room: RoomApi; state: R
     return (
       <>
         {header}
-        <MultiFinal room={room} state={state} />
+        <MultiFinal room={room} state={state} abajo />
       </>
     );
   }
@@ -76,8 +76,8 @@ export default function MemotestMulti({ room, state }: { room: RoomApi; state: R
         )}
       </div>
 
-      <div data-testid="mesa" data-columnas={columnas}
-        style={{ display: 'grid', gridTemplateColumns: `repeat(${columnas}, minmax(0, 1fr))`, gap: '8px' }}>
+      <div data-testid="mesa" data-columnas={columnas} className="ui-ancho"
+        style={{ display: 'grid', gridTemplateColumns: `repeat(${columnas}, minmax(0, 1fr))`, gap: '8px', '--ancho': `${anchoMesa(pantalla.orientacion)}px` } as CSSProperties}>
         {Array.from({ length: v.cartas }, (_, i) => {
           const d = descubiertas.get(i);
           const a = abiertas.get(i);

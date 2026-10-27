@@ -17,11 +17,11 @@ export default function ImpostorMenu() {
     <PantallaImpostor salir={{ to: '/dashboard' }} ayuda={COMO_JUGAR_EN_PERSONA}>
       <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
         <Hinchas />
-        <h1 className="neon-title imp-titulo">El Impostor</h1>
-        <p className="imp-texto">¿Cómo juegan?</p>
+        <h1 className="neon-title ui-titulo">El Impostor</h1>
+        <p className="ui-texto">¿Cómo juegan?</p>
       </div>
       {tarjetas.map(({ id, titulo, texto, Icono, color, ir }) => (
-        <button key={id} type="button" className="card imp-modo" data-testid={id} onClick={() => navigate(ir)}
+        <button key={id} type="button" className="card ui-modo" data-testid={id} onClick={() => navigate(ir)}
           style={{ display: 'flex', alignItems: 'center', gap: '16px', width: '100%', minHeight: '104px', cursor: 'pointer', color: 'inherit', textAlign: 'left', font: 'inherit' }}>
           <span style={{ width: 60, height: 60, borderRadius: '50%', background: `${color}1f`, border: `1px solid ${color}66`, boxShadow: `0 0 16px ${color}40`,
             color, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
