@@ -26,6 +26,7 @@ import Admin from './pages/Admin';
 import Privacidad from './pages/legal/Privacidad';
 import Terminos from './pages/legal/Terminos';
 import Cookies from './pages/legal/Cookies';
+import BorrarCuentaPublica from './pages/legal/BorrarCuenta';
 
 // La partida multijugador vive en /room/:code (lobby y juego en la misma pantalla)
 function RedirectToRoom() {
@@ -49,6 +50,7 @@ export default function App() {
         <Route path="/privacidad" element={<Privacidad />} />
         <Route path="/terminos" element={<Terminos />} />
         <Route path="/cookies" element={<Cookies />} />
+        <Route path="/borrar-cuenta" element={<BorrarCuentaPublica />} />
         <Route
           path="/welcome"
           element={

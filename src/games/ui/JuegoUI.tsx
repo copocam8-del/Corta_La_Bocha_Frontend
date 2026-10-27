@@ -87,7 +87,14 @@ export function BarraAbajo({ children }: { children: ReactNode }) {
 
 // Hoja que sube desde abajo (se cierra tocando afuera, con Escape o con su botón). Al abrirse el foco va a la
 // hoja misma (sin scrollear: así se lee desde el título) y el botón de cerrar queda siempre a la vista abajo.
-export function Hoja({ titulo, onCerrar, children, cerrar = 'Cerrar' }: { titulo: string; onCerrar: () => void; children: ReactNode; cerrar?: string }) {
+// Con "pie", esos botones van en lugar del de cerrar (ej. "Borrar para siempre" y "Cancelar").
+export function Hoja({ titulo, onCerrar, children, cerrar = 'Cerrar', pie }: {
+  titulo: string;
+  onCerrar: () => void;
+  children: ReactNode;
+  cerrar?: string;
+  pie?: ReactNode;
+}) {
   const hoja = useRef<HTMLDivElement>(null);
   useEffect(() => hoja.current?.focus({ preventScroll: true }), []);
   return alBody(
@@ -97,7 +104,7 @@ export function Hoja({ titulo, onCerrar, children, cerrar = 'Cerrar' }: { titulo
         <h2 className="neon-title ui-titulo" style={{ fontSize: '26px' }}>{titulo}</h2>
         {children}
         <div className="ui-hoja-pie">
-          <button type="button" className="ui-boton" onClick={onCerrar}>{cerrar}</button>
+          {pie ?? <button type="button" className="ui-boton" onClick={onCerrar}>{cerrar}</button>}
         </div>
       </div>
     </div>,

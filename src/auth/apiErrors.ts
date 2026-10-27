@@ -6,6 +6,9 @@ export interface ParsedApiError {
   message: string; // error general para mostrar arriba del formulario ('' si no hay)
 }
 
+// 401 de DELETE /users/me con la contraseña equivocada: NO es una sesión vencida (axios.ts no cierra la sesión)
+export const CONTRASENA_INCORRECTA = 'La contraseña no es correcta.';
+
 const NETWORK_ERROR =
   'No se pudo conectar con el servidor. Puede estar iniciando (Render free tier tarda ~30-60s en despertar): probá de nuevo en unos segundos.';
 

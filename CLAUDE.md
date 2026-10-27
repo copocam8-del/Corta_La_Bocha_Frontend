@@ -116,7 +116,8 @@ Checklist pre-producción (rama `feat/seguridad`, octubre 2026; el detalle compl
 
 ## Páginas legales
 
-- `/privacidad`, `/terminos` y `/cookies` (en `src/pages/legal/`, públicas). Usan `components/LegalLayout.tsx`.
+- `/privacidad`, `/terminos`, `/cookies` y `/borrar-cuenta` (en `src/pages/legal/`, públicas). Usan `components/LegalLayout.tsx`.
+  Las cuatro están en el menú de `LegalLayout` y en el pie legal (`components/LegalFooter.tsx`).
 - Responsable: **CLB Devs (responsable: Camila Copo)**, Ciudad Autónoma de Buenos Aires; contacto
   `clbdevelopers@outlook.es`; jurisdicción: tribunales ordinarios de la CABA. Ya no hay datos por completar (el marcador
   `<Falta>` se borró y un test controla que no vuelva).
@@ -140,6 +141,21 @@ Checklist pre-producción (rama `feat/seguridad`, octubre 2026; el detalle compl
   (desactivado sin la casilla) y "Cerrar sesión". Manda `POST /users/me/aceptar-terminos {version}` con la
   `terminosVersion` que dio `/users/me`. Hasta aceptar no se ve ninguna pantalla privada (ni juegos ni salas). Mientras
   pregunta muestra un spinner; si el servidor no responde, "Reintentar". Tests en `components/aceptarTerminos.test.tsx`.
+
+## Borrar mi cuenta (lo exige Google Play)
+
+- Perfil, al final y separado: zona roja "Borrar mi cuenta" (`profile/BorrarCuenta.tsx`; reglas en
+  `profile/reglasBorrarCuenta.ts`). Abre una `Hoja` (con `pie` propio) que explica qué se borra y que es para siempre.
+  Si `/users/me` dice `tieneContrasena`, pide la contraseña; si no (entró sólo con Google), escribir su nombre de usuario
+  (sin importar mayúsculas). "Borrar para siempre" (rojo) está desactivado hasta completar; "Cancelar" cierra.
+- Manda `DELETE /users/me` con `{ password }` o `{ confirmacion }`. Si sale bien: `clearSession()` y `/login?borrada=1`
+  ("Tu cuenta se borró."). Si no, muestra el motivo del backend debajo del campo.
+- `api/axios.ts` (`esSesionVencida`): el 401 "La contraseña no es correcta." de `DELETE /users/me` **no** cierra la sesión
+  (cualquier otro 401 sí, como siempre).
+- `/borrar-cuenta` (pública): cómo borrarla desde la app, qué se borra, backups que se borran solos a los 30 días y, si no
+  podés entrar, escribir a `clbdevelopers@outlook.es` desde el email de la cuenta. La Política de privacidad (secciones 6 y
+  9) la linkea. No hizo falta subir `TERMS_VERSION`. Tests en `profile/borrarCuenta.test.tsx`, `api/axios.test.ts` y
+  `pages/legal/legal.test.tsx`.
 
 ## Botón "Volver"
 

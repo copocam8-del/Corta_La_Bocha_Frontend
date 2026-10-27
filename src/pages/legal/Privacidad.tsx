@@ -132,10 +132,11 @@ export default function Privacidad() {
 
       <Section title="6. Cuánto tiempo los guardamos">
         <p>
-          Guardamos tus datos mientras tengas una cuenta. Si pedís que la eliminemos, borramos tus datos
-          personales; podemos conservar información anónima de partidas (sin identificarte) para
-          estadísticas generales. Tus datos pueden seguir en las copias de seguridad hasta 30 días después,
-          hasta que esas copias se borran solas.
+          Guardamos tus datos mientras tengas una cuenta. Cuando la borrás (o nos pedís que la borremos), se
+          borran en el momento tu cuenta, tu perfil, tus estadísticas, tu lugar en el ranking, tus logros y tus
+          partidas. En las partidas multijugador quedan sólo los resultados de los demás jugadores, sin los tuyos.
+          Tus datos pueden seguir en las copias de seguridad hasta 30 días después, hasta que esas copias se
+          borran solas.
         </p>
       </Section>
 
@@ -160,11 +161,16 @@ export default function Privacidad() {
         <ul>
           <li><strong>Acceder</strong> a tus datos: saber qué datos tenemos sobre vos.</li>
           <li><strong>Rectificar</strong> o actualizar datos incorrectos (varios los podés cambiar vos mismo desde tu perfil).</li>
-          <li><strong>Suprimir</strong> tus datos, es decir, pedir que eliminemos tu cuenta.</li>
+          <li><strong>Suprimir</strong> tus datos, es decir, borrar tu cuenta.</li>
           <li><strong>Retirar tu consentimiento</strong> en cualquier momento.</li>
         </ul>
         <p>
-          Para ejercerlos escribí a <a href="mailto:clbdevelopers@outlook.es">clbdevelopers@outlook.es</a> desde el email de tu cuenta. Respondemos
+          <strong>Borrar tu cuenta</strong> lo podés hacer vos mismo desde la app, en <strong>Perfil → Borrar mi
+          cuenta</strong>: se borra en el momento y para siempre. Si no podés entrar, escribinos desde el email de tu
+          cuenta. Todo el detalle está en <Link to="/borrar-cuenta">Borrar tu cuenta</Link>.
+        </p>
+        <p>
+          Para ejercer los demás derechos (o si no podés entrar a la app) escribí a <a href="mailto:clbdevelopers@outlook.es">clbdevelopers@outlook.es</a> desde el email de tu cuenta. Respondemos
           los pedidos de acceso dentro de los 10 días corridos y los de rectificación o supresión dentro de
           los 5 días hábiles, como indica la ley.
         </p>

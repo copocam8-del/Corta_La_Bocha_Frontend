@@ -3,7 +3,7 @@ import { NavLink, useLocation } from 'react-router-dom';
 import BackButton from './BackButton';
 import { getToken } from '../auth/session';
 
-// Marco común de las páginas legales (/privacidad, /terminos, /cookies),
+// Marco común de las páginas legales (/privacidad, /terminos, /cookies, /borrar-cuenta),
 // con el mismo estilo de cancha nocturna del Login.
 
 export const LEGAL_LAST_UPDATE = '27 de octubre de 2026';
@@ -12,6 +12,7 @@ const LEGAL_LINKS = [
   { to: '/privacidad', label: 'Privacidad' },
   { to: '/terminos', label: 'Términos' },
   { to: '/cookies', label: 'Cookies' },
+  { to: '/borrar-cuenta', label: 'Borrar cuenta' },
 ];
 
 export function Section({ title, children }: { title: string; children: ReactNode }) {

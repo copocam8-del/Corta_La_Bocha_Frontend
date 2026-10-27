@@ -15,6 +15,7 @@ export default function LegalFooter({ variant = 'dark' }: { variant?: 'dark' | '
       <Link to="/privacidad" state={state} style={linkStyle}>Privacidad</Link>
       <Link to="/terminos" state={state} style={linkStyle}>Términos</Link>
       <Link to="/cookies" state={state} style={linkStyle}>Cookies</Link>
+      <Link to="/borrar-cuenta" state={state} style={linkStyle}>Borrar cuenta</Link>
     </nav>
   );
 }
