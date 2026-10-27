@@ -80,9 +80,13 @@ describe('El Impostor: lo que ve cada uno', () => {
   it('el grupo ve la palabra bien grande; el impostor ve "Sos el impostor" y sólo la categoría', () => {
     const grupo = pantalla('a', vista({}));
     expect(grupo).toContain('Riquelme');
+    expect(grupo).toContain('Hincha'); // colores de rol: los demás son "Hinchas" (celeste)
+    expect(grupo).toContain('Tu palabra es:');
+    expect(grupo).toContain('aria-label="Cómo jugar"');
     expect(grupo).not.toContain('Sos el impostor');
     const impostor = pantalla('c', vista({ rol: 'impostor', palabra: null }));
     expect(impostor).toContain('Sos el impostor');
+    expect(impostor).toContain('No tenés palabra');
     expect(impostor).toContain('Jugador');
     expect(impostor).not.toContain('Riquelme');
   });
@@ -94,6 +98,8 @@ describe('El Impostor: lo que ve cada uno', () => {
     expect(html).toContain('sin pista');
     expect(html).toContain('¡Te toca dar una pista!');
     expect(html).toContain('maxLength="30"');
+    // El botón principal va fijo abajo y manda el mismo formulario
+    expect(html).toMatch(/data-testid="imp-barra"[\s\S]*form="imp-pista-form"[\s\S]*Mandar pista/);
     expect(pantalla('a', v)).not.toContain('id="imp-pista"');
     expect(pantalla('a', v)).toContain('Pista de');
   });

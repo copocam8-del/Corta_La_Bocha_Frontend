@@ -1,29 +1,31 @@
 import { createElement, useState, useEffect, useMemo } from 'react';
 import { Navigate, useNavigate, useParams } from 'react-router-dom';
 import FraseRotativa from '../components/FraseRotativa';
-import { Bot, Home, KeyRound, Globe, Smartphone, Wifi } from 'lucide-react';
+import { Bot, Home, KeyRound, Globe } from 'lucide-react';
 import api from '../api/axios';
 import BackButton from '../components/BackButton';
 import { Avatar } from '../profile/avatars';
 import { GAME_ICONS, gameName } from '../games/gameIcons';
-import { crearSalaPath, isMultiGame, menuOnlinePath, menuPath, MULTI_CONFIG, publicaPath } from '../games/multiConfig';
+import { crearSalaPath, isMultiGame, menuPath, MULTI_CONFIG, publicaPath } from '../games/multiConfig';
+import ImpostorMenu from '../games/impostor/ImpostorMenu';
 
 // Menú "¿Cómo querés jugar?" de cada juego (/juego/:game): solo, con amigos (sala privada o unirse
 // con código) u online (partida pública). Se abre al elegir un juego en el Dashboard. El desafío
 // del día no tiene este menú (es individual, una vez por día).
 //
-// Los juegos con "En persona" (El Impostor) preguntan primero "¿Cómo juegan?": En persona (un solo
-// celular) u Online, que lleva a este mismo menú en /juego/:game/online (con amigos y partida pública).
+// Los juegos con "En persona" (El Impostor) preguntan primero "¿Cómo juegan?" con su propia pantalla
+// (games/impostor/ImpostorMenu.tsx): En persona (un solo celular) u Online, que lleva a este mismo menú en
+// /juego/:game/online (con amigos y partida pública).
 export default function GameMenu({ online = false }: { online?: boolean }) {
   const { game = '' } = useParams<{ game: string }>();
   if (!isMultiGame(game)) return <Navigate to="/dashboard" replace />;
   if (online && !MULTI_CONFIG[game].enPersona) return <Navigate to={menuPath(game)} replace />;
+  if (MULTI_CONFIG[game].enPersona && !online) return <ImpostorMenu />;
   return <Menu key={game + online} game={game} online={online} />;
 }
 
 function Menu({ game, online }: { game: keyof typeof MULTI_CONFIG; online: boolean }) {
   const config = MULTI_CONFIG[game];
-  const elegir = !!config.enPersona && !online; // primero "¿Cómo juegan?"
   const soloIcon = createElement(game === 'tutti_frutti' ? Bot : GAME_ICONS[game], { size: 24, strokeWidth: 1.5 });
   const [entered, setEntered] = useState(false);
   const [showJoinInput, setShowJoinInput] = useState(false);
@@ -428,7 +430,7 @@ function Menu({ game, online }: { game: keyof typeof MULTI_CONFIG; online: boole
             }}>{gameName(game)}</h1>
             <p style={{
               fontSize: '12px', color: 'rgba(180,255,205,0.75)', margin: 0,
-            }}>{elegir ? '¿Cómo juegan?' : config.enPersona ? 'Online · ¿Cómo querés jugar?' : '¿Cómo querés jugar?'}</p>
+            }}>{config.enPersona ? 'Online · ¿Cómo querés jugar?' : '¿Cómo querés jugar?'}</p>
           </div>
 
           <div className="lobby-card" style={{
@@ -445,27 +447,6 @@ function Menu({ game, online }: { game: keyof typeof MULTI_CONFIG; online: boole
             display: 'flex', flexDirection: 'column', gap: '8px',
           }}>
 
-            {/* "¿Cómo juegan?": En persona u Online */}
-            {elegir && config.enPersona && (
-              <>
-                <button className="mode-card" data-testid="modo-en-persona" onClick={() => navigate(config.enPersona!.path)}>
-                  <span className="mode-card-icon"><Smartphone size={24} strokeWidth={1.5} /></span>
-                  <div>
-                    <div style={{ fontWeight: 600, fontSize: '13px' }}>En persona</div>
-                    <div style={{ fontSize: '11px', color: 'rgba(180,255,205,0.5)', marginTop: '1px' }}>{config.enPersona.descripcion}</div>
-                  </div>
-                </button>
-                <button className="mode-card" data-testid="modo-online" onClick={() => navigate(menuOnlinePath(game))}>
-                  <span className="mode-card-icon"><Wifi size={24} strokeWidth={1.5} /></span>
-                  <div>
-                    <div style={{ fontWeight: 600, fontSize: '13px' }}>Online</div>
-                    <div style={{ fontSize: '11px', color: 'rgba(180,255,205,0.5)', marginTop: '1px' }}>Cada uno desde su casa</div>
-                  </div>
-                </button>
-              </>
-            )}
-
-            {!elegir && (<>
             {/* Solo (El Impostor no tiene: es sólo multijugador) */}
             {config.solo && (
               <>
@@ -528,7 +509,6 @@ function Menu({ game, online }: { game: keyof typeof MULTI_CONFIG; online: boole
                 <div style={{ fontSize: '11px', color: 'rgba(180,255,205,0.5)', marginTop: '1px' }}>Jugá contra alguien al azar en todo el mundo</div>
               </div>
             </button>
-            </>)}
 
           </div>
         </div>
