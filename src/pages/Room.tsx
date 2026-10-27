@@ -236,7 +236,7 @@ export default function Room() {
     />
   );
 
-  // El memotest en la PC usa una mesa más ancha (tablero horizontal, ver usePantallaMemotest)
-  const ancho = !state || state.phase === 'lobby' ? 480 : state.game === 'memotest' && state.phase !== 'finished' && pantalla.orientacion === 'horizontal' ? MESA_PC : 720;
+  // El memotest en la PC usa una mesa más ancha (tablero horizontal, ver usePantallaMemotest); El Impostor, una columna de 480 px
+  const ancho = !state || state.phase === 'lobby' || state.game === 'impostor' ? 480 : state.game === 'memotest' && state.phase !== 'finished' && pantalla.orientacion === 'horizontal' ? MESA_PC : 720;
   return <MultiShell maxWidth={ancho}>{back}{content}</MultiShell>;
 }

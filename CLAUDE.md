@@ -43,7 +43,7 @@ src/
     BackButton.tsx           botón "Volver" (fijo arriba a la izquierda) + ventana "¿Seguro?" (textos en abandonar.ts)
   games/multiConfig.ts       menú y opciones de las salas de cada juego (copia del backend)
   multi/juegos/              pantallas de partida multijugador de trivia, ahorcado, sopa, memotest y El Impostor
-  games/impostor/            El Impostor "En persona": reglas que corren en el navegador (presencial.ts)
+  games/impostor/            El Impostor: reglas de "En persona" (presencial.ts), estilo común (estilo.ts + ImpostorUI.tsx) y su menú (ImpostorMenu.tsx)
   pages/                     una página por pantalla (Login, Register, Dashboard, GameMenu, Game, Room…)
 ```
 
@@ -178,25 +178,51 @@ Checklist pre-producción (rama `feat/seguridad`, octubre 2026; el detalle compl
     (girar el celular, achicar la ventana) y saca los listeners al desmontar. En la PC la mesa llega a 960 px
     (`MESA_PC`; en la sala, `Room.tsx`) y las cartas son apaisadas (4/3); en el celular, paradas (3/4). Letra e ícono
     según `medidasCarta`; columnas con `minmax(0, 1fr)` y el texto corta palabras largas, así nunca hay scroll horizontal.
+- **Estilo de El Impostor** (todas sus pantallas: menú, "En persona" y online). App de celular limpia: una columna de 480 px
+  como máximo, fondo oscuro liso (no la cancha), bloques con esquinas de 20-24 px (`imp-bloque`, `imp-lista` + `imp-fila`),
+  letra grande y el botón principal verde de ancho completo **fijo abajo** (`BarraFija`). Arriba, botones redondos: "X" para
+  salir (`BotonSalir`, con la ventana "¿Seguro?" en plena partida) a la izquierda y "?" (`BotonAyuda` → hoja "Cómo jugar" que
+  sube desde abajo, pasos con ícono y título de color) a la derecha. Colores en `games/impostor/estilo.ts`: verde de la app,
+  **impostor en ROJO** (`VenetianMask`) y los demás, **"Hinchas", en CELESTE** (`Users`). Ilustración: tres de NUESTROS hinchas
+  (`HINCHAS_PORTADA`, `public/avatars/hinchas/*.webp`, el del medio adelante); nada de imágenes de otras apps, escudos ni
+  logos. Animaciones suaves y ninguna con `prefers-reduced-motion`. Lo que es `fixed` va con portal al `<body>` (como el
+  botón Volver). Si cambiás el estilo, cambialo en `estilo.ts` (sirve para todas).
+- **Menú del Impostor** (`/juego/impostor`, `games/impostor/ImpostorMenu.tsx`, lo abre `GameMenu`): dos tarjetas grandes,
+  "En persona" y "Online" (este último sigue siendo el menú de siempre en `/juego/impostor/online`).
 - **El Impostor** (sólo multijugador, de 3 a 8; `multi/juegos/ImpostorMulti.tsx`, tipos en `multi/gameViews.ts` → `ImpostorView`):
-  arriba, tu palabra bien grande (o "Sos el impostor" + la categoría), con botón para taparla; abajo la etapa con el reloj
-  (pista de quién / ¡A votar! / ¡Descubrieron a X!), el campo de la pista sólo en tu turno (máx. 30), la lista de pistas
-  por jugador, la votación con un botón por cada uno de los demás y, si te descubren, el campo para adivinar. La
-  revelación (quién era, la palabra, los votos y los puntos) tiene animación (sin animación con `prefers-reduced-motion`).
-  En la compu, acciones y pistas van en dos columnas. El servidor nunca le manda la palabra al impostor: la pantalla sólo
-  muestra lo que llega. `multi/impostor.test.tsx` controla el menú, lo que ve cada uno y que las opciones sean las del backend.
+  con el estilo del Impostor (funciona igual que antes): arriba tu rol ("Hincha" en celeste con tu palabra bien grande, o
+  "Impostor" en rojo con "Sos el impostor" y la categoría), con botón para taparla; abajo la etapa con el reloj (pista de
+  quién / ¡A votar! / ¡Descubrieron a X!), el campo de la pista sólo en tu turno (máx. 30; "Mandar pista" va en la barra fija
+  de abajo, `form="imp-pista-form"`), la lista de pistas por jugador, la votación con un botón por cada uno de los demás y, si
+  te descubren, el campo para adivinar ("Arriesgar" también abajo). La revelación (quién era, la palabra, los votos y los
+  puntos) tiene animación. La sala del Impostor usa una columna de 480 px (`Room.tsx`) y conserva el botón "Volver" (la sala
+  y el lobby son los de siempre). El servidor nunca le manda la palabra al impostor: la pantalla sólo muestra lo que llega.
+  **El online tiene UN solo impostor** (varios impostores es sólo de "En persona": en el online habría que cambiar el modo del
+  backend, la votación y los puntos). `multi/impostor.test.tsx` controla el menú, lo que ve cada uno y que las opciones sean las del backend.
   En el catálogo sigue "Próximamente" (`available: false`): para probarlo se entra directo a `/juego/impostor`.
 - **El Impostor "En persona"** (`/juego/impostor/en-persona`, `pages/ImpostorPresencial.tsx`, reglas en
-  `games/impostor/presencial.ts`, API en `api/impostor.ts`): **un solo celular que se pasan**. Preparación: nombres
-  (de 3 a 12, hasta 20 caracteres, sin repetidos sin importar tildes ni mayúsculas; los últimos se recuerdan en
-  `localStorage` con try/catch), temática y rondas (las de `multiConfig`). "¡Jugar!" pide las palabras a
-  `POST /impostor/local` (una por ronda) y **todo lo demás pasa en el navegador**: el impostor de cada ronda rota (el
-  que menos veces fue tiene prioridad, `armarRondas`), "Pasale el celu a X" → "Ver mi palabra" → la palabra grande (o
-  "Sos el impostor" + la categoría) → "Listo, tapar" (la palabra sólo se dibuja mientras la mira cada uno), "Empieza X"
-  con el orden de las pistas (dos vueltas, en voz alta), "¡A votar!" → "Voten en voz alta" → "Revelar" (con animación,
-  sin animación con `prefers-reduced-motion`) → siguiente ronda o el final con la palabra y el impostor de cada ronda y
-  "Jugar de nuevo". **No cuenta** para estadísticas, ELO, ligas ni logros. Volver en plena partida pregunta antes
-  (`SALIR_EN_PERSONA`). Tests en `games/impostor/impostorPresencial.test.tsx`.
+  `games/impostor/presencial.ts`, API en `api/impostor.ts`): **un solo celular que se pasan**. Pantallas:
+  1. **Configuración** como "lista de ajustes" (filas con ícono a la izquierda y valor a la derecha): **Jugadores** (abre una
+     hoja para agregar y sacar nombres: de 3 a 12, hasta 20 caracteres, sin repetidos sin importar tildes ni mayúsculas),
+     **Impostores** con − y + (`maxImpostores`: 1 con 3-4 jugadores, 2 con 5-7, 3 con 8 o más; si sacan jugadores baja solo,
+     `ajustarImpostores`), **Pista para el impostor** (interruptor: prendido ve la categoría, apagado no ve nada), **Temática**
+     y **Rondas** (abren un selector). Botón "Iniciar juego". Nombres y ajustes se recuerdan en `localStorage` con try/catch
+     (`impostor-en-persona-nombres` / `-ajustes`).
+  2. **Pasar el celu**: "Jugador" chiquito y el nombre grande; una tarjeta con los hinchas que se **desliza hacia arriba**
+     (pointer events, `touch-action: none`; también el botón "Ver mi palabra" para accesibilidad). Debajo aparece el rol, que
+     sale SÓLO de `secretoDe(ronda, jugador, pista)`: impostor (rojo, "No tenés palabra", la categoría si la pista está
+     prendida y cuántos impostores más hay, sin decir quiénes) o hincha (celeste, "Tu palabra es:" y la palabra). "Jugador
+     siguiente" primero baja la tarjeta (se tapa todo) y después muestra el siguiente nombre con una pantalla nueva (`key`):
+     **nunca queda la palabra del anterior**. El último ve "¡A dar pistas!".
+  3. **Orden de pistas**: "Empieza NOMBRE" grande y la lista numerada (dos vueltas, en voz alta) → "¡A votar!".
+  4. **Votación** en voz alta con reloj opcional (sin reloj / 30 s / 60 s, contra la hora de fin) → "Revelar".
+  5. **Revelación** con animación: quiénes eran los impostores (pueden ser varios) y la palabra → "Siguiente ronda" o "Ver final".
+  6. **Final**: palabra e impostores de cada ronda, "Jugar de nuevo" y "Cambiar ajustes".
+  Los impostores de cada ronda rotan (`armarRondas(jugadores, palabras, impostores)` + `elegirImpostores`: siempre distintos
+  en la ronda, primero los que menos veces lo fueron). "¡Jugar!" pide las palabras a `POST /impostor/local` (una por ronda) y
+  **todo lo demás pasa en el navegador**. **No cuenta** para estadísticas, ELO, ligas ni logros. Salir ("X") en plena partida
+  pregunta antes (`SALIR_EN_PERSONA`). Tests en `games/impostor/impostorPresencial.test.tsx` (rotación con varios
+  impostores, pista prendida/apagada, que nunca se vea la palabra del anterior, cada pantalla).
 - Ojo en Windows: no puede haber dos archivos que sólo difieren en mayúsculas (`Pelota.tsx` y `pelota.ts` chocan).
 
 ## Perfil, partidas y ranking

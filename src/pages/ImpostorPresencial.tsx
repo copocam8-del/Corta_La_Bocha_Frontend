@@ -1,52 +1,27 @@
-import { useState, type FormEvent } from 'react';
+import { useEffect, useRef, useState, type FormEvent, type PointerEvent } from 'react';
 import { isAxiosError } from 'axios';
-import { Eye, EyeOff, Megaphone, Play, Plus, RotateCcw, Smartphone, Users, VenetianMask, X } from 'lucide-react';
-import MultiShell from '../multi/MultiShell';
-import BackButton from '../components/BackButton';
+import {
+  ChevronRight, ChevronsUp, Eye, Lightbulb, Megaphone, Minus, Play, Plus, Repeat, RotateCcw, Shapes, SlidersHorizontal, Timer, Users,
+  VenetianMask, X,
+} from 'lucide-react';
 import { SALIR_EN_PERSONA } from '../components/abandonar';
 import { menuPath, MULTI_CONFIG } from '../games/multiConfig';
 import { pedirPalabrasEnPersona } from '../api/impostor';
 import {
-  armarRondas, errorNombre, guardarNombres, leerNombresGuardados, limpiarNombre, MAX_JUGADORES, MIN_JUGADORES, NOMBRE_MAX,
-  ordenPistas, type RondaEnPersona,
+  ajustarImpostores, armarRondas, errorNombre, guardarAjustes, guardarNombres, leerAjustes, leerNombresGuardados, limpiarNombre,
+  MAX_JUGADORES, maxImpostores, MIN_JUGADORES, NOMBRE_MAX, ordenPistas, secretoDe, VUELTAS, type AjustesEnPersona, type RondaEnPersona,
+  type Secreto,
 } from '../games/impostor/presencial';
+import { AMARILLO, CELESTE, COMO_JUGAR_EN_PERSONA, ROJO, VERDE } from '../games/impostor/estilo';
+import { Hinchas, Hoja, PantallaImpostor } from '../games/impostor/ImpostorUI';
 
-// El Impostor "En persona" (/juego/impostor/en-persona): un solo celular que se pasan. Se cargan los
-// nombres, el backend da las palabras y todo lo demás pasa acá: cada uno ve su palabra (o "Sos el
-// impostor") a su turno, las pistas y la votación son en voz alta y al final se revela. No cuenta
-// para estadísticas ni logros. Pensado primero para el celular.
+// El Impostor "En persona" (/juego/impostor/en-persona): un solo celular que se pasan. Se arma la partida
+// (jugadores, impostores, pista, temática y rondas), el backend da las palabras y todo lo demás pasa acá:
+// cada uno desliza la tarjeta para ver su palabra (o que es impostor), las pistas y la votación son en voz
+// alta y al final se revela. No cuenta para estadísticas ni logros. Pensado primero para el celular.
 
-const ROJO = '#f87171';
 const config = MULTI_CONFIG.impostor;
-
-const ESTILOS = `
-  .ep-titulo { font-family: 'Oswald', sans-serif; font-weight: 700; text-transform: uppercase; color: #eafff2; line-height: 1.1;
-    font-size: clamp(24px, 7vw, 32px); text-align: center; overflow-wrap: anywhere; }
-  .ep-palabra { font-family: 'Oswald', sans-serif; font-weight: 700; text-transform: uppercase; line-height: 1.05; text-align: center;
-    font-size: clamp(34px, 11vw, 56px); color: #eafff2; text-shadow: 0 0 18px rgba(57,255,140,0.55); overflow-wrap: anywhere; }
-  .ep-palabra.impostor { color: ${ROJO}; text-shadow: 0 0 18px rgba(248,113,113,0.55); }
-  .ep-sub { text-align: center; font-size: 14px; color: rgba(180,255,205,0.75); line-height: 1.5; }
-  .ep-nombre { display: flex; align-items: center; gap: 10px; padding: 8px 8px 8px 12px; border-radius: 10px;
-    background: rgba(57,255,140,0.04); border: 1px solid rgba(57,255,140,0.15); font-size: 15px; }
-  .ep-nombre span { flex: 1; overflow-wrap: anywhere; }
-  .ep-x { width: 36px; height: 36px; border-radius: 8px; border: 1px solid rgba(239,68,68,0.35); background: rgba(239,68,68,0.08);
-    color: #fca5a5; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; }
-  .ep-input { flex: 1; min-width: 0; background: rgba(57,255,140,0.04); border: 1px solid rgba(57,255,140,0.25); border-radius: 10px;
-    color: #eafff2; padding: 12px; font-size: 16px; outline: none; }
-  .ep-input:focus { border-color: rgba(57,255,140,0.7); }
-  .ep-add { width: 48px; border-radius: 10px; border: 1px solid rgba(57,255,140,0.5); background: rgba(57,255,140,0.12); color: #39ff8c;
-    display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; }
-  .ep-add:disabled { opacity: 0.4; cursor: default; }
-  .ep-orden { display: flex; flex-wrap: wrap; gap: 6px; list-style: none; }
-  .ep-orden li { padding: 5px 10px; border-radius: 999px; font-size: 14px; background: rgba(57,255,140,0.08); border: 1px solid rgba(57,255,140,0.25); }
-  .ep-orden li.primero { border-color: #fbbf24; background: rgba(251,191,36,0.14); color: #fde68a; }
-  .ep-fila { display: flex; justify-content: space-between; gap: 10px; padding: 10px 12px; border-radius: 10px;
-    background: rgba(57,255,140,0.03); border: 1px solid rgba(57,255,140,0.12); font-size: 14px; }
-  .ep-revela { animation: epRevela 0.9s cubic-bezier(.2,1.4,.4,1) both; }
-  .ep-revela-2 { animation: epRevela 0.7s ease 0.7s both; }
-  @keyframes epRevela { from { opacity: 0; transform: scale(0.6) rotateX(70deg); } to { opacity: 1; transform: none; } }
-  @media (prefers-reduced-motion: reduce) { .ep-revela, .ep-revela-2 { animation: none; } }
-`;
+const SALIR = menuPath('impostor');
 
 type Paso =
   | { tipo: 'preparar' }
@@ -56,10 +31,13 @@ type Paso =
   | { tipo: 'revelar' }
   | { tipo: 'final' };
 
+const sinAnimacion = () => typeof window !== 'undefined' && !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+
 export default function ImpostorPresencial() {
   const [jugadores, setJugadores] = useState<string[]>(() => leerNombresGuardados());
   const [tematica, setTematica] = useState(config.defaults.tematica);
   const [cantidadRondas, setCantidadRondas] = useState(config.defaults.rounds);
+  const [ajustes, setAjustes] = useState<AjustesEnPersona>(() => leerAjustes());
   const [rondas, setRondas] = useState<RondaEnPersona[]>([]);
   const [actual, setActual] = useState(0);
   const [paso, setPaso] = useState<Paso>({ tipo: 'preparar' });
@@ -72,10 +50,12 @@ export default function ImpostorPresencial() {
     if (jugadores.length < MIN_JUGADORES || cargando) return;
     setCargando(true);
     setError(null);
+    const impostores = ajustarImpostores(ajustes.impostores, jugadores.length);
     guardarNombres(jugadores);
+    guardarAjustes({ ...ajustes, impostores });
     try {
       const palabras = await pedirPalabrasEnPersona(tematica, cantidadRondas);
-      setRondas(armarRondas(jugadores.length, palabras));
+      setRondas(armarRondas(jugadores.length, palabras, impostores));
       setActual(0);
       setPaso({ tipo: 'pasar', jugador: 0, viendo: false });
     } catch (e) {
@@ -88,10 +68,10 @@ export default function ImpostorPresencial() {
     }
   };
 
-  const tapar = (jugador: number) =>
+  const siguienteJugador = (jugador: number) =>
     setPaso(jugador + 1 < jugadores.length ? { tipo: 'pasar', jugador: jugador + 1, viendo: false } : { tipo: 'pistas' });
 
-  const siguiente = () => {
+  const siguienteRonda = () => {
     if (actual + 1 < rondas.length) {
       setActual(actual + 1);
       setPaso({ tipo: 'pasar', jugador: 0, viendo: false });
@@ -101,48 +81,51 @@ export default function ImpostorPresencial() {
   };
 
   const enPartida = paso.tipo !== 'preparar' && paso.tipo !== 'final';
+  const salir = { to: SALIR, confirm: enPartida ? SALIR_EN_PERSONA : null };
 
+  if (paso.tipo === 'pasar' && ronda) {
+    return (
+      <PasarCelu
+        key={`${actual}-${paso.jugador}`} ronda={ronda} total={rondas.length} nombre={jugadores[paso.jugador]}
+        secreto={secretoDe(ronda, paso.jugador, ajustes.pista)} viendo={paso.viendo} ultimo={paso.jugador + 1 >= jugadores.length}
+        salir={salir} onVer={() => setPaso({ ...paso, viendo: true })} onSiguiente={() => siguienteJugador(paso.jugador)}
+      />
+    );
+  }
+  if (paso.tipo === 'pistas' && ronda) return <Pistas ronda={ronda} total={rondas.length} jugadores={jugadores} salir={salir} onVotar={() => setPaso({ tipo: 'votar' })} />;
+  if (paso.tipo === 'votar' && ronda) return <Votar ronda={ronda} total={rondas.length} salir={salir} onRevelar={() => setPaso({ tipo: 'revelar' })} />;
+  if (paso.tipo === 'revelar' && ronda) {
+    return <Revelacion ronda={ronda} total={rondas.length} jugadores={jugadores} ultima={actual + 1 >= rondas.length} salir={salir} onSiguiente={siguienteRonda} />;
+  }
+  if (paso.tipo === 'final') {
+    return (
+      <Final
+        rondas={rondas} jugadores={jugadores} cargando={cargando} error={error} salir={salir}
+        onDeNuevo={() => void jugar()} onCambiar={() => setPaso({ tipo: 'preparar' })}
+      />
+    );
+  }
   return (
-    <MultiShell maxWidth={480}>
-      <style>{ESTILOS}</style>
-      <BackButton to={menuPath('impostor')} confirm={enPartida ? SALIR_EN_PERSONA : null} />
-
-      {paso.tipo === 'preparar' && (
-        <Preparacion
-          jugadores={jugadores} setJugadores={setJugadores} tematica={tematica} setTematica={setTematica}
-          rondas={cantidadRondas} setRondas={setCantidadRondas} cargando={cargando} error={error} onJugar={() => void jugar()}
-        />
-      )}
-      {paso.tipo === 'pasar' && ronda && (
-        <PasarCelu
-          key={`${actual}-${paso.jugador}`} ronda={ronda} total={rondas.length} nombre={jugadores[paso.jugador]}
-          esImpostor={ronda.impostor === paso.jugador} viendo={paso.viendo}
-          onVer={() => setPaso({ ...paso, viendo: true })} onTapar={() => tapar(paso.jugador)}
-        />
-      )}
-      {paso.tipo === 'pistas' && ronda && <Pistas ronda={ronda} total={rondas.length} jugadores={jugadores} onVotar={() => setPaso({ tipo: 'votar' })} />}
-      {paso.tipo === 'votar' && ronda && <Votar ronda={ronda} total={rondas.length} onRevelar={() => setPaso({ tipo: 'revelar' })} />}
-      {paso.tipo === 'revelar' && ronda && (
-        <Revelacion ronda={ronda} jugadores={jugadores} ultima={actual + 1 >= rondas.length} onSiguiente={siguiente} />
-      )}
-      {paso.tipo === 'final' && (
-        <Final
-          rondas={rondas} jugadores={jugadores} cargando={cargando} error={error}
-          onDeNuevo={() => void jugar()} onCambiar={() => setPaso({ tipo: 'preparar' })}
-        />
-      )}
-    </MultiShell>
+    <Configuracion
+      jugadores={jugadores} setJugadores={setJugadores} ajustes={ajustes} setAjustes={setAjustes}
+      tematica={tematica} setTematica={setTematica} rondas={cantidadRondas} setRondas={setCantidadRondas}
+      cargando={cargando} error={error} onJugar={() => void jugar()}
+    />
   );
 }
 
-const Encabezado = ({ ronda, total }: { ronda: RondaEnPersona; total: number }) => (
-  <p className="kicker" style={{ textAlign: 'center' }}>El Impostor · Ronda {ronda.numero} de {total}</p>
+type Salir = { to: string; confirm: typeof SALIR_EN_PERSONA | null };
+
+const RondaDe = ({ ronda, total }: { ronda: RondaEnPersona; total: number }) => (
+  <p className="imp-chiquito">Ronda {ronda.numero} de {total}</p>
 );
 
-// ── Preparación: nombres, temática y rondas ──
-export function Preparacion({ jugadores, setJugadores, tematica, setTematica, rondas, setRondas, cargando, error, onJugar }: {
+// ── 1. Configuración: lista de ajustes ──
+export function Configuracion({ jugadores, setJugadores, ajustes, setAjustes, tematica, setTematica, rondas, setRondas, cargando, error, onJugar }: {
   jugadores: string[];
   setJugadores: (j: string[]) => void;
+  ajustes: AjustesEnPersona;
+  setAjustes: (a: AjustesEnPersona) => void;
   tematica: string;
   setTematica: (t: string) => void;
   rondas: number;
@@ -151,10 +134,99 @@ export function Preparacion({ jugadores, setJugadores, tematica, setTematica, ro
   error: string | null;
   onJugar: () => void;
 }) {
+  const [hoja, setHoja] = useState<'jugadores' | 'tematica' | 'rondas' | null>(null);
+  const faltan = MIN_JUGADORES - jugadores.length;
+  const maximo = maxImpostores(jugadores.length);
+  const impostores = ajustarImpostores(ajustes.impostores, jugadores.length);
+  const cambiarImpostores = (n: number) => setAjustes({ ...ajustes, impostores: ajustarImpostores(n, jugadores.length) });
+  const tematicaLabel = config.tematicas!.opciones.find((o) => o.id === tematica)?.label ?? tematica;
+
+  return (
+    <PantallaImpostor
+      salir={{ to: SALIR }} ayuda={COMO_JUGAR_EN_PERSONA}
+      barra={
+        <>
+          {faltan > 0 && <p className="imp-barra-nota">Faltan {faltan} {faltan === 1 ? 'jugador' : 'jugadores'} (mínimo {MIN_JUGADORES}).</p>}
+          <button type="button" className="imp-boton" data-testid="ep-jugar" disabled={faltan > 0 || cargando} onClick={onJugar}>
+            <Play size={22} fill="currentColor" /> {cargando ? 'Preparando…' : 'Iniciar juego'}
+          </button>
+        </>
+      }
+    >
+      <div className="imp-entra" style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+        <Hinchas />
+        <h1 className="imp-titulo">El Impostor</h1>
+        <p className="imp-texto" style={{ fontSize: '15px' }}>En persona · un solo celular que se van pasando</p>
+      </div>
+
+      <div className="imp-lista imp-entra" data-testid="ep-ajustes">
+        <button type="button" className="imp-fila" onClick={() => setHoja('jugadores')} data-testid="ep-fila-jugadores">
+          <span className="imp-fila-icono" style={{ background: 'rgba(57,255,140,0.14)', color: VERDE }}><Users size={22} /></span>
+          <span className="imp-fila-nombre">Jugadores</span>
+          <span className="imp-fila-valor">{jugadores.length} <ChevronRight size={20} /></span>
+        </button>
+
+        <div className="imp-fila">
+          <span className="imp-fila-icono" style={{ background: 'rgba(248,113,113,0.16)', color: ROJO }}><VenetianMask size={22} /></span>
+          <span className="imp-fila-nombre">Impostores</span>
+          <span style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <button type="button" className="imp-chico" aria-label="Menos impostores" disabled={impostores <= 1} onClick={() => cambiarImpostores(impostores - 1)}>
+              <Minus size={18} />
+            </button>
+            <span style={{ fontFamily: "'Oswald', sans-serif", fontSize: '22px', minWidth: '18px', textAlign: 'center' }} data-testid="ep-impostores" aria-live="polite">
+              {impostores}
+            </span>
+            <button type="button" className="imp-chico" aria-label="Más impostores" disabled={impostores >= maximo} onClick={() => cambiarImpostores(impostores + 1)}>
+              <Plus size={18} />
+            </button>
+          </span>
+        </div>
+
+        <button type="button" className="imp-fila" role="switch" aria-checked={ajustes.pista} data-testid="ep-pista"
+          onClick={() => setAjustes({ ...ajustes, pista: !ajustes.pista })}>
+          <span className="imp-fila-icono" style={{ background: 'rgba(251,191,36,0.16)', color: AMARILLO }}><Lightbulb size={22} /></span>
+          <span className="imp-fila-nombre">
+            Pista para el impostor
+            <span style={{ display: 'block', fontSize: '13px', fontWeight: 400, color: 'rgba(200,255,220,0.6)' }}>
+              {ajustes.pista ? 'Ve la categoría' : 'No ve nada'}
+            </span>
+          </span>
+          <span className={`imp-switch${ajustes.pista ? ' on' : ''}`} aria-hidden="true" />
+        </button>
+
+        <button type="button" className="imp-fila" onClick={() => setHoja('tematica')}>
+          <span className="imp-fila-icono" style={{ background: 'rgba(94,203,255,0.16)', color: CELESTE }}><Shapes size={22} /></span>
+          <span className="imp-fila-nombre">Temática</span>
+          <span className="imp-fila-valor">{tematicaLabel} <ChevronRight size={20} /></span>
+        </button>
+
+        <button type="button" className="imp-fila" onClick={() => setHoja('rondas')}>
+          <span className="imp-fila-icono" style={{ background: 'rgba(57,255,140,0.14)', color: VERDE }}><Repeat size={22} /></span>
+          <span className="imp-fila-nombre">Rondas</span>
+          <span className="imp-fila-valor">{rondas} <ChevronRight size={20} /></span>
+        </button>
+      </div>
+
+      {error && <p className="error" role="alert">{error}</p>}
+
+      {hoja === 'jugadores' && <HojaJugadores jugadores={jugadores} setJugadores={setJugadores} onCerrar={() => setHoja(null)} />}
+      {hoja === 'tematica' && (
+        <Selector titulo={config.tematicas!.titulo} opciones={config.tematicas!.opciones} valor={tematica}
+          onElegir={(v) => { setTematica(v); setHoja(null); }} onCerrar={() => setHoja(null)} />
+      )}
+      {hoja === 'rondas' && (
+        <Selector titulo={config.rondas.titulo} opciones={config.rondas.opciones.map((r) => ({ id: String(r), label: `${r} ${r === 1 ? 'ronda' : 'rondas'}` }))}
+          valor={String(rondas)} onElegir={(v) => { setRondas(Number(v)); setHoja(null); }} onCerrar={() => setHoja(null)} />
+      )}
+    </PantallaImpostor>
+  );
+}
+
+// Lista de jugadores: agregar y sacar nombres
+export function HojaJugadores({ jugadores, setJugadores, onCerrar }: { jugadores: string[]; setJugadores: (j: string[]) => void; onCerrar: () => void }) {
   const [nuevo, setNuevo] = useState('');
   const [aviso, setAviso] = useState<string | null>(null);
   const lleno = jugadores.length >= MAX_JUGADORES;
-  const faltan = MIN_JUGADORES - jugadores.length;
 
   const agregar = (e: FormEvent) => {
     e.preventDefault();
@@ -166,208 +238,362 @@ export function Preparacion({ jugadores, setJugadores, tematica, setTematica, ro
   };
 
   return (
-    <>
-      <div style={{ textAlign: 'center' }}>
-        <p className="kicker">El Impostor · En persona</p>
-        <h1 className="neon-title" style={{ fontSize: '26px', marginTop: '4px' }}>¿Quiénes juegan?</h1>
-        <p className="ep-sub" style={{ marginTop: '4px' }}>
-          <Smartphone size={13} style={{ verticalAlign: '-2px' }} /> Un solo celular que se van pasando
-        </p>
-      </div>
-
-      <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-        <p className="section-label"><Users size={12} /> Jugadores ({jugadores.length} de {MAX_JUGADORES})</p>
-        {jugadores.length > 0 && (
-          <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '6px' }} data-testid="ep-jugadores">
-            {jugadores.map((j, i) => (
-              <li key={j} className="ep-nombre">
-                <span>{i + 1}. {j}</span>
-                <button type="button" className="ep-x" aria-label={`Sacar a ${j}`} onClick={() => setJugadores(jugadores.filter((x) => x !== j))}>
-                  <X size={16} />
-                </button>
-              </li>
-            ))}
-          </ul>
-        )}
-        {!lleno && (
-          <form onSubmit={agregar} style={{ display: 'flex', gap: '8px' }}>
-            <input
-              id="ep-nuevo" className="ep-input" placeholder="Nombre del jugador" maxLength={NOMBRE_MAX} autoComplete="off"
-              value={nuevo} onChange={(e) => { setNuevo(e.target.value); setAviso(null); }}
-            />
-            <button type="submit" className="ep-add" aria-label="Agregar jugador" disabled={!nuevo.trim()}><Plus size={20} /></button>
-          </form>
-        )}
-        {aviso && <p className="error">{aviso}</p>}
-        {faltan > 0 && <p className="ep-sub" style={{ fontSize: '12px' }}>Faltan {faltan} {faltan === 1 ? 'jugador' : 'jugadores'} (mínimo {MIN_JUGADORES}).</p>}
-      </div>
-
-      <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-        <p className="section-label">{config.tematicas!.titulo}</p>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '6px' }}>
-          {config.tematicas!.opciones.map((o) => (
-            <button key={o.id} type="button" className={`option-btn${tematica === o.id ? ' active' : ''}`} onClick={() => setTematica(o.id)}>{o.label}</button>
+    <Hoja titulo={`Jugadores (${jugadores.length})`} onCerrar={onCerrar} cerrar="Listo">
+      <p className="imp-texto" style={{ fontSize: '14px' }}>De {MIN_JUGADORES} a {MAX_JUGADORES}. El celular se pasa en este orden.</p>
+      {!lleno && (
+        <form onSubmit={agregar} style={{ display: 'flex', gap: '8px' }}>
+          <input
+            id="ep-nuevo" aria-label="Nombre del jugador" placeholder="Nombre del jugador" maxLength={NOMBRE_MAX} autoComplete="off"
+            value={nuevo} onChange={(e) => { setNuevo(e.target.value); setAviso(null); }}
+            style={{ flex: 1, minWidth: 0, minHeight: '54px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.14)',
+              background: 'rgba(255,255,255,0.06)', color: '#eefff4', padding: '0 16px', fontSize: '17px', outline: 'none' }}
+          />
+          <button type="submit" className="imp-chico" aria-label="Agregar jugador" disabled={!nuevo.trim()} style={{ minWidth: '54px', borderRadius: '16px' }}>
+            <Plus size={22} />
+          </button>
+        </form>
+      )}
+      {aviso && <p className="error" role="alert">{aviso}</p>}
+      {jugadores.length > 0 && (
+        <ol className="imp-lista" style={{ listStyle: 'none', margin: 0, padding: 0 }} data-testid="ep-jugadores">
+          {jugadores.map((j, i) => (
+            <li key={j} className="imp-fila" style={{ minHeight: '56px' }}>
+              <span style={{ width: '28px', color: 'rgba(200,255,220,0.5)', fontFamily: "'Oswald', sans-serif", fontSize: '18px' }}>{i + 1}</span>
+              <span className="imp-fila-nombre" style={{ overflowWrap: 'anywhere' }}>{j}</span>
+              <button type="button" className="imp-chico" aria-label={`Sacar a ${j}`} onClick={() => setJugadores(jugadores.filter((x) => x !== j))}>
+                <X size={18} />
+              </button>
+            </li>
           ))}
-        </div>
-        <p className="section-label" style={{ marginTop: '4px' }}>{config.rondas.titulo}</p>
-        <div style={{ display: 'flex', gap: '6px' }}>
-          {config.rondas.opciones.map((r) => (
-            <button key={r} type="button" className={`option-btn${rondas === r ? ' active' : ''}`} onClick={() => setRondas(r)}>{r}</button>
-          ))}
-        </div>
-      </div>
-
-      {error && <p className="error">{error}</p>}
-      <button className="main-btn" data-testid="ep-jugar" disabled={faltan > 0 || cargando} onClick={onJugar}>
-        <Play size={18} /> {cargando ? 'Preparando…' : '¡Jugar!'}
-      </button>
-    </>
+        </ol>
+      )}
+    </Hoja>
   );
 }
 
-// ── Pasarse el celular: cada uno ve su palabra a su turno ──
-// La palabra sólo se dibuja mientras "viendo" es true: al tapar, el siguiente nunca la ve.
-export function PasarCelu({ ronda, total, nombre, esImpostor, viendo, onVer, onTapar }: {
+function Selector({ titulo, opciones, valor, onElegir, onCerrar }: {
+  titulo: string;
+  opciones: { id: string; label: string }[];
+  valor: string;
+  onElegir: (id: string) => void;
+  onCerrar: () => void;
+}) {
+  return (
+    <Hoja titulo={titulo} onCerrar={onCerrar}>
+      <div role="radiogroup" aria-label={titulo} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+        {opciones.map((o) => (
+          <button key={o.id} type="button" role="radio" aria-checked={o.id === valor} className={`imp-opcion${o.id === valor ? ' activo' : ''}`} onClick={() => onElegir(o.id)}>
+            {o.label}
+          </button>
+        ))}
+      </div>
+    </Hoja>
+  );
+}
+
+// ── 2. Pasar el celu: cada uno desliza la tarjeta para ver su palabra ──
+// El secreto sólo se dibuja mientras ese jugador levanta la tarjeta: al tocar "Jugador siguiente" se
+// tapa todo y el siguiente arranca con una pantalla nueva (key distinta), sin nada del anterior.
+const ALTO = 420; // alto de la zona de la tarjeta
+const SUBE = 286; // cuánto sube la tarjeta al abrirse (deja ver el rol abajo)
+const UMBRAL = 90; // cuánto hay que deslizar para abrirla
+
+export function PasarCelu({ ronda, total, nombre, secreto, viendo, ultimo, salir, onVer, onSiguiente }: {
   ronda: RondaEnPersona;
   total: number;
   nombre: string;
-  esImpostor: boolean;
+  secreto: Secreto;
   viendo: boolean;
+  ultimo: boolean;
+  salir: Salir;
   onVer: () => void;
-  onTapar: () => void;
+  onSiguiente: () => void;
 }) {
-  if (!viendo) {
+  const [arrastre, setArrastre] = useState(0);
+  const [tapando, setTapando] = useState(false);
+  const [arrastrando, setArrastrando] = useState(false);
+  const inicio = useRef<number | null>(null);
+  const abierta = viendo && !tapando;
+  const sube = tapando ? 0 : viendo ? SUBE : arrastre;
+  const muestraSecreto = abierta || (!tapando && arrastre > 0);
+
+  const bajar = (e: PointerEvent<HTMLDivElement>) => {
+    if (viendo) return;
+    inicio.current = e.clientY;
+    setArrastrando(true);
+    e.currentTarget.setPointerCapture?.(e.pointerId);
+  };
+  const mover = (e: PointerEvent<HTMLDivElement>) => {
+    if (inicio.current === null) return;
+    setArrastre(Math.max(0, Math.min(SUBE, inicio.current - e.clientY)));
+  };
+  const soltar = () => {
+    if (inicio.current === null) return;
+    inicio.current = null;
+    setArrastrando(false);
+    if (arrastre >= UMBRAL) onVer();
+    setArrastre(0);
+  };
+  const siguiente = () => {
+    setTapando(true);
+    // Primero baja la tarjeta (se tapa todo) y recién después aparece el nombre del siguiente
+    if (sinAnimacion()) onSiguiente();
+    else window.setTimeout(onSiguiente, 320);
+  };
+
+  return (
+    <PantallaImpostor
+      salir={salir} ayuda={COMO_JUGAR_EN_PERSONA}
+      barra={abierta ? (
+        <>
+          <p className="imp-barra-nota">Tapá y pasá al siguiente jugador</p>
+          <button type="button" className="imp-boton" data-testid="ep-siguiente-jugador" onClick={siguiente}>
+            {ultimo ? <><Megaphone size={22} /> ¡A dar pistas!</> : <>Jugador siguiente <ChevronRight size={22} /></>}
+          </button>
+        </>
+      ) : (
+        <button type="button" className="imp-boton secundario" data-testid="ep-ver" disabled={tapando} onClick={onVer}>
+          <Eye size={20} /> Ver mi palabra
+        </button>
+      )}
+    >
+      <RondaDe ronda={ronda} total={total} />
+      <div style={{ textAlign: 'center' }}>
+        <p className="imp-chiquito">Jugador</p>
+        <p className="imp-gigante" data-testid="ep-pasar-a">{nombre}</p>
+      </div>
+
+      <div style={{ position: 'relative', height: `${ALTO}px`, overflow: 'hidden', borderRadius: '24px' }}>
+        {/* El rol, debajo de la tarjeta */}
+        {muestraSecreto && (
+          <div data-testid="ep-secreto" aria-hidden={!abierta} aria-live="polite"
+            style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: `${SUBE}px`, display: 'flex', flexDirection: 'column',
+              alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '12px 16px', textAlign: 'center' }}>
+            <Rol secreto={secreto} />
+          </div>
+        )}
+        {/* La tarjeta: se desliza hacia arriba */}
+        <div
+          className="imp-tarjeta" data-testid="ep-tarjeta" onPointerDown={bajar} onPointerMove={mover} onPointerUp={soltar} onPointerCancel={soltar}
+          style={{
+            position: 'absolute', inset: 0, borderRadius: '24px', touchAction: 'none', userSelect: 'none', cursor: viendo ? 'default' : 'grab',
+            background: 'linear-gradient(180deg, #123a24 0%, #0b2416 100%)', border: '1px solid rgba(57,255,140,0.28)',
+            boxShadow: '0 24px 50px -18px rgba(0,0,0,0.9)', display: 'flex', flexDirection: 'column', alignItems: 'center',
+            justifyContent: 'space-between', padding: '28px 20px 22px',
+            transform: `translateY(-${sube}px)`, transition: arrastrando ? 'none' : 'transform 0.32s cubic-bezier(.2,.9,.3,1)',
+          }}
+        >
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px' }}>
+            <ChevronsUp size={34} color={VERDE} />
+            <p className="imp-texto" style={{ fontSize: '17px', maxWidth: '280px' }}>Deslizá la tarjeta hacia arriba para ver tu palabra</p>
+            <p style={{ fontSize: '13px', color: 'rgba(200,255,220,0.5)' }}>Que nadie más mire la pantalla</p>
+          </div>
+          <Hinchas chico />
+        </div>
+      </div>
+    </PantallaImpostor>
+  );
+}
+
+// Lo que ve cada uno: impostor (rojo, sin palabra) o hincha (su color, con la palabra)
+function Rol({ secreto }: { secreto: Secreto }) {
+  if (secreto.rol === 'impostor') {
     return (
       <>
-        <Encabezado ronda={ronda} total={total} />
-        <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '16px', padding: '28px 20px' }}>
-          <Smartphone size={40} color="#39ff8c" style={{ margin: '0 auto' }} />
-          <p className="ep-sub">Pasale el celu a</p>
-          <p className="ep-titulo" data-testid="ep-pasar-a">{nombre}</p>
-          <p className="ep-sub" style={{ fontSize: '12px' }}>Que nadie más mire la pantalla.</p>
-          <button className="main-btn" data-testid="ep-ver" onClick={onVer}><Eye size={18} /> Ver mi palabra</button>
-        </div>
+        <span style={{ width: 64, height: 64, borderRadius: '50%', background: 'rgba(248,113,113,0.16)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <VenetianMask size={36} color={ROJO} />
+        </span>
+        <p className="imp-gigante" style={{ color: ROJO }}>Impostor</p>
+        <p className="imp-texto" style={{ fontSize: '18px', color: '#eefff4' }}>No tenés palabra</p>
+        {secreto.categoria
+          ? <p className="imp-texto">Pista: <strong style={{ color: AMARILLO }}>{secreto.categoria}</strong></p>
+          : <p className="imp-texto" style={{ fontSize: '14px' }}>Sin pista: escuchá bien a los demás</p>}
+        {secreto.companeros > 0 && (
+          <p style={{ fontSize: '13px', color: 'rgba(255,200,200,0.75)' }}>
+            Hay {secreto.companeros === 1 ? 'otro impostor' : `otros ${secreto.companeros} impostores`} (no sabés quién)
+          </p>
+        )}
       </>
     );
   }
   return (
     <>
-      <Encabezado ronda={ronda} total={total} />
-      <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '16px', padding: '28px 20px' }} data-testid="ep-secreto">
-        <p className="ep-sub">{nombre}, tu palabra es:</p>
-        {esImpostor ? (
-          <>
-            <VenetianMask size={44} color={ROJO} style={{ margin: '0 auto' }} />
-            <p className="ep-palabra impostor">Sos el impostor</p>
-            <p className="ep-sub">Categoría: <strong style={{ color: '#eafff2' }}>{ronda.categoria}</strong>. Escuchá las pistas y disimulá.</p>
-          </>
-        ) : (
-          <>
-            <p className="ep-palabra">{ronda.palabra}</p>
-            <p className="ep-sub">{ronda.categoria}</p>
-          </>
-        )}
-        <button className="main-btn" data-testid="ep-tapar" onClick={onTapar}><EyeOff size={18} /> Listo, tapar</button>
-      </div>
+      <span style={{ width: 52, height: 52, borderRadius: '50%', background: 'rgba(94,203,255,0.16)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <Users size={28} color={CELESTE} />
+      </span>
+      <p style={{ fontFamily: "'Oswald', sans-serif", fontWeight: 700, fontSize: '22px', letterSpacing: '3px', color: CELESTE, textTransform: 'uppercase' }}>Hincha</p>
+      <p className="imp-texto" style={{ fontSize: '15px' }}>Tu palabra es:</p>
+      <p className="imp-gigante" style={{ color: '#eefff4', fontSize: 'clamp(32px, 10vw, 48px)' }}>{secreto.palabra}</p>
+      <p style={{ fontSize: '14px', color: 'rgba(200,255,220,0.6)' }}>{secreto.categoria}</p>
     </>
   );
 }
 
-// ── Pistas en voz alta: quién empieza y el orden (dos vueltas) ──
-export function Pistas({ ronda, total, jugadores, onVotar }: { ronda: RondaEnPersona; total: number; jugadores: string[]; onVotar: () => void }) {
-  const vueltas = ordenPistas(jugadores.length, ronda.empieza);
+// ── 3. Orden de las pistas (en voz alta) ──
+export function Pistas({ ronda, total, jugadores, salir, onVotar }: { ronda: RondaEnPersona; total: number; jugadores: string[]; salir: Salir; onVotar: () => void }) {
+  const [vuelta] = ordenPistas(jugadores.length, ronda.empieza);
   return (
-    <>
-      <Encabezado ronda={ronda} total={total} />
-      <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-        <p className="ep-sub">Empieza</p>
-        <p className="ep-titulo" data-testid="ep-empieza">{jugadores[ronda.empieza]}</p>
-        <p className="ep-sub">Por turnos, cada uno dice una pista en voz alta. ¡Sin decir la palabra!</p>
-        {vueltas.map((vuelta, v) => (
-          <div key={v}>
-            <p className="section-label">Vuelta {v + 1}</p>
-            <ol className="ep-orden">
-              {vuelta.map((j, i) => <li key={j} className={v === 0 && i === 0 ? 'primero' : ''}>{i + 1}. {jugadores[j]}</li>)}
-            </ol>
-          </div>
+    <PantallaImpostor
+      salir={salir} ayuda={COMO_JUGAR_EN_PERSONA}
+      barra={<button type="button" className="imp-boton" data-testid="ep-a-votar" onClick={onVotar}><Megaphone size={22} /> ¡A votar!</button>}
+    >
+      <RondaDe ronda={ronda} total={total} />
+      <div className="imp-entra" style={{ textAlign: 'center' }}>
+        <p className="imp-chiquito">Empieza</p>
+        <p className="imp-gigante" style={{ color: VERDE }} data-testid="ep-empieza">{jugadores[ronda.empieza]}</p>
+      </div>
+      <p className="imp-texto">Por turnos, cada uno dice una pista en voz alta. ¡Sin decir la palabra! Son {VUELTAS} vueltas.</p>
+      <ol className="imp-lista imp-entra" style={{ listStyle: 'none', margin: 0, padding: 0 }} data-testid="ep-orden">
+        {vuelta.map((j, i) => (
+          <li key={j} className="imp-fila" style={{ minHeight: '56px' }}>
+            <span className="imp-fila-icono" style={{
+              background: i === 0 ? VERDE : 'rgba(255,255,255,0.08)', color: i === 0 ? '#03200f' : '#eefff4',
+              fontFamily: "'Oswald', sans-serif", fontSize: '18px', fontWeight: 700,
+            }}>{i + 1}</span>
+            <span className="imp-fila-nombre" style={{ overflowWrap: 'anywhere' }}>{jugadores[j]}</span>
+          </li>
         ))}
-      </div>
-      <button className="main-btn" data-testid="ep-a-votar" onClick={onVotar}><Megaphone size={18} /> ¡A votar!</button>
-    </>
+      </ol>
+    </PantallaImpostor>
   );
 }
 
-// ── Votación en voz alta ──
-export function Votar({ ronda, total, onRevelar }: { ronda: RondaEnPersona; total: number; onRevelar: () => void }) {
+// ── 4. Votación en voz alta, con un reloj opcional ──
+const RELOJES = [0, 30, 60];
+
+export function Votar({ ronda, total, salir, onRevelar }: { ronda: RondaEnPersona; total: number; salir: Salir; onRevelar: () => void }) {
+  const [segundos, setSegundos] = useState(0);
   return (
-    <>
-      <Encabezado ronda={ronda} total={total} />
-      <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '12px', padding: '28px 20px' }}>
-        <Megaphone size={40} color="#fbbf24" style={{ margin: '0 auto' }} />
-        <p className="ep-titulo">Voten en voz alta</p>
-        <p className="ep-sub">A la cuenta de tres, todos señalan a quien creen que es el impostor. Si lo descubren, puede intentar adivinar la palabra.</p>
+    <PantallaImpostor
+      salir={salir} ayuda={COMO_JUGAR_EN_PERSONA}
+      barra={<button type="button" className="imp-boton" data-testid="ep-revelar" onClick={onRevelar}><Eye size={22} /> Revelar</button>}
+    >
+      <RondaDe ronda={ronda} total={total} />
+      <div className="imp-bloque imp-entra" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', padding: '28px 20px' }}>
+        <span style={{ width: 72, height: 72, borderRadius: '50%', background: 'rgba(251,191,36,0.16)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <Megaphone size={38} color={AMARILLO} />
+        </span>
+        <p className="imp-titulo">Voten en voz alta</p>
+        <p className="imp-texto">
+          {ronda.impostores.length > 1
+            ? `A la cuenta de tres, todos señalan a quien creen que es impostor (hay ${ronda.impostores.length}). Si descubren a uno, puede intentar adivinar la palabra.`
+            : 'A la cuenta de tres, todos señalan a quien creen que es el impostor. Si lo descubren, puede intentar adivinar la palabra.'}
+        </p>
       </div>
-      <button className="main-btn" data-testid="ep-revelar" onClick={onRevelar}><Eye size={18} /> Revelar</button>
-    </>
+      <div className="imp-bloque imp-entra" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+        <p className="imp-chiquito" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}><Timer size={15} /> Reloj (opcional)</p>
+        <div style={{ display: 'flex', gap: '8px' }} role="radiogroup" aria-label="Reloj">
+          {RELOJES.map((s) => (
+            <button key={s} type="button" role="radio" aria-checked={segundos === s} className={`imp-chico${segundos === s ? ' activo' : ''}`} style={{ flex: 1 }}
+              onClick={() => setSegundos(s)}>
+              {s ? `${s} s` : 'Sin reloj'}
+            </button>
+          ))}
+        </div>
+        {segundos > 0 && <Reloj key={segundos} segundos={segundos} />}
+      </div>
+    </PantallaImpostor>
   );
 }
 
-// ── Revelación: quién era el impostor y cuál era la palabra ──
-export function Revelacion({ ronda, jugadores, ultima, onSiguiente }: { ronda: RondaEnPersona; jugadores: string[]; ultima: boolean; onSiguiente: () => void }) {
+// Cuenta regresiva. Arranca de nuevo cada vez que se elige otro tiempo (key) y se calcula contra la hora de
+// fin (no restando de a 1), así no se atrasa si el celu se traba.
+function Reloj({ segundos }: { segundos: number }) {
+  const [quedan, setQuedan] = useState(segundos);
+  useEffect(() => {
+    const fin = Date.now() + segundos * 1000;
+    const t = window.setInterval(() => setQuedan(Math.max(0, Math.ceil((fin - Date.now()) / 1000))), 250);
+    return () => window.clearInterval(t);
+  }, [segundos]);
   return (
-    <>
-      <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '10px', textAlign: 'center', perspective: '600px', padding: '28px 20px' }} data-testid="ep-revelacion">
-        <p className="ep-sub">El impostor era</p>
-        <div className="ep-revela">
-          <VenetianMask size={40} color={ROJO} style={{ margin: '0 auto 6px', display: 'block' }} />
-          <p className="ep-palabra impostor">{jugadores[ronda.impostor]}</p>
-        </div>
-        <div className="ep-revela-2" style={{ marginTop: '10px' }}>
-          <p className="ep-sub">La palabra era</p>
-          <p className="ep-palabra" style={{ fontSize: 'clamp(26px, 8vw, 40px)' }}>{ronda.palabra}</p>
-          <p className="ep-sub">{ronda.categoria}</p>
-        </div>
-      </div>
-      <button className="main-btn" data-testid="ep-siguiente" onClick={onSiguiente}>
-        <Play size={18} /> {ultima ? 'Ver el final' : 'Siguiente ronda'}
-      </button>
-    </>
+    <p data-testid="ep-reloj" role="timer" aria-live="off" style={{
+      fontFamily: "'Oswald', sans-serif", fontSize: '64px', fontWeight: 700, textAlign: 'center', lineHeight: 1,
+      color: quedan <= 5 ? ROJO : '#eefff4',
+    }}>{quedan === 0 ? '¡Tiempo!' : quedan}</p>
   );
 }
 
-// ── Final: palabra e impostor de cada ronda ──
-export function Final({ rondas, jugadores, cargando, error, onDeNuevo, onCambiar }: {
+// ── 5. Revelación: quiénes eran los impostores y la palabra ──
+export function Revelacion({ ronda, total, jugadores, ultima, salir, onSiguiente }: {
+  ronda: RondaEnPersona;
+  total: number;
+  jugadores: string[];
+  ultima: boolean;
+  salir: Salir;
+  onSiguiente: () => void;
+}) {
+  const varios = ronda.impostores.length > 1;
+  return (
+    <PantallaImpostor
+      salir={salir} ayuda={COMO_JUGAR_EN_PERSONA}
+      barra={
+        <button type="button" className="imp-boton" data-testid="ep-siguiente" onClick={onSiguiente}>
+          <Play size={22} fill="currentColor" /> {ultima ? 'Ver final' : 'Siguiente ronda'}
+        </button>
+      }
+    >
+      <RondaDe ronda={ronda} total={total} />
+      <div className="imp-bloque" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px', textAlign: 'center', perspective: '700px', padding: '28px 20px' }} data-testid="ep-revelacion">
+        <p className="imp-chiquito">{varios ? 'Los impostores eran' : 'El impostor era'}</p>
+        <div className="imp-revela" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
+          <VenetianMask size={46} color={ROJO} />
+          {ronda.impostores.map((i) => <p key={i} className="imp-gigante" style={{ color: ROJO }}>{jugadores[i]}</p>)}
+        </div>
+      </div>
+      <div className="imp-bloque imp-revela-2" style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+        <p className="imp-chiquito">La palabra era</p>
+        <p className="imp-titulo" style={{ color: CELESTE }}>{ronda.palabra}</p>
+        <p style={{ fontSize: '14px', color: 'rgba(200,255,220,0.6)' }}>{ronda.categoria}</p>
+      </div>
+    </PantallaImpostor>
+  );
+}
+
+// ── Final: palabra e impostores de cada ronda ──
+export function Final({ rondas, jugadores, cargando, error, salir, onDeNuevo, onCambiar }: {
   rondas: RondaEnPersona[];
   jugadores: string[];
   cargando: boolean;
   error: string | null;
+  salir: Salir;
   onDeNuevo: () => void;
   onCambiar: () => void;
 }) {
   return (
-    <>
-      <div style={{ textAlign: 'center' }}>
-        <p className="kicker">El Impostor · En persona</p>
-        <h1 className="neon-title" style={{ fontSize: '26px', marginTop: '4px' }}>¡Terminó la partida!</h1>
+    <PantallaImpostor
+      salir={salir} ayuda={COMO_JUGAR_EN_PERSONA}
+      barra={
+        <>
+          <button type="button" className="imp-boton" data-testid="ep-de-nuevo" disabled={cargando} onClick={onDeNuevo}>
+            <RotateCcw size={22} /> {cargando ? 'Preparando…' : 'Jugar de nuevo'}
+          </button>
+          <button type="button" className="imp-boton secundario" onClick={onCambiar}><SlidersHorizontal size={18} /> Cambiar ajustes</button>
+        </>
+      }
+    >
+      <div className="imp-entra" style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+        <Hinchas chico />
+        <h1 className="imp-titulo">¡Terminó la partida!</h1>
       </div>
-      <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '6px' }} data-testid="ep-final">
+      <div className="imp-lista" data-testid="ep-final">
         {rondas.map((r) => (
-          <div key={r.numero} className="ep-fila">
-            <span>
-              <span style={{ color: 'rgba(180,255,205,0.6)' }}>Ronda {r.numero}</span><br />
-              <strong>{r.palabra}</strong> <span style={{ fontSize: '12px', color: 'rgba(180,255,205,0.6)' }}>({r.categoria})</span>
+          <div key={r.numero} className="imp-fila" style={{ alignItems: 'flex-start' }}>
+            <span className="imp-fila-icono" style={{ background: 'rgba(255,255,255,0.08)', fontFamily: "'Oswald', sans-serif", fontSize: '18px', fontWeight: 700 }}>{r.numero}</span>
+            <span style={{ flex: 1, minWidth: 0 }}>
+              <strong style={{ fontSize: '17px', color: CELESTE }}>{r.palabra}</strong>
+              <span style={{ display: 'block', fontSize: '13px', color: 'rgba(200,255,220,0.55)' }}>{r.categoria}</span>
             </span>
-            <span style={{ textAlign: 'right', color: ROJO }}>
-              <VenetianMask size={13} style={{ verticalAlign: '-2px' }} /> {jugadores[r.impostor]}
+            <span style={{ textAlign: 'right', color: ROJO, fontSize: '15px', display: 'flex', flexDirection: 'column', gap: '2px' }}>
+              {r.impostores.map((i) => (
+                <span key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '6px', whiteSpace: 'nowrap' }}>
+                  <VenetianMask size={15} /> {jugadores[i]}
+                </span>
+              ))}
             </span>
           </div>
         ))}
       </div>
-      {error && <p className="error">{error}</p>}
-      <button className="main-btn" data-testid="ep-de-nuevo" disabled={cargando} onClick={onDeNuevo}>
-        <RotateCcw size={18} /> {cargando ? 'Preparando…' : 'Jugar de nuevo'}
-      </button>
-      <button className="ghost-btn" onClick={onCambiar}>Cambiar jugadores o temática</button>
-    </>
+      {error && <p className="error" role="alert">{error}</p>}
+    </PantallaImpostor>
   );
 }

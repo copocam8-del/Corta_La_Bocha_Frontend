@@ -9,14 +9,26 @@ export const MAX_JUGADORES = 12;
 export const NOMBRE_MAX = 20;
 export const VUELTAS = 2; // vueltas de pistas en voz alta
 const GUARDADOS = 'impostor-en-persona-nombres';
+const AJUSTES = 'impostor-en-persona-ajustes';
 
 export interface RondaEnPersona {
   numero: number;
   palabra: string;
   categoria: string;
-  impostor: number; // índice en la lista de jugadores
+  impostores: number[]; // índices en la lista de jugadores (uno o más, ordenados)
   empieza: number; // quién da la primera pista
 }
+
+// Cuántos impostores puede haber: 1 con 3-4 jugadores, 2 con 5-7 y 3 con 8 o más (mínimo siempre 1)
+export function maxImpostores(cantidadJugadores: number): number {
+  if (cantidadJugadores >= 8) return 3;
+  if (cantidadJugadores >= 5) return 2;
+  return 1;
+}
+
+// Deja la cantidad de impostores dentro de lo permitido (ej. si sacaron jugadores)
+export const ajustarImpostores = (cantidad: number, cantidadJugadores: number) =>
+  Math.min(Math.max(1, Math.floor(cantidad) || 1), maxImpostores(cantidadJugadores));
 
 // Sin espacios de más
 export const limpiarNombre = (nombre: string) => nombre.replace(/\s+/g, ' ').trim();
@@ -42,14 +54,44 @@ export function elegirImpostor(veces: number[], azar: () => number = Math.random
   return candidatos[Math.floor(azar() * candidatos.length)];
 }
 
-// Todas las rondas de la partida (una por palabra): impostor rotando y quién empieza al azar
-export function armarRondas(cantidadJugadores: number, palabras: PalabraEnPersona[], azar: () => number = Math.random): RondaEnPersona[] {
+// Varios impostores distintos en la misma ronda: uno por uno, siempre entre los que MENOS veces lo fueron
+export function elegirImpostores(veces: number[], cantidad: number, azar: () => number = Math.random): number[] {
+  const elegidos: number[] = [];
+  for (let k = 0; k < Math.min(cantidad, veces.length); k++) {
+    // Los ya elegidos en esta ronda no cuentan (Infinity = nunca son el mínimo)
+    const i = elegirImpostor(veces.map((v, j) => (elegidos.includes(j) ? Infinity : v)), azar);
+    elegidos.push(i);
+  }
+  return elegidos.sort((a, b) => a - b);
+}
+
+// Todas las rondas de la partida (una por palabra): impostores rotando y quién empieza al azar
+export function armarRondas(
+  cantidadJugadores: number,
+  palabras: PalabraEnPersona[],
+  cantidadImpostores = 1,
+  azar: () => number = Math.random,
+): RondaEnPersona[] {
   const veces = Array.from({ length: cantidadJugadores }, () => 0);
+  const cantidad = ajustarImpostores(cantidadImpostores, cantidadJugadores);
   return palabras.map((p, i) => {
-    const impostor = elegirImpostor(veces, azar);
-    veces[impostor] += 1;
-    return { numero: i + 1, palabra: p.texto, categoria: p.categoria, impostor, empieza: Math.floor(azar() * cantidadJugadores) };
+    const impostores = elegirImpostores(veces, cantidad, azar);
+    for (const j of impostores) veces[j] += 1;
+    return { numero: i + 1, palabra: p.texto, categoria: p.categoria, impostores, empieza: Math.floor(azar() * cantidadJugadores) };
   });
+}
+
+// Lo que ve cada jugador al levantar la tarjeta. El impostor nunca recibe la palabra; la categoría sólo
+// si la pista está prendida. Las pantallas dibujan SÓLO esto (así no hay forma de mostrar de más).
+export type Secreto =
+  | { rol: 'impostor'; categoria: string | null; companeros: number }
+  | { rol: 'hincha'; palabra: string; categoria: string };
+
+export function secretoDe(ronda: RondaEnPersona, jugador: number, pista: boolean): Secreto {
+  if (ronda.impostores.includes(jugador)) {
+    return { rol: 'impostor', categoria: pista ? ronda.categoria : null, companeros: ronda.impostores.length - 1 };
+  }
+  return { rol: 'hincha', palabra: ronda.palabra, categoria: ronda.categoria };
 }
 
 // Orden de las pistas: arranca "empieza" y sigue la ronda (como sentados en ronda), dos vueltas
@@ -76,5 +118,35 @@ export function guardarNombres(nombres: string[]) {
     localStorage.setItem(GUARDADOS, JSON.stringify(nombres));
   } catch {
     // Sin localStorage (modo privado, bloqueado…): la próxima vez se escriben de nuevo
+  }
+}
+
+// Ajustes de la partida en este celular (impostores y pista). Igual que los nombres: si falla, valores por defecto.
+export interface AjustesEnPersona {
+  impostores: number;
+  pista: boolean; // true = el impostor ve la categoría
+}
+
+export const AJUSTES_POR_DEFECTO: AjustesEnPersona = { impostores: 1, pista: true };
+
+export function leerAjustes(): AjustesEnPersona {
+  try {
+    const crudo: unknown = JSON.parse(localStorage.getItem(AJUSTES) ?? 'null');
+    if (!crudo || typeof crudo !== 'object') return AJUSTES_POR_DEFECTO;
+    const a = crudo as Partial<Record<keyof AjustesEnPersona, unknown>>;
+    return {
+      impostores: typeof a.impostores === 'number' && a.impostores >= 1 && a.impostores <= 3 ? Math.floor(a.impostores) : 1,
+      pista: typeof a.pista === 'boolean' ? a.pista : true,
+    };
+  } catch {
+    return AJUSTES_POR_DEFECTO;
+  }
+}
+
+export function guardarAjustes(ajustes: AjustesEnPersona) {
+  try {
+    localStorage.setItem(AJUSTES, JSON.stringify(ajustes));
+  } catch {
+    // Sin localStorage: la próxima vez arranca con los valores por defecto
   }
 }

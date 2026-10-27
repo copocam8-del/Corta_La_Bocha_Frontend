@@ -12,7 +12,7 @@ import type { ConfirmText } from './abandonar';
 // navegar (ej. avisar al servidor que abandonaste o rendirte).
 
 
-const CSS = `
+export const CSS = `
   .back-fixed {
     position: fixed; z-index: 50;
     top: calc(12px + env(safe-area-inset-top, 0px)); left: calc(12px + env(safe-area-inset-left, 0px));
