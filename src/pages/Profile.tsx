@@ -18,7 +18,7 @@ import {
 } from 'lucide-react';
 import { clearSession } from '../auth/session';
 import { parseAuthError } from '../auth/apiErrors';
-import { NAME_MAX, validateProfileNames, type FieldErrors } from '../auth/rules';
+import { NAME_MAX, validateProfile, type FieldErrors } from '../auth/rules';
 import FieldError from '../components/FieldError';
 import BackButton from '../components/BackButton';
 import { Avatar, AvatarPicker } from '../profile/avatars';
@@ -107,10 +107,18 @@ export default function Profile() {
     setError('');
     setFieldErrors({});
     setSuccess(false);
-    // Nombre y apellido: se avisa antes de enviar (el backend vuelve a validar)
-    const nameErrors = validateProfileNames(firstName, lastName);
-    if (Object.keys(nameErrors).length) {
-      setFieldErrors(nameErrors);
+    // Nombre, apellido, usuario y textos públicos: se avisa antes de enviar (el backend vuelve a validar)
+    const clientErrors = validateProfile({
+      first_name: firstName,
+      last_name: lastName,
+      username,
+      bio,
+      favorite_team: favoriteTeam,
+      favorite_country: favoriteCountry,
+      favorite_player: favoritePlayer,
+    });
+    if (Object.keys(clientErrors).length) {
+      setFieldErrors(clientErrors);
       setSaving(false);
       return;
     }

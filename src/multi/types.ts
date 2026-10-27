@@ -22,6 +22,8 @@ export interface CellResult {
   canonical: string | null;
   reason: string;
   points: number;
+  // Respuesta ofensiva: no vale y el backend la manda como "***" a los demás (el que la escribió ve la suya)
+  ofensiva?: boolean;
 }
 
 export interface RoundResult {

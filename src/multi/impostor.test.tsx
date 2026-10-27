@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import ImpostorMulti from './juegos/ImpostorMulti';
+import { avisoAntesDeEnviar } from './juegos/impostorAviso';
 import GameMenu from '../pages/GameMenu';
 import { MULTI_CONFIG } from '../games/multiConfig';
 import { achievementIcon } from '../profile/achievementIcons';
@@ -128,5 +129,16 @@ describe('El Impostor: lo que ve cada uno', () => {
     expect(html).toContain('el impostor zafó');
     expect(html).toContain('Perdiste la ronda.');
     expect(html).toContain('Caro +30');
+  });
+});
+
+describe('El Impostor: filtro de malas palabras antes de enviar', () => {
+  it('pista o adivinanza ofensiva: mismo mensaje que el backend; lo normal se manda', () => {
+    expect(avisoAntesDeEnviar('pista', { pista: 'p.u.t.o' })).toBe('Esa pista no está permitida.');
+    expect(avisoAntesDeEnviar('pista', { pista: 'b0lud0' })).toBe('Esa pista no está permitida.');
+    expect(avisoAntesDeEnviar('adivinar', { respuesta: 'puuuto' })).toBe('Esa respuesta no está permitida.');
+    expect(avisoAntesDeEnviar('pista', { pista: 'enganche' })).toBeNull();
+    expect(avisoAntesDeEnviar('pista', { pista: 'disputa' })).toBeNull();
+    expect(avisoAntesDeEnviar('voto', { userId: 'b' })).toBeNull();
   });
 });

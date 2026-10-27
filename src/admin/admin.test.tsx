@@ -3,9 +3,9 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { MemoryRouter } from 'react-router-dom';
 import Admin from '../pages/Admin';
 import { PanelButton } from '../pages/Dashboard';
-import { esAdmin, type AdminContenido, type AdminIa, type AdminPartidas, type AdminUsuarios } from '../api/admin';
+import { esAdmin, type AdminContenido, type AdminIa, type AdminNombres, type AdminPartidas, type AdminUsuarios } from '../api/admin';
 import { BarrasHorizontales, BarrasPorDia } from './AdminParts';
-import { TabContenido, TabIa, TabPartidas, TabUsuarios } from './AdminTabs';
+import { TabContenido, TabIa, TabNombres, TabPartidas, TabUsuarios } from './AdminTabs';
 import { etiquetaDia } from './adminFormat';
 
 const usuarios: AdminUsuarios = {
@@ -96,6 +96,25 @@ describe('panel de administración', () => {
     expect(html).toContain('Clubes argentinos');
     expect(html).toContain('No se guarda');
     expect(html).toContain('Todavía no hay datos'); // memotest y más acertadas vacíos
+  });
+
+  it('nombres a revisar: tabla de sólo lectura con usuario, alta y motivo', () => {
+    const d: AdminNombres = {
+      revisados: 120,
+      nombres: [
+        { username: 'p3l0tud0_9', creado: '2026-10-12T15:00:00Z', motivo: 'ofensivo' },
+        { username: 'admin_clb', creado: '2026-10-11T15:00:00Z', motivo: 'reservado' },
+      ],
+    };
+    const html = renderToStaticMarkup(<TabNombres d={d} />);
+    expect(html).toContain('Nombres a revisar');
+    expect(html).toContain('de 120 usuarios');
+    expect(html).toContain('p3l0tud0_9');
+    expect(html).toContain('12/10/2026');
+    expect(html).toContain('Ofensivo');
+    expect(html).toContain('Reservado');
+    expect(html).not.toContain('<button'); // nada se cambia desde acá
+    expect(renderToStaticMarkup(<TabNombres d={{ revisados: 3, nombres: [] }} />)).toContain('Todavía no hay datos');
   });
 
   it('gráficos sin datos y etiquetas de días', () => {

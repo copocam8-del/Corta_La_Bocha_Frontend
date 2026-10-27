@@ -1,32 +1,34 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { BarChart3, Bot, Gamepad2, Library, Users } from 'lucide-react';
+import { BarChart3, Bot, Gamepad2, Library, ShieldAlert, Users } from 'lucide-react';
 import MultiShell from '../multi/MultiShell';
 import BackButton from '../components/BackButton';
 import { getMyProfile } from '../api/profile';
 import {
-  esAdmin, getAdminContenido, getAdminIa, getAdminPartidas, getAdminUsuarios, PERIODOS_ADMIN,
-  type AdminContenido, type AdminIa, type AdminPartidas, type AdminUsuarios, type PeriodoAdmin,
+  esAdmin, getAdminContenido, getAdminIa, getAdminNombres, getAdminPartidas, getAdminUsuarios, PERIODOS_ADMIN,
+  type AdminContenido, type AdminIa, type AdminNombres, type AdminPartidas, type AdminUsuarios, type PeriodoAdmin,
 } from '../api/admin';
-import { TabContenido, TabIa, TabPartidas, TabUsuarios } from '../admin/AdminTabs';
+import { TabContenido, TabIa, TabNombres, TabPartidas, TabUsuarios } from '../admin/AdminTabs';
 
 // Panel de administración del equipo (sólo lectura). Quién entra lo decide el BACKEND
 // (ADMIN_EMAILS): acá sólo se usa isAdmin de /users/me para no mostrar la pantalla a los demás. Si
 // no sos admin, vuelve al Dashboard.
 
-type Tab = 'usuarios' | 'partidas' | 'ia' | 'contenido';
+type Tab = 'usuarios' | 'partidas' | 'ia' | 'contenido' | 'nombres';
 const TABS: { id: Tab; label: string; Icon: typeof Users }[] = [
   { id: 'usuarios', label: 'Usuarios', Icon: Users },
   { id: 'partidas', label: 'Partidas', Icon: Gamepad2 },
   { id: 'ia', label: 'IA', Icon: Bot },
   { id: 'contenido', label: 'Contenido', Icon: Library },
+  { id: 'nombres', label: 'Nombres', Icon: ShieldAlert },
 ];
-type Datos = AdminUsuarios | AdminPartidas | AdminIa | AdminContenido;
+type Datos = AdminUsuarios | AdminPartidas | AdminIa | AdminContenido | AdminNombres;
 const CARGAR: Record<Tab, (p: PeriodoAdmin) => Promise<Datos>> = {
   usuarios: getAdminUsuarios,
   partidas: getAdminPartidas,
   ia: getAdminIa,
   contenido: getAdminContenido,
+  nombres: () => getAdminNombres(), // no depende del período
 };
 
 export default function Admin() {
@@ -114,6 +116,7 @@ export default function Admin() {
           {d && tab === 'partidas' && <TabPartidas d={d as AdminPartidas} />}
           {d && tab === 'ia' && <TabIa d={d as AdminIa} />}
           {d && tab === 'contenido' && <TabContenido d={d as AdminContenido} />}
+          {d && tab === 'nombres' && <TabNombres d={d as AdminNombres} />}
         </>
       )}
     </MultiShell>

@@ -7,6 +7,7 @@ import { secondsUntil } from '../clock';
 import { useNow } from '../useNow';
 import { Countdown, MultiFinal, MultiHeader, Notices, Scoreboard } from '../MultiParts';
 import { colorOf, nameOf } from '../players';
+import { avisoAntesDeEnviar } from './impostorAviso';
 
 // El Impostor multijugador. Todos ven la palabra secreta menos el impostor (el servidor ni se la
 // manda). Por turnos se dan pistas (dos vueltas), después se vota y, si descubren al impostor,
@@ -43,6 +44,12 @@ export default function ImpostorMulti({ room, state }: { room: RoomApi; state: R
   const [error, setError] = useState<string | null>(null);
 
   const jugar = async (type: string, payload: object) => {
+    // Filtro de malas palabras: se avisa antes de enviar (el backend igual lo revisa)
+    const aviso = avisoAntesDeEnviar(type, payload);
+    if (aviso) {
+      setError(aviso);
+      return false;
+    }
     const r = await room.action(type, payload);
     setError(r.ok ? null : r.error);
     return r.ok;

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { maxBirthDate, NAME_MAX, validateLogin, validateProfileNames, validateRegister, type RegisterForm } from './rules';
+import { maxBirthDate, NAME_MAX, validateLogin, validateProfile, validateProfileNames, validateRegister, type RegisterForm } from './rules';
 
 const hoy = new Date(Date.UTC(2026, 9, 8));
 
@@ -78,6 +78,33 @@ describe('validateProfileNames (Editar perfil)', () => {
     expect(NAME_MAX).toBe(50);
     expect(validateProfileNames('x'.repeat(51), 'Messi')).toEqual({ first_name: 'El nombre puede tener hasta 50 caracteres' });
     expect(validateRegister({ ...valido, lastName: 'y'.repeat(51) }, hoy)).toEqual({ lastName: 'El apellido puede tener hasta 50 caracteres' });
+  });
+});
+
+// Filtro de malas palabras (copia del backend): avisa antes de enviar con el mismo mensaje que el backend
+describe('filtro de malas palabras en los formularios', () => {
+  it('registro: usuario ofensivo o reservado, nombre y apellido ofensivos', () => {
+    expect(validateRegister({ ...valido, username: 'puuuto_10' }, hoy)).toEqual({ username: 'Ese nombre de usuario no está permitido. Elegí otro.' });
+    expect(validateRegister({ ...valido, username: 'admin' }, hoy)).toEqual({ username: 'Ese nombre de usuario no está permitido. Elegí otro.' });
+    expect(validateRegister({ ...valido, name: 'Pelotudo', lastName: 'P.u.t.o' }, hoy)).toEqual({
+      name: 'Ese nombre no está permitido. Elegí otro.',
+      lastName: 'Ese apellido no está permitido. Elegí otro.',
+    });
+    expect(validateRegister({ ...valido, username: 'Modric10', name: 'Concha', lastName: 'Acayaguá' }, hoy)).toEqual({});
+  });
+
+  it('perfil: usuario, nombre y textos públicos', () => {
+    const ok = { first_name: 'Lionel', last_name: 'Messi', username: 'messi_10', bio: 'Me gusta el pollo', favorite_team: 'Boca', favorite_country: 'Nigeria', favorite_player: 'Riquelme' };
+    expect(validateProfile(ok)).toEqual({});
+    expect(validateProfile({ ...ok, username: 'soporte', bio: 'sos un b0lud0', favorite_team: 'm1erd4', favorite_country: 'Sudacas', favorite_player: 'puuuto' })).toEqual({
+      username: 'Ese nombre de usuario no está permitido. Elegí otro.',
+      bio: 'Ese texto no está permitido.',
+      favorite_team: 'Ese texto no está permitido.',
+      favorite_country: 'Ese texto no está permitido.',
+      favorite_player: 'Ese texto no está permitido.',
+    });
+    // Usuario vacío no se revisa acá (el backend lo ignora)
+    expect(validateProfile({ ...ok, username: '' })).toEqual({});
   });
 });
 

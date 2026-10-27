@@ -50,6 +50,19 @@ describe('resultados del multijugador', () => {
     expect(html).not.toContain('La IA no pudo validar');
   });
 
+  it('una respuesta ofensiva de otro llega como "***" y se muestra así', () => {
+    const conOculta: RoundResult = {
+      ...ronda,
+      categories: ronda.categories.map((c, i) => i === 0
+        ? { ...c, entries: c.entries.map((e) => e.userId === 'b' ? { ...e, answer: '***', canonical: null, status: 'invalid' as const, ofensiva: true, reason: 'Esa respuesta no está permitida.' } : e) }
+        : c),
+    };
+    const html = renderToStaticMarkup(<MultiRoundResults result={conOculta} me="a" />);
+    expect(html).toContain('aria-label="Respuesta no permitida"');
+    expect(html).toContain('***');
+    expect(html).toContain('Esa respuesta no está permitida.');
+  });
+
   it('avisa si la IA no pudo validar', () => {
     const html = renderToStaticMarkup(<MultiRoundResults result={{ ...ronda, incomplete: true }} me="a" />);
     expect(html).toContain('La IA no pudo validar');

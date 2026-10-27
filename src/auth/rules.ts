@@ -1,6 +1,7 @@
 // Mismas reglas que el backend (src/auth/dto/auth-rules.ts en Corta_La_Bocha_Backend).
 // Acá sólo sirven para avisar antes de enviar el formulario; el backend es el que decide.
 import { COMMON_PASSWORDS } from './common-passwords';
+import { contieneOfensivo, MENSAJE_APELLIDO, MENSAJE_NOMBRE, MENSAJE_TEXTO, MENSAJE_USUARIO, usuarioPermitido } from '../moderacion/filtro';
 
 export const PASSWORD_MIN = 8;
 export const PASSWORD_MAX = 72;
@@ -68,6 +69,30 @@ export function validateName(value: string, campo: 'nombre' | 'apellido'): strin
   const v = value.trim();
   if (!v) return campo === 'nombre' ? 'Ingresá tu nombre' : 'Ingresá tu apellido';
   if (v.length > NAME_MAX) return `El ${campo} puede tener hasta ${NAME_MAX} caracteres`;
+  // Filtro de malas palabras (copia del backend en src/moderacion/): mismo mensaje que el backend
+  if (contieneOfensivo(v)) return campo === 'nombre' ? MENSAJE_NOMBRE : MENSAJE_APELLIDO;
+}
+
+// "Editar perfil": todo lo que se puede escribir. Nombre de usuario: mismas reglas que el registro (ahí es
+// obligatorio). Textos públicos (bio y favoritos): sin malas palabras. Errores con los nombres de campo del backend.
+export interface ProfileTexts {
+  first_name: string;
+  last_name: string;
+  username: string;
+  bio: string;
+  favorite_team: string;
+  favorite_country: string;
+  favorite_player: string;
+}
+
+export function validateProfile(form: ProfileTexts): FieldErrors {
+  const errors = validateProfileNames(form.first_name, form.last_name);
+  const username = form.username.trim();
+  if (username && !usuarioPermitido(username)) errors.username = MENSAJE_USUARIO;
+  for (const campo of ['bio', 'favorite_team', 'favorite_country', 'favorite_player'] as const) {
+    if (contieneOfensivo(form[campo])) errors[campo] = MENSAJE_TEXTO;
+  }
+  return errors;
 }
 
 // "Editar perfil": nombre y apellido (los errores usan los nombres de campo del backend)
@@ -101,6 +126,7 @@ export function validateRegister(form: RegisterForm, today = new Date()): FieldE
     errors.username = `El nombre de usuario debe tener entre ${USERNAME_MIN} y ${USERNAME_MAX} caracteres`;
   else if (!USERNAME_REGEX.test(username))
     errors.username = 'El nombre de usuario sólo puede tener letras, números y _';
+  else if (!usuarioPermitido(username)) errors.username = MENSAJE_USUARIO;
 
   if (!form.birthDate) errors.birthDate = 'Ingresá tu fecha de nacimiento';
   else if (isNaN(Date.parse(form.birthDate))) errors.birthDate = 'La fecha de nacimiento no es válida';

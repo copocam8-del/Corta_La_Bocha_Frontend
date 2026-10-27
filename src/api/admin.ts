@@ -80,6 +80,12 @@ export interface AdminContenido {
   sinDatos: string[];
 }
 
+// Usuarios existentes cuyo nombre no pasaría el filtro de malas palabras (no depende del período)
+export interface AdminNombres {
+  revisados: number;
+  nombres: { username: string; creado: string; motivo: 'ofensivo' | 'reservado' }[];
+}
+
 // ¿Mostrar el panel? Sólo si /users/me dice isAdmin: true (el backend igual lo controla en /admin)
 export const esAdmin = (perfil: { isAdmin?: boolean } | null | undefined) => perfil?.isAdmin === true;
 
@@ -89,3 +95,4 @@ export const getAdminUsuarios = (p: PeriodoAdmin) => get<AdminUsuarios>('usuario
 export const getAdminPartidas = (p: PeriodoAdmin) => get<AdminPartidas>('partidas', p);
 export const getAdminIa = (p: PeriodoAdmin) => get<AdminIa>('ia', p);
 export const getAdminContenido = (p: PeriodoAdmin) => get<AdminContenido>('contenido', p);
+export const getAdminNombres = () => api.get<AdminNombres>('/admin/nombres').then((r) => r.data);

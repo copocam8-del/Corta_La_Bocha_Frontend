@@ -36,6 +36,7 @@ src/
     common-passwords.ts      contraseñas demasiado comunes (copia exacta de la lista del backend)
     turnstile.ts             captcha de Cloudflare Turnstile (carga del script + CaptchaToken)
     apiErrors.ts             traduce errores del backend a errores por campo
+  moderacion/                filtro de malas palabras: palabras.ts + filtro.ts (COPIA EXACTA del backend)
   components/
     ProtectedRoute.tsx       sin token o token vencido → /login
     FieldError.tsx           mensaje de error debajo de un input
@@ -63,7 +64,24 @@ src/
 - Contraseñas: el registro y "contraseña nueva" avisan si está en la lista de las más comunes
   (`auth/common-passwords.ts`, **copia exacta** de `src/auth/dto/common-passwords.ts` del backend: un test del
   backend compara las dos). Mismo mensaje que el backend ("Esa contraseña es muy común…").
+- Malas palabras: ver "Filtro de malas palabras".
 - 429: `parseAuthError` muestra el mensaje del backend, que dice cuánto esperar (1 minuto por IP, 15 por email).
+
+## Filtro de malas palabras (`src/moderacion/`)
+
+- `palabras.ts` (la lista) y `filtro.ts` (normalización + `contieneOfensivo`, `esNombreReservado`, `usuarioPermitido` y
+  los mensajes) son **copia exacta** de `src/moderacion/` del backend: un test del backend compara los dos archivos.
+  **No los edites acá solos**: cambiá el backend y copiá los dos archivos (cómo agregar una palabra está arriba de
+  `palabras.ts`; el detalle de cómo compara está en el CLAUDE.md del backend). **Decide el backend**: acá sólo se avisa antes.
+- Avisa antes de enviar, con el mismo mensaje que el backend:
+  - Registro (`validateRegister`) y "Editar perfil" (`validateProfile` en `auth/rules.ts`): usuario ofensivo o reservado
+    (admin, moderador, clb…) → "Ese nombre de usuario no está permitido. Elegí otro."; nombre/apellido → "Ese nombre
+    (apellido) no está permitido. Elegí otro."; bio y favoritos → "Ese texto no está permitido.".
+  - El Impostor online (`multi/juegos/impostorAviso.ts`): pista → "Esa pista no está permitida."; adivinanza → "Esa
+    respuesta no está permitida." (no se manda y no gasta el intento).
+- Tutti Frutti multijugador: el backend manda "***" (`TEXTO_OCULTO`) en lugar de la respuesta ofensiva de otro (y
+  `ofensiva: true`); `MultiRoundResults` la muestra tenue con `aria-label="Respuesta no permitida"`. Cuenta como "No vale".
+- El Impostor "En persona" no se filtra: los nombres y las pistas no viajan a nadie (es un solo celular).
 
 ## Seguridad
 
@@ -225,8 +243,9 @@ Checklist pre-producción (rama `feat/seguridad`, octubre 2026; el detalle compl
     cambia ni se borra (los usuarios lo pueden tener elegido).
   - Se muestran en el perfil (grande), el ranking (podio y filas), el lobby de las salas, el marcador de la partida y el
     menú de cada juego.
-- Perfil → "Editar perfil": Nombre y Apellido (arriba de Nombre de usuario) se validan antes de enviar con
-  `validateProfileNames` de `auth/rules.ts` (obligatorios, hasta `NAME_MAX` = 50, igual que el registro). Al guardar se
+- Perfil → "Editar perfil": antes de enviar se valida con `validateProfile` de `auth/rules.ts`: Nombre y Apellido
+  (arriba de Nombre de usuario; obligatorios, hasta `NAME_MAX` = 50, igual que el registro, con `validateProfileNames`)
+  y el filtro de malas palabras en usuario, bio y favoritos. Al guardar se
   actualiza el nombre de arriba y el `name` de localStorage (es el `first_name`, como en el login).
 - Perfil (`pages/Profile.tsx`): avatar del set propio (clásicos o hinchas, mismos ids que el backend),
   equipo/selección/jugador favorito, bio, estadísticas y puesto en el ranking (`api/profile.ts`).
@@ -264,9 +283,12 @@ Checklist pre-producción (rama `feat/seguridad`, octubre 2026; el detalle compl
 - **Quién entra lo decide el backend** (`ADMIN_EMAILS` en Render). El frontend sólo usa `isAdmin` de `GET /users/me`:
   el botón **"Panel"** del Dashboard (`PanelButton`) aparece sólo si es `true`, y `/admin` (`pages/Admin.tsx`) vuelve al
   Dashboard si es `false` o si `/admin/*` responde 404 (no sos admin). Hasta confirmarlo no muestra nada.
-- Pestañas Usuarios / Partidas / IA / Contenido (`admin/AdminTabs.tsx`) y período Hoy / 7 días / 30 días / Todo. Cada
+- Pestañas Usuarios / Partidas / IA / Contenido / Nombres (`admin/AdminTabs.tsx`) y período Hoy / 7 días / 30 días / Todo. Cada
   pestaña y período se pide una vez (`api/admin.ts`) y queda guardado mientras estás en la pantalla. El backend limita a
   30 pedidos por minuto (429 → "Demasiados pedidos" con botón Reintentar).
+- **Nombres** (`TabNombres`, `GET /admin/nombres`): "Nombres a revisar", tabla de sólo lectura con los usuarios que
+  ya existen y cuyo nombre no pasaría el filtro de malas palabras (usuario, alta y motivo: ofensivo o reservado). No
+  depende del período y no tiene botones: nada se cambia solo.
 - Tarjetas con números grandes y gráficos hechos con SVG/CSS, **sin librerías** (`admin/AdminParts.tsx`: `BarrasPorDia`
   apilado por juego, `BarrasHorizontales`, `Tabla` que en el celular se desplaza adentro de su caja). Colores por juego y
   formatos (números y plata con coma, días "13 oct") en `admin/adminFormat.ts`.
