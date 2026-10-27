@@ -25,7 +25,7 @@ import { MESA_PC } from '../api/memotest';
 // diga el servidor: si recargás la página en medio de una ronda, volvés exactamente a donde estabas.
 
 // Juegos que ya tienen el formato de El Impostor en la partida (los demás todavía usan la columna ancha)
-const COLUMNA_480: string[] = ['impostor', 'tutti_frutti', 'ahorcado'];
+const COLUMNA_480: string[] = ['impostor', 'tutti_frutti', 'ahorcado', 'trivia'];
 
 const EN_PARTIDA: Phase[] = ['countdown', 'playing', 'collecting', 'validating', 'results'];
 
