@@ -387,6 +387,19 @@ backend local se levanta con `npm run db:local` y `npm run dev:local` (ver el RE
 nada salvo que `VITE_ADS_ENABLED=true`. No hay ninguna red de anuncios integrada: antes de activarla leé
 `docs/PUBLICIDAD.md` (usuarios desde 13 años, anuncios no personalizados, consentimiento de cookies, políticas).
 
+## PWA y Play Store
+
+- `public/manifest.webmanifest` (enlazado en `index.html`): nombre, `display: standalone`, abre en `/dashboard`, colores
+  `#0b0f0c` e íconos `icon-192.png`, `icon-512.png` (esquinas redondeadas transparentes) e `icon-maskable-512.png` (fondo
+  negro y el logo dentro de la zona segura: Android lo recorta en círculo o cuadrado). Salen del logo de Camila
+  (emblema neón). Un test (`src/pwaManifest.test.ts`) controla el manifest y que cada ícono mida lo que dice.
+- **No hay service worker**: `public/sw.js` es sólo el "de limpieza" (borra uno viejo y se desinstala). No registrar uno
+  nuevo sin pensar en ese problema (guardaba versiones viejas de la app); el test controla que `main.tsx` no registre ninguno.
+- Play Store: la idea es una **TWA** (la página envuelta en una app de Android con PWABuilder/Bubblewrap): se actualiza
+  sola con cada publicación de Vercel. Falta: cuenta de Play Console, `public/.well-known/assetlinks.json` (con la huella
+  de la clave de firma que da Google), borrar cuenta desde la app (obligatorio en Play) y la prueba cerrada (12 personas,
+  14 días). Ícono de la tienda y portada 1024×500 en `docs/play-store/`.
+
 ## Variables de entorno
 
 - `VITE_API_URL`: URL del backend (default `http://localhost:3000`)
