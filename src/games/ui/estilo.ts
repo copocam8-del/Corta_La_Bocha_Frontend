@@ -29,7 +29,7 @@ export const JUEGO_CSS = `
 
   /* Ícono del juego arriba del título (el de gameIcons.ts), en un círculo verde con brillo */
   .ui-icono-juego { width: 76px; height: 76px; border-radius: 50%; margin: 0 auto; display: flex; align-items: center; justify-content: center;
-    background: rgba(57,255,140,0.12); border: 1px solid rgba(57,255,140,0.45); color: ${VERDE};
+    background: radial-gradient(circle, rgba(18,70,40,0.95) 0%, rgba(4,20,11,0.95) 72%); border: 1px solid rgba(57,255,140,0.45); color: ${VERDE};
     box-shadow: 0 0 24px rgba(57,255,140,0.35), inset 0 0 18px rgba(57,255,140,0.12); }
 
   /* "?" de Cómo jugar: arriba a la derecha, igual que el botón Volver (que va a la izquierda) */
