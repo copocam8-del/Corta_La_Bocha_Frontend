@@ -5,6 +5,8 @@ import type { ReactElement } from 'react';
 import Privacidad from './Privacidad';
 import Terminos from './Terminos';
 import Cookies from './Cookies';
+import BorrarCuenta from './BorrarCuenta';
+import LegalFooter from '../../components/LegalFooter';
 
 const render = (page: ReactElement, path: string) =>
   renderToStaticMarkup(<MemoryRouter initialEntries={[path]}>{page}</MemoryRouter>);
@@ -59,6 +61,7 @@ describe('páginas legales', () => {
     ['privacidad', <Privacidad />],
     ['terminos', <Terminos />],
     ['cookies', <Cookies />],
+    ['borrar-cuenta', <BorrarCuenta />],
   ])('/%s ya no tiene datos por completar y tiene el email de contacto', (ruta, page) => {
     const html = render(page, `/${ruta}`);
     expect(html).not.toContain('<mark');
@@ -71,5 +74,27 @@ describe('páginas legales', () => {
     const fuentes = import.meta.glob('../../**/*.tsx', { query: '?raw', import: 'default', eager: true }) as Record<string, string>;
     const con = Object.entries(fuentes).filter(([archivo, texto]) => !archivo.includes('.test.') && /<Falta>/.test(texto));
     expect(con.map(([archivo]) => archivo)).toEqual([]);
+  });
+
+  it('/borrar-cuenta explica cómo borrarla desde la app, qué se borra, los backups y qué hacer si no podés entrar', () => {
+    const html = render(<BorrarCuenta />, '/borrar-cuenta');
+    for (const t of ['<strong>Perfil</strong>', '<strong>Borrar mi cuenta</strong>', '<strong>Borrar para siempre</strong>', 'nombre de usuario']) expect(html).toContain(t);
+    for (const t of ['estadísticas', 'ranking', 'logros', 'perfil']) expect(html).toContain(t);
+    expect(html).toContain('<strong>30 días</strong>');
+    expect(html).toContain('se borran solas');
+    expect(html).toContain('href="mailto:clbdevelopers@outlook.es?subject=Borrar%20mi%20cuenta"');
+    expect(html).toContain('<strong>desde el email de tu cuenta</strong>');
+  });
+
+  it('la política de privacidad dice cómo borrar la cuenta y linkea /borrar-cuenta', () => {
+    const html = render(<Privacidad />, '/privacidad');
+    expect(html).toContain('<strong>Perfil → Borrar mi');
+    expect(html).toContain('href="/borrar-cuenta"');
+    expect(html).toContain('quedan sólo los resultados de los demás jugadores');
+  });
+
+  it('el pie legal y el menú de las páginas legales linkean /borrar-cuenta', () => {
+    expect(render(<LegalFooter />, '/login')).toContain('href="/borrar-cuenta"');
+    expect(render(<Cookies />, '/cookies')).toMatch(/aria-label="Páginas legales"[\s\S]*href="\/borrar-cuenta"/);
   });
 });
