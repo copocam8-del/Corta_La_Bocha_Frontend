@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import LegalLayout, { Falta, Section } from '../../components/LegalLayout';
+import LegalLayout, { Section } from '../../components/LegalLayout';
 
 export default function Privacidad() {
   return (
@@ -13,9 +13,9 @@ export default function Privacidad() {
 
       <Section title="1. Quién es el responsable">
         <p>
-          El responsable de la base de datos es <Falta>NOMBRE DEL RESPONSABLE</Falta>, con domicilio
-          en <Falta>DOMICILIO DEL RESPONSABLE</Falta>. Para cualquier consulta sobre tus datos podés
-          escribirnos a <Falta>EMAIL DE CONTACTO</Falta>.
+          El responsable de la base de datos es <strong>CLB Devs (responsable: Camila Copo)</strong>, con domicilio
+          en Ciudad Autónoma de Buenos Aires, Argentina. Para cualquier consulta sobre tus datos podés
+          escribirnos a <a href="mailto:clbdevelopers@outlook.es">clbdevelopers@outlook.es</a>.
         </p>
       </Section>
 
@@ -61,6 +61,11 @@ export default function Privacidad() {
               <td>Al registrarte</td>
               <td>Funcionamiento interno y estadísticas generales.</td>
             </tr>
+            <tr>
+              <td>Fecha y versión de los Términos y de esta política que aceptaste</td>
+              <td>Al registrarte y cada vez que los actualizamos y los volvés a aceptar</td>
+              <td>Poder demostrar que diste tu consentimiento (Ley 25.326) y pedírtelo de nuevo si los cambiamos.</td>
+            </tr>
           </tbody>
         </table>
         <p>
@@ -77,28 +82,38 @@ export default function Privacidad() {
       </Section>
 
       <Section title="4. Con quién compartimos tus datos">
-        <p>No vendemos ni alquilamos tus datos. Para que la app funcione usamos estos proveedores:</p>
+        <p>No vendemos ni alquilamos tus datos. Para que la app funcione usamos estos proveedores (cada uno recibe sólo lo necesario):</p>
         <ul>
-          <li><strong>Vercel</strong>: aloja la página web que ves.</li>
-          <li><strong>Render</strong>: aloja el servidor de la aplicación.</li>
-          <li><strong>Supabase</strong>: aloja la base de datos donde se guardan los datos de la sección 2.</li>
-          <li>
-            <strong>Un proveedor de inteligencia artificial</strong> (Google Gemini, Anthropic u OpenAI, según cuál
-            tengamos configurado) valida si tus respuestas del Tutti Frutti son correctas. Sólo le enviamos la letra
-            de la ronda, las categorías y las respuestas escritas; <strong>nunca</strong> tu nombre, email ni
-            otros datos de tu cuenta.
-          </li>
-          <li>
-            <strong>Brevo (Sendinblue)</strong>, servicio de envío de emails: sólo si pedís recuperar tu contraseña,
-            le pasamos tu email para mandarte el link. El link vence en una hora y sirve una sola vez.
-          </li>
-          <li><strong>Google Fonts</strong>: sirve las tipografías de la página; tu navegador se conecta a sus
-            servidores para descargarlas.</li>
+          <li><strong>Supabase</strong> (base de datos): guarda los datos de la sección 2.</li>
+          <li><strong>Render</strong> (servidor): ejecuta la aplicación, así que procesa los datos que mandás mientras la usás
+            (por ejemplo, tu email y contraseña al iniciar sesión, o tus respuestas en las partidas) y tu dirección IP.</li>
+          <li><strong>Vercel</strong> (página web): sirve la página que ves; recibe tu dirección IP y los datos técnicos de tu
+            navegador al cargarla.</li>
           <li>
             <strong>Google (inicio de sesión)</strong>: podés registrarte y entrar con tu cuenta de Google. En ese
             caso, el inicio de sesión lo hace Google, que nos confirma quién sos; nosotros guardamos tu nombre, tu
             email y el identificador de tu cuenta de Google para reconocerte la próxima vez. No recibimos tu
             contraseña de Google.
+          </li>
+          <li>
+            <strong>Google Gemini</strong> (inteligencia artificial): valida si tus respuestas del Tutti Frutti son correctas.
+            Sólo le enviamos la letra de la ronda, las categorías y las respuestas escritas; <strong>nunca</strong> tu nombre,
+            email ni otros datos personales.
+          </li>
+          <li>
+            <strong>Brevo (Sendinblue)</strong>, servicio de envío de emails: sólo si pedís recuperar tu contraseña,
+            le pasamos tu email para mandarte el link. El link vence en una hora y sirve una sola vez.
+          </li>
+          <li>
+            <strong>Cloudflare Turnstile</strong> (verificación anti-robots del registro): al registrarte, Cloudflare analiza
+            datos técnicos de tu navegador y tu dirección IP para comprobar que no sos un robot. No le pasamos tu email ni tus datos de la cuenta.
+          </li>
+          <li><strong>Google Fonts</strong>: sirve las tipografías de la página; tu navegador se conecta a sus
+            servidores para descargarlas.</li>
+          <li>
+            <strong>Copias de seguridad (backups)</strong>: todos los días hacemos una copia de la base de datos, <strong>cifrada</strong>,
+            que se guarda en <strong>Google Drive</strong> y en <strong>GitHub</strong>. Cada copia se borra a los <strong>30 días</strong>.
+            Sin la clave no se puede leer, y sólo la usamos para recuperar los datos si algo sale mal.
           </li>
         </ul>
         <p>
@@ -119,7 +134,8 @@ export default function Privacidad() {
         <p>
           Guardamos tus datos mientras tengas una cuenta. Si pedís que la eliminemos, borramos tus datos
           personales; podemos conservar información anónima de partidas (sin identificarte) para
-          estadísticas generales.
+          estadísticas generales. Tus datos pueden seguir en las copias de seguridad hasta 30 días después,
+          hasta que esas copias se borran solas.
         </p>
       </Section>
 
@@ -135,7 +151,7 @@ export default function Privacidad() {
         <p>
           Para registrarte tenés que tener al menos <strong>13 años</strong>. Si sos menor de 18, usá la app con el
           conocimiento y la autorización de tus padres o tutores. Si sos madre, padre o tutor y creés que
-          un menor nos dio datos sin autorización, escribinos a <Falta>EMAIL DE CONTACTO</Falta> y los borramos.
+          un menor nos dio datos sin autorización, escribinos a <a href="mailto:clbdevelopers@outlook.es">clbdevelopers@outlook.es</a> y los borramos.
         </p>
       </Section>
 
@@ -148,7 +164,7 @@ export default function Privacidad() {
           <li><strong>Retirar tu consentimiento</strong> en cualquier momento.</li>
         </ul>
         <p>
-          Para ejercerlos escribí a <Falta>EMAIL DE CONTACTO</Falta> desde el email de tu cuenta. Respondemos
+          Para ejercerlos escribí a <a href="mailto:clbdevelopers@outlook.es">clbdevelopers@outlook.es</a> desde el email de tu cuenta. Respondemos
           los pedidos de acceso dentro de los 10 días corridos y los de rectificación o supresión dentro de
           los 5 días hábiles, como indica la ley.
         </p>
@@ -168,7 +184,7 @@ export default function Privacidad() {
       <Section title="10. Cambios en esta política">
         <p>
           Si cambiamos esta política, vamos a actualizar la fecha de arriba y, si el cambio es importante,
-          te lo vamos a avisar dentro de la app.
+          te vamos a pedir que la vuelvas a aceptar dentro de la app antes de seguir jugando.
         </p>
       </Section>
     </LegalLayout>

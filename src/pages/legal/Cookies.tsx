@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import LegalLayout, { Falta, Section } from '../../components/LegalLayout';
+import LegalLayout, { Section } from '../../components/LegalLayout';
 
 export default function Cookies() {
   return (
@@ -59,6 +59,10 @@ export default function Cookies() {
           guardar sus propias cookies para que funcione el inicio de sesión con tu cuenta de Google, según su
           política de privacidad.
         </p>
+        <p>
+          En el registro se carga la verificación anti-robots de <strong>Cloudflare Turnstile</strong>, que puede usar
+          datos técnicos de tu navegador para comprobar que no sos un robot, según la política de privacidad de Cloudflare.
+        </p>
       </Section>
 
       <Section title="4. Cómo borrar estos datos">
@@ -74,7 +78,7 @@ export default function Cookies() {
       <Section title="5. Más información">
         <p>
           Para saber qué datos guardamos en nuestros servidores, leé la <Link to="/privacidad">Política de
-          privacidad</Link>. Consultas: <Falta>EMAIL DE CONTACTO</Falta>.
+          privacidad</Link>. Consultas: <a href="mailto:clbdevelopers@outlook.es">clbdevelopers@outlook.es</a>.
         </p>
       </Section>
     </LegalLayout>

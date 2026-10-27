@@ -1,12 +1,12 @@
 import { Link } from 'react-router-dom';
-import LegalLayout, { Falta, Section } from '../../components/LegalLayout';
+import LegalLayout, { Section } from '../../components/LegalLayout';
 
 export default function Terminos() {
   return (
     <LegalLayout title="Términos y condiciones">
       <p>
         Estos términos regulan el uso de <strong>Corta la bocha</strong>, un juego online de preguntas y
-        respuestas sobre fútbol al estilo "Tutti Frutti", ofrecido por <Falta>NOMBRE DEL RESPONSABLE</Falta>.
+        respuestas sobre fútbol al estilo "Tutti Frutti", ofrecido por <strong>CLB Devs (responsable: Camila Copo)</strong>.
         Al crear una cuenta o usar la app aceptás estos términos y la <Link to="/privacidad">Política de privacidad</Link>.
       </p>
 
@@ -71,7 +71,7 @@ export default function Terminos() {
 
       <Section title="7. Baja de la cuenta">
         <p>
-          Podés pedir la baja de tu cuenta cuando quieras escribiendo a <Falta>EMAIL DE CONTACTO</Falta>.
+          Podés pedir la baja de tu cuenta cuando quieras escribiendo a <a href="mailto:clbdevelopers@outlook.es">clbdevelopers@outlook.es</a>.
           Tus datos se tratan como explica la <Link to="/privacidad">Política de privacidad</Link>.
         </p>
       </Section>
@@ -79,16 +79,16 @@ export default function Terminos() {
       <Section title="8. Cambios en los términos">
         <p>
           Podemos actualizar estos términos. Vamos a cambiar la fecha de arriba y, si el cambio es importante,
-          te lo vamos a avisar en la app. Si seguís usando Corta la bocha después del cambio, se entiende que
-          lo aceptás.
+          te vamos a pedir que los vuelvas a aceptar en la app: hasta que los aceptes no vas a poder seguir
+          jugando. Si no estás de acuerdo, podés pedir la baja de tu cuenta.
         </p>
       </Section>
 
       <Section title="9. Ley aplicable y contacto">
         <p>
           Estos términos se rigen por las leyes de la República Argentina. Ante cualquier conflicto serán
-          competentes los tribunales ordinarios de <Falta>CIUDAD / JURISDICCIÓN</Falta>, sin perjuicio de
-          los derechos que te correspondan como consumidor. Consultas: <Falta>EMAIL DE CONTACTO</Falta>.
+          competentes los tribunales ordinarios de la Ciudad Autónoma de Buenos Aires, sin perjuicio de
+          los derechos que te correspondan como consumidor. Consultas: <a href="mailto:clbdevelopers@outlook.es">clbdevelopers@outlook.es</a>.
         </p>
       </Section>
     </LegalLayout>
