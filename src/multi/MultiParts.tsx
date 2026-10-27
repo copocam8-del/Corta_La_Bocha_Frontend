@@ -11,6 +11,7 @@ import { achievementIcon } from '../profile/achievementIcons';
 import { gameName } from '../games/gameIcons';
 import { menuOnlinePath, publicaPath } from '../games/multiConfig';
 import AdSlot from '../ads/AdSlot';
+import { BarraAbajo } from '../games/ui/JuegoUI';
 
 // Partes comunes de las partidas multijugador de todos los juegos: encabezado, marcador, cuenta
 // regresiva y pantalla final (posiciones, logros y "jugar otra vez").
@@ -79,8 +80,9 @@ export function Notices({ room, state, local }: { room: RoomApi; state: RoomSnap
   );
 }
 
-// Pantalla final: ganador (o empate arriba), posiciones, logros nuevos y qué hacer después
-export function MultiFinal({ room, state, children }: { room: RoomApi; state: RoomSnapshot; children?: ReactNode }) {
+// Pantalla final: ganador (o empate arriba), posiciones, logros nuevos y qué hacer después. "abajo": el botón principal
+// ("Jugar otra vez" / "Buscar otra partida") va fijo abajo, como en el resto de las pantallas de los juegos.
+export function MultiFinal({ room, state, children, abajo = false }: { room: RoomApi; state: RoomSnapshot; children?: ReactNode; abajo?: boolean }) {
   const navigate = useNavigate();
   if (!state.final) return null;
   const meStanding = state.final.standings.find((s) => s.userId === state.me);
@@ -93,6 +95,22 @@ export function MultiFinal({ room, state, children }: { room: RoomApi; state: Ro
   const titulo = empate
     ? empateYo ? '¡Empate!' : `Empataron ${listaNombres(empatados)}`
     : meStanding?.won ? '¡Ganaste!' : winners.length ? `Ganó ${winners.map((w) => w.username).join(' y ')}` : 'Terminó la partida';
+  // Botón principal debajo de todo (sin "abajo"; así lo usa El Impostor)
+  const principal = state.isPrivate ? (
+    isHost ? (
+      <button className="main-btn" data-testid="jugar-otra-vez" onClick={() => void room.playAgain()}>
+        <Users size={18} /> Jugar otra vez
+      </button>
+    ) : (
+      <p style={{ textAlign: 'center', fontSize: '12px', color: 'rgba(180,255,205,0.6)' }}>
+        Esperando a que el anfitrión arranque otra…
+      </p>
+    )
+  ) : (
+    <button className="main-btn" onClick={() => { void room.leave(); navigate(publicaPath(state.game)); }}>
+      Buscar otra partida
+    </button>
+  );
   return (
     <>
       <div className="card pulse" style={{ textAlign: 'center' }} data-testid="final">
@@ -136,23 +154,26 @@ export function MultiFinal({ room, state, children }: { room: RoomApi; state: Ro
 
       {children}
 
-      {state.isPrivate ? (
-        isHost ? (
-          <button className="main-btn" data-testid="jugar-otra-vez" onClick={() => void room.playAgain()}>
-            <Users size={18} /> Jugar otra vez
-          </button>
-        ) : (
-          <p style={{ textAlign: 'center', fontSize: '12px', color: 'rgba(180,255,205,0.6)' }}>
-            Esperando a que el anfitrión arranque otra…
-          </p>
-        )
-      ) : (
-        <button className="main-btn" onClick={() => { void room.leave(); navigate(publicaPath(state.game)); }}>
-          Buscar otra partida
-        </button>
-      )}
+      {!abajo && principal}
       <button className="ghost-btn" onClick={() => { void room.leave(); navigate(menuOnlinePath(state.game)); }}>Volver al menú</button>
       <AdSlot placement="resultado" />
+      {abajo && (
+        <BarraAbajo>
+          {state.isPrivate ? (
+            isHost ? (
+              <button className="ui-boton" data-testid="jugar-otra-vez" onClick={() => void room.playAgain()}>
+                <Users size={20} /> Jugar otra vez
+              </button>
+            ) : (
+              <p className="ui-barra-nota">Esperando a que el anfitrión arranque otra…</p>
+            )
+          ) : (
+            <button className="ui-boton" onClick={() => { void room.leave(); navigate(publicaPath(state.game)); }}>
+              Buscar otra partida
+            </button>
+          )}
+        </BarraAbajo>
+      )}
     </>
   );
 }

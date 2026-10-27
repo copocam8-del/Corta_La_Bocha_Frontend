@@ -92,7 +92,8 @@ export const JUEGO_CSS = `
   /* Barra fija de abajo con el botón principal (y el aviso justo arriba del botón) */
   .ui-barra { position: fixed; z-index: 30; left: 0; right: 0; bottom: 0;
     padding: 18px max(16px, env(safe-area-inset-right, 0px)) calc(16px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));
-    background: linear-gradient(180deg, rgba(1,8,5,0) 0%, rgba(1,8,5,0.88) 26%, rgba(1,8,5,0.96) 100%); }
+    background: linear-gradient(180deg, rgba(1,8,5,0) 0%, rgba(1,8,5,0.88) 26%, rgba(1,8,5,0.96) 100%);
+    font-family: 'Inter', sans-serif; color: #eafff2; } /* va en el <body>, fuera de MultiShell: necesita su letra */
   .ui-barra > div { max-width: 480px; margin: 0 auto; display: flex; flex-direction: column; gap: 10px; }
   .ui-barra-nota { text-align: center; font-size: 13px; color: #bbf7d0; }
 
