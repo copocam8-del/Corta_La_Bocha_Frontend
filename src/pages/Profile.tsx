@@ -23,6 +23,7 @@ import FieldError from '../components/FieldError';
 import BackButton from '../components/BackButton';
 import { Avatar, AvatarPicker } from '../profile/avatars';
 import AchievementsGrid from '../profile/AchievementsGrid';
+import BorrarCuenta from '../profile/BorrarCuenta';
 import { getMyGameStats, type GameStats } from '../api/games';
 import { gameName } from '../games/gameIcons';
 import { getMyAchievements, type Achievement } from '../api/achievements';
@@ -221,6 +222,7 @@ export default function Profile() {
           .perfil-ident { order: 0; }
           .perfil-edit { order: 1; }
           .perfil-main { order: 2; }
+          .perfil-borrar { order: 3; }
           .perfil-layout .logros-grupos { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; gap: 16px !important; }
         }
 
@@ -773,6 +775,9 @@ export default function Profile() {
                   </form>
                 )}
               </div>
+
+              {/* Borrar mi cuenta: al final y separado */}
+              <BorrarCuenta username={profile.username} tieneContrasena={profile.tieneContrasena !== false} />
             </>
           )}
         </div>

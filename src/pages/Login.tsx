@@ -23,6 +23,8 @@ export default function Login() {
   const sessionExpired = searchParams.get('expired') === '1';
   // Register manda acá con ?registered=1 después de crear la cuenta
   const justRegistered = searchParams.get('registered') === '1';
+  // Perfil → Borrar mi cuenta manda acá con ?borrada=1 (la sesión ya está cerrada)
+  const cuentaBorrada = searchParams.get('borrada') === '1';
 
   useEffect(() => {
     const t = setTimeout(() => setEntered(true), 80);
@@ -376,6 +378,18 @@ export default function Login() {
                 marginBottom: '14px',
                 animation: 'fadeIn 0.3s ease',
               }}>Tu sesión venció. Volvé a iniciar sesión.</div>
+            )}
+
+            {cuentaBorrada && !error && (
+              <div role="status" data-testid="cuenta-borrada" style={{
+                background: 'rgba(57,255,140,0.1)',
+                border: '1px solid rgba(57,255,140,0.35)',
+                color: '#bbf7d0',
+                padding: '10px 14px', borderRadius: '8px',
+                fontSize: '12px', textAlign: 'center',
+                marginBottom: '14px',
+                animation: 'fadeIn 0.3s ease',
+              }}>Tu cuenta se borró.</div>
             )}
 
             {error && (

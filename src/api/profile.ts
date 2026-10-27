@@ -29,6 +29,7 @@ export interface MyProfile {
   created_at: string;
   profile: ProfileStats | null;
   isAdmin?: boolean; // equipo con acceso al panel /admin (lo decide el backend)
+  tieneContrasena?: boolean; // false: entró sólo con Google (para borrar la cuenta confirma con su nombre de usuario)
 }
 
 export interface ProfileUpdate {
@@ -71,6 +72,9 @@ export interface RankingRow {
 }
 
 export const getMyProfile = () => api.get<MyProfile>('/users/me').then((r) => r.data);
+// Borrar la cuenta para siempre: con la contraseña o, si entró sólo con Google, con su nombre de usuario
+export const borrarMiCuenta = (confirmar: { password: string } | { confirmacion: string }) =>
+  api.delete<{ borrada: true }>('/users/me', { data: confirmar }).then((r) => r.data);
 export const updateMyProfile = (data: ProfileUpdate) => api.put<MyProfile>('/users/me', data).then((r) => r.data);
 // game: ranking de un juego (sin game = general). El ELO es uno solo.
 export const getMyRanking = (period: RankingPeriod = 'global', game?: string) =>
