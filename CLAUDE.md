@@ -43,7 +43,9 @@ src/
     BackButton.tsx           botón "Volver" (fijo arriba a la izquierda) + ventana "¿Seguro?" (textos en abandonar.ts)
   games/multiConfig.ts       menú y opciones de las salas de cada juego (copia del backend)
   multi/juegos/              pantallas de partida multijugador de trivia, ahorcado, sopa, memotest y El Impostor
-  games/impostor/            El Impostor: reglas de "En persona" (presencial.ts), estilo común (estilo.ts + ImpostorUI.tsx) y su menú (ImpostorMenu.tsx)
+  games/ui/                  formato común de TODOS los juegos (estilo.ts + JuegoUI.tsx): columna, barra fija, "?", hojas, filas de ajustes
+  games/comoJugar.ts         pasos de "Cómo jugar" de cada juego (la hoja del "?")
+  games/impostor/            El Impostor: reglas de "En persona" (presencial.ts), lo propio de su estilo (estilo.ts + ImpostorUI.tsx) y su menú
   pages/                     una página por pantalla (Login, Register, Dashboard, GameMenu, Game, Room…)
 ```
 
@@ -151,17 +153,44 @@ Checklist pre-producción (rama `feat/seguridad`, octubre 2026; el detalle compl
   Tutti Frutti (`/lobby`, `/create-room`, `/public-setup`) redirigen al menú nuevo.
 - Opciones de cada juego (temática, dificultad, rondas, tiempo, mínimo y máximo de jugadores, pública, explicación del
   lobby) en `games/multiConfig.ts`: **copia de `src/rooms/modes/*.mode.ts` del backend**; si cambia una, cambiala en los dos.
-  `explicacion` (opcional) se muestra en la sala de espera ("Cómo se juega"); `publica.rangos` cambia el "2 a 4 jugadores".
+  `explicacion` (opcional) es el resumen del backend (en la pantalla, "Cómo jugar" sale de `games/comoJugar.ts`); `publica.rangos`
+  cambia el "2 a 4 jugadores".
 - Íconos y nombres de cada juego en `games/gameIcons.ts` (íconos de lucide, sin logos de terceros).
 - El ranking tiene filtro por juego (el ELO es general); el perfil muestra estadísticas por juego y los logros
   agrupados (generales y de cada juego).
 
 ## Juegos
 
-- Componentes comunes: `games/GameResult.tsx` (resultado con puntos y logros) y `multi/MultiShell.tsx` (fondo).
+- **Formato común de todos los juegos** (`games/ui/`, el de El Impostor): menú de cada juego, configuración y partida solo,
+  crear sala / código / pública / buscando, la sala de espera y las partidas multijugador. Los juegos de Tutti Frutti,
+  ahorcado, trivia, sopa, memotest, desafío del día y El Impostor se ven igual:
+  - `PantallaJuego` (`JuegoUI.tsx`): `MultiShell` con **columna de 480 px**, el `BackButton` de siempre a la izquierda y el
+    **"?" a la derecha** (`BotonAyuda` → hoja "Cómo jugar" que sube desde abajo, pasos de `games/comoJugar.ts`: si cambia
+    una regla en el backend, cambiá el texto ahí). `barra`: el **botón principal fijo abajo** (`ui-boton`, el "Entrar" del
+    login) con el aviso justo arriba (`ui-barra-nota`). `BarraAbajo` deja al final un espacio del alto de la barra
+    (ResizeObserver): la barra nunca tapa nada. La sala (`Room.tsx`) usa `MultiShell` + `EstilosJuego` + `BotonAyuda` y
+    cada partida pone su `BarraAbajo`.
+  - Bloques `.card` y **listas de ajustes** (`ui-filas` + `ui-fila`: ícono en un circulito verde, nombre y valor). Una
+    opción que se elige de una lista es un `AjusteElegible` (la fila abre un `Selector` en una hoja; sin elegir dice
+    "Elegí"; `deshabilitado` sólo muestra el valor). Las de la sala están en `multi/AjustesSala.tsx` (crear sala y lobby).
+  - `Encabezado`: rótulo, el **ícono del juego** de `gameIcons.ts` en un círculo con brillo, título `.neon-title` y una línea.
+  - Los tableros pueden ser más anchos que la columna en la compu con `.ui-ancho` y `--ancho` (sopa 600 px `SOPA_ANCHO`,
+    memotest `anchoMesa` = 960 en la PC, grilla de Tutti Frutti 860). En el celular miden lo que la columna: **nunca hay
+    scroll horizontal**.
+  - Los estilos comunes van **una vez por pantalla** (`EstilosJuego`, lo pone `PantallaJuego`): la barra y las hojas van
+    en un portal al `<body>` y no los repiten (una copia más abajo pisaría los estilos propios de un juego). Los efectos de
+    pasar el mouse van en `@media (hover: hover)`. Ojo: el CSS base de Tailwind pone los íconos `display: block`; para un
+    ícono al lado de un texto usá un `inline-flex`.
+  - `games/ui/formato.test.tsx` controla el "?", las filas y que el botón principal esté en la barra.
+- Componentes comunes: `games/GameResult.tsx` (resultado con puntos y logros; "Jugar otra" va fijo abajo) y
+  `multi/MultiShell.tsx` (fondo). Final multijugador: `MultiFinal` con `abajo` pone "Jugar otra vez" / "Buscar otra
+  partida" fijo abajo (El Impostor no lo usa).
+- **Tutti Frutti**: la grilla es una tarjeta por categoría (`game/tuttiEstilo.ts`): en el celular de a dos, en la compu
+  más ancha. "¡Basta!" fijo abajo con el aviso "completá todas las categorías" arriba (solo y multijugador).
 - **Ahorcado** (`/ahorcado`, `pages/Ahorcado.tsx`, `api/ahorcado.ts`): la pelota (`games/Pelota.tsx`, etapas en
   `games/pelotaEtapas.ts`) se aplasta con cada error. Teclado en pantalla (con Ñ) y del teclado físico. El
-  navegador nunca conoce la respuesta hasta el final.
+  navegador nunca conoce la respuesta hasta el final. Se elige la dificultad (Medio de entrada) y se toca "¡Arrancar!".
+  Palabra, teclado y "arriesgar" son los mismos en solo y multijugador (`games/AhorcadoUI.tsx`).
 - **Trivia** (`/trivia`, `pages/Trivia.tsx`, `api/trivia.ts`): pregunta con 4 opciones en `games/QuestionCard.tsx`
   (la reusa el desafío del día). El reloj es sólo visual; si llega a 0 se manda `opcion: null`. El servidor corrige.
 - **Desafío del día** (`/desafio-diario`, `pages/DesafioDiario.tsx`, `api/desafio.ts`): si ya jugó hoy muestra el
@@ -176,23 +205,16 @@ Checklist pre-producción (rama `feat/seguridad`, octubre 2026; el detalle compl
     menos de 900 px), 20 = 5×4. Celular (vertical): 12 = 3×4, 16 = 4×4, 20 = 4×5. "Celular" = ventana de menos de
     700 px o más alta que ancha (`orientacionDe`). `games/usePantallaMemotest.ts` escucha `resize` y `matchMedia`
     (girar el celular, achicar la ventana) y saca los listeners al desmontar. En la PC la mesa llega a 960 px
-    (`MESA_PC`; en la sala, `Room.tsx`) y las cartas son apaisadas (4/3); en el celular, paradas (3/4). Letra e ícono
+    (`MESA_PC`) y las cartas son apaisadas (4/3); en el celular, paradas (3/4). Letra e ícono
     según `medidasCarta`; columnas con `minmax(0, 1fr)` y el texto corta palabras largas, así nunca hay scroll horizontal.
-- **Estilo de El Impostor** (todas sus pantallas: menú, "En persona" y online): **el de Corta La Bocha**, como el login. Usa
-  `MultiShell` (la cancha con franjas y líneas que brillan) y sus clases: `.card` (vidrio verde oscuro, borde verde y el de
-  arriba iluminado), `.neon-title` (Oswald en mayúsculas con brillo), `.kicker` y `.ghost-btn`; arriba a la izquierda el
-  `BackButton` de siempre y a la derecha el "?" (`BotonAyuda` → hoja "Cómo jugar" que sube desde abajo, del mismo vidrio).
-  En `games/impostor/estilo.ts` queda sólo lo propio: filas de ajustes como los campos del login con el ícono en un
-  circulito verde (`imp-fila`), el campo de texto (`imp-campo`, el `.field` del login), el botón principal **fijo abajo** igual
-  al "Entrar" del login (`imp-boton`; desactivado = el mismo verde apagado), interruptor y − / + en verde neón, la hoja y los
-  colores de rol: **impostor en ROJO** (`VenetianMask`, `imp-rojo`) y los demás, **"Hinchas", en CELESTE** (`Users`,
-  `imp-celeste`), con brillo suave. Los efectos de pasar el mouse van en `@media (hover: hover)` (en el celular el `:hover`
-  queda "pegado" donde se tocó). Ilustración: tres de NUESTROS hinchas **recortados sin el fondo gris** en
+    La columna de la pantalla es de 480 px y la mesa se ensancha con `.ui-ancho` (`anchoMesa`).
+- **Estilo de El Impostor** (todas sus pantallas: menú, "En persona" y online): el formato común de los juegos (`games/ui`,
+  ver arriba) y, en `games/impostor/estilo.ts` + `ImpostorUI.tsx`, sólo lo propio: los colores de rol, **impostor en ROJO**
+  (`VenetianMask`, `imp-rojo`) y los demás, **"Hinchas", en CELESTE** (`Users`, `imp-celeste`), con brillo suave; la
+  animación de la revelación y la ilustración: tres de NUESTROS hinchas **recortados sin el fondo gris** en
   `public/avatars/impostor/` (`HINCHAS_PORTADA`, el del medio adelante, con brillo verde y sin círculo); salen de
   `public/avatars/hinchas/` con un recorte del fondo (si cambian esas imágenes, hay que recortarlas de nuevo). Nada de
-  imágenes de otras apps, escudos ni logos. Lo que es `fixed` va con portal al `<body>` (como el botón Volver). Abajo de
-  cada pantalla queda un espacio del alto de la barra fija (`PantallaImpostor` la mide), así haciendo scroll se ve todo y el
-  aviso ("Falta 1 jugador…") va justo arriba del botón sin pisar nada.
+  imágenes de otras apps, escudos ni logos. `PantallaImpostor` = `PantallaJuego` + los estilos del Impostor.
 - **Menú del Impostor** (`/juego/impostor`, `games/impostor/ImpostorMenu.tsx`, lo abre `GameMenu`): dos tarjetas grandes,
   "En persona" y "Online" (este último sigue siendo el menú de siempre en `/juego/impostor/online`).
 - **El Impostor** (sólo multijugador, de 3 a 8; `multi/juegos/ImpostorMulti.tsx`, tipos en `multi/gameViews.ts` → `ImpostorView`):
@@ -201,8 +223,8 @@ Checklist pre-producción (rama `feat/seguridad`, octubre 2026; el detalle compl
   quién / ¡A votar! / ¡Descubrieron a X!), el campo de la pista sólo en tu turno (máx. 30; "Mandar pista" va en la barra fija
   de abajo, `form="imp-pista-form"`), la lista de pistas por jugador, la votación con un botón por cada uno de los demás y, si
   te descubren, el campo para adivinar ("Arriesgar" también abajo). La revelación (quién era, la palabra, los votos y los
-  puntos) tiene animación. La sala del Impostor usa una columna de 480 px (`Room.tsx`) y conserva el botón "Volver" (la sala
-  y el lobby son los de siempre). El servidor nunca le manda la palabra al impostor: la pantalla sólo muestra lo que llega.
+  puntos) tiene animación. La sala y el lobby son los de todos los juegos (columna de 480 px, formato común); en la partida
+  el "?" lo pone `ImpostorMulti` (la sala no lo repite). El servidor nunca le manda la palabra al impostor: la pantalla sólo muestra lo que llega.
   **El online tiene UN solo impostor** (varios impostores es sólo de "En persona": en el online habría que cambiar el modo del
   backend, la votación y los puntos). `multi/impostor.test.tsx` controla el menú, lo que ve cada uno y que las opciones sean las del backend.
   En el catálogo sigue "Próximamente" (`available: false`): para probarlo se entra directo a `/juego/impostor`.
