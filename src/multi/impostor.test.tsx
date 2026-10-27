@@ -99,7 +99,7 @@ describe('El Impostor: lo que ve cada uno', () => {
     expect(html).toContain('¡Te toca dar una pista!');
     expect(html).toContain('maxLength="30"');
     // El botón principal va fijo abajo y manda el mismo formulario
-    expect(html).toMatch(/data-testid="imp-barra"[\s\S]*form="imp-pista-form"[\s\S]*Mandar pista/);
+    expect(html).toMatch(/data-testid="ui-barra"[\s\S]*form="imp-pista-form"[\s\S]*Mandar pista/);
     expect(pantalla('a', v)).not.toContain('id="imp-pista"');
     expect(pantalla('a', v)).toContain('Pista de');
   });

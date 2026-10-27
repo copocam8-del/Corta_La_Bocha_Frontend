@@ -13,7 +13,8 @@ import {
   type Secreto,
 } from '../games/impostor/presencial';
 import { AMARILLO, CELESTE, COMO_JUGAR_EN_PERSONA, ROJO, VERDE } from '../games/impostor/estilo';
-import { Hinchas, Hoja, PantallaImpostor } from '../games/impostor/ImpostorUI';
+import { Hinchas, PantallaImpostor } from '../games/impostor/ImpostorUI';
+import { Hoja, Selector } from '../games/ui/JuegoUI';
 
 // El Impostor "En persona" (/juego/impostor/en-persona): un solo celular que se pasan. Se arma la partida
 // (jugadores, impostores, pista, temática y rondas), el backend da las palabras y todo lo demás pasa acá:
@@ -117,7 +118,7 @@ export default function ImpostorPresencial() {
 type Salir = { to: string; confirm: typeof SALIR_EN_PERSONA | null };
 
 const RondaDe = ({ ronda, total }: { ronda: RondaEnPersona; total: number }) => (
-  <p className="kicker imp-centro">Ronda {ronda.numero} de {total}</p>
+  <p className="kicker ui-centro">Ronda {ronda.numero} de {total}</p>
 );
 
 // ── 1. Configuración: lista de ajustes ──
@@ -146,8 +147,8 @@ export function Configuracion({ jugadores, setJugadores, ajustes, setAjustes, te
       salir={{ to: SALIR }} ayuda={COMO_JUGAR_EN_PERSONA}
       barra={
         <>
-          {faltan > 0 && <p className="imp-barra-nota">{faltan === 1 ? 'Falta 1 jugador' : `Faltan ${faltan} jugadores`} (mínimo {MIN_JUGADORES}).</p>}
-          <button type="button" className="imp-boton" data-testid="ep-jugar" disabled={faltan > 0 || cargando} onClick={onJugar}>
+          {faltan > 0 && <p className="ui-barra-nota">{faltan === 1 ? 'Falta 1 jugador' : `Faltan ${faltan} jugadores`} (mínimo {MIN_JUGADORES}).</p>}
+          <button type="button" className="ui-boton" data-testid="ep-jugar" disabled={faltan > 0 || cargando} onClick={onJugar}>
             <Play size={22} fill="currentColor" /> {cargando ? 'Preparando…' : 'Iniciar juego'}
           </button>
         </>
@@ -155,55 +156,55 @@ export function Configuracion({ jugadores, setJugadores, ajustes, setAjustes, te
     >
       <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
         <Hinchas />
-        <h1 className="neon-title imp-titulo">El Impostor</h1>
-        <p className="imp-texto">En persona · un solo celular que se van pasando</p>
+        <h1 className="neon-title ui-titulo">El Impostor</h1>
+        <p className="ui-texto">En persona · un solo celular que se van pasando</p>
       </div>
 
-      <div className="card imp-filas" data-testid="ep-ajustes">
-        <button type="button" className="imp-fila" onClick={() => setHoja('jugadores')} data-testid="ep-fila-jugadores">
-          <span className="imp-fila-icono"><Users size={19} /></span>
-          <span className="imp-fila-nombre">Jugadores</span>
-          <span className="imp-fila-valor">{jugadores.length} <ChevronRight size={20} /></span>
+      <div className="card ui-filas" data-testid="ep-ajustes">
+        <button type="button" className="ui-fila" onClick={() => setHoja('jugadores')} data-testid="ep-fila-jugadores">
+          <span className="ui-fila-icono"><Users size={19} /></span>
+          <span className="ui-fila-nombre">Jugadores</span>
+          <span className="ui-fila-valor">{jugadores.length} <ChevronRight size={20} /></span>
         </button>
 
-        <div className="imp-fila">
-          <span className="imp-fila-icono"><VenetianMask size={19} /></span>
-          <span className="imp-fila-nombre">Impostores</span>
+        <div className="ui-fila">
+          <span className="ui-fila-icono"><VenetianMask size={19} /></span>
+          <span className="ui-fila-nombre">Impostores</span>
           <span style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <button type="button" className="imp-chico" aria-label="Menos impostores" disabled={impostores <= 1} onClick={() => cambiarImpostores(impostores - 1)}>
+            <button type="button" className="ui-chico" aria-label="Menos impostores" disabled={impostores <= 1} onClick={() => cambiarImpostores(impostores - 1)}>
               <Minus size={18} />
             </button>
             <span style={{ fontFamily: "'Oswald', sans-serif", fontSize: '22px', minWidth: '18px', textAlign: 'center', color: '#eafff2' }} data-testid="ep-impostores" aria-live="polite">
               {impostores}
             </span>
-            <button type="button" className="imp-chico" aria-label="Más impostores" disabled={impostores >= maximo} onClick={() => cambiarImpostores(impostores + 1)}>
+            <button type="button" className="ui-chico" aria-label="Más impostores" disabled={impostores >= maximo} onClick={() => cambiarImpostores(impostores + 1)}>
               <Plus size={18} />
             </button>
           </span>
         </div>
 
-        <button type="button" className="imp-fila" role="switch" aria-checked={ajustes.pista} data-testid="ep-pista"
+        <button type="button" className="ui-fila" role="switch" aria-checked={ajustes.pista} data-testid="ep-pista"
           onClick={() => setAjustes({ ...ajustes, pista: !ajustes.pista })}>
-          <span className="imp-fila-icono"><Lightbulb size={19} /></span>
-          <span className="imp-fila-nombre">
+          <span className="ui-fila-icono"><Lightbulb size={19} /></span>
+          <span className="ui-fila-nombre">
             Pista para el impostor
-            <span className="imp-fila-sub">
+            <span className="ui-fila-sub">
               {ajustes.pista ? 'Ve la categoría' : 'No ve nada'}
             </span>
           </span>
-          <span className={`imp-switch${ajustes.pista ? ' on' : ''}`} aria-hidden="true" />
+          <span className={`ui-switch${ajustes.pista ? ' on' : ''}`} aria-hidden="true" />
         </button>
 
-        <button type="button" className="imp-fila" onClick={() => setHoja('tematica')}>
-          <span className="imp-fila-icono"><Shapes size={19} /></span>
-          <span className="imp-fila-nombre">Temática</span>
-          <span className="imp-fila-valor">{tematicaLabel} <ChevronRight size={20} /></span>
+        <button type="button" className="ui-fila" onClick={() => setHoja('tematica')}>
+          <span className="ui-fila-icono"><Shapes size={19} /></span>
+          <span className="ui-fila-nombre">Temática</span>
+          <span className="ui-fila-valor">{tematicaLabel} <ChevronRight size={20} /></span>
         </button>
 
-        <button type="button" className="imp-fila" onClick={() => setHoja('rondas')}>
-          <span className="imp-fila-icono"><Repeat size={19} /></span>
-          <span className="imp-fila-nombre">Rondas</span>
-          <span className="imp-fila-valor">{rondas} <ChevronRight size={20} /></span>
+        <button type="button" className="ui-fila" onClick={() => setHoja('rondas')}>
+          <span className="ui-fila-icono"><Repeat size={19} /></span>
+          <span className="ui-fila-nombre">Rondas</span>
+          <span className="ui-fila-valor">{rondas} <ChevronRight size={20} /></span>
         </button>
       </div>
 
@@ -239,52 +240,32 @@ export function HojaJugadores({ jugadores, setJugadores, onCerrar }: { jugadores
 
   return (
     <Hoja titulo={`Jugadores (${jugadores.length})`} onCerrar={onCerrar} cerrar="Listo">
-      <p className="imp-texto" style={{ fontSize: '14px' }}>De {MIN_JUGADORES} a {MAX_JUGADORES}. El celular se pasa en este orden.</p>
+      <p className="ui-texto" style={{ fontSize: '14px' }}>De {MIN_JUGADORES} a {MAX_JUGADORES}. El celular se pasa en este orden.</p>
       {!lleno && (
         <form onSubmit={agregar} style={{ display: 'flex', gap: '8px' }}>
           <input
             id="ep-nuevo" aria-label="Nombre del jugador" placeholder="Nombre del jugador" maxLength={NOMBRE_MAX} autoComplete="off"
-            value={nuevo} onChange={(e) => { setNuevo(e.target.value); setAviso(null); }} className="imp-campo" style={{ flex: 1 }}
+            value={nuevo} onChange={(e) => { setNuevo(e.target.value); setAviso(null); }} className="ui-campo" style={{ flex: 1 }}
           />
-          <button type="submit" className="imp-chico" aria-label="Agregar jugador" disabled={!nuevo.trim()} style={{ minWidth: '50px' }}>
+          <button type="submit" className="ui-chico" aria-label="Agregar jugador" disabled={!nuevo.trim()} style={{ minWidth: '50px' }}>
             <Plus size={22} />
           </button>
         </form>
       )}
       {aviso && <p className="error" role="alert">{aviso}</p>}
       {jugadores.length > 0 && (
-        <ol className="imp-filas" data-testid="ep-jugadores">
+        <ol className="ui-filas" data-testid="ep-jugadores">
           {jugadores.map((j, i) => (
-            <li key={j} className="imp-fila">
-              <span className="imp-fila-icono">{i + 1}</span>
-              <span className="imp-fila-nombre">{j}</span>
-              <button type="button" className="imp-chico" aria-label={`Sacar a ${j}`} onClick={() => setJugadores(jugadores.filter((x) => x !== j))}>
+            <li key={j} className="ui-fila">
+              <span className="ui-fila-icono">{i + 1}</span>
+              <span className="ui-fila-nombre">{j}</span>
+              <button type="button" className="ui-chico" aria-label={`Sacar a ${j}`} onClick={() => setJugadores(jugadores.filter((x) => x !== j))}>
                 <X size={18} />
               </button>
             </li>
           ))}
         </ol>
       )}
-    </Hoja>
-  );
-}
-
-function Selector({ titulo, opciones, valor, onElegir, onCerrar }: {
-  titulo: string;
-  opciones: { id: string; label: string }[];
-  valor: string;
-  onElegir: (id: string) => void;
-  onCerrar: () => void;
-}) {
-  return (
-    <Hoja titulo={titulo} onCerrar={onCerrar}>
-      <div role="radiogroup" aria-label={titulo} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-        {opciones.map((o) => (
-          <button key={o.id} type="button" role="radio" aria-checked={o.id === valor} className={`imp-opcion${o.id === valor ? ' activo' : ''}`} onClick={() => onElegir(o.id)}>
-            {o.label}
-          </button>
-        ))}
-      </div>
     </Hoja>
   );
 }
@@ -344,8 +325,8 @@ export function PasarCelu({ ronda, total, nombre, secreto, viendo, ultimo, salir
       salir={salir} ayuda={COMO_JUGAR_EN_PERSONA}
       barra={abierta ? (
         <>
-          <p className="imp-barra-nota">Tapá y pasá al siguiente jugador</p>
-          <button type="button" className="imp-boton" data-testid="ep-siguiente-jugador" onClick={siguiente}>
+          <p className="ui-barra-nota">Tapá y pasá al siguiente jugador</p>
+          <button type="button" className="ui-boton" data-testid="ep-siguiente-jugador" onClick={siguiente}>
             {ultimo ? <><Megaphone size={22} /> ¡A dar pistas!</> : <>Jugador siguiente <ChevronRight size={22} /></>}
           </button>
         </>
@@ -358,8 +339,8 @@ export function PasarCelu({ ronda, total, nombre, secreto, viendo, ultimo, salir
     >
       <RondaDe ronda={ronda} total={total} />
       <div style={{ textAlign: 'center' }}>
-        <p className="kicker imp-centro">Jugador</p>
-        <p className="imp-gigante" data-testid="ep-pasar-a">{nombre}</p>
+        <p className="kicker ui-centro">Jugador</p>
+        <p className="ui-gigante" data-testid="ep-pasar-a">{nombre}</p>
       </div>
 
       <div style={{ position: 'relative', height: `${ALTO}px`, overflow: 'hidden', borderRadius: '16px', background: 'rgba(4,20,11,0.62)',
@@ -383,7 +364,7 @@ export function PasarCelu({ ronda, total, nombre, secreto, viendo, ultimo, salir
         >
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px' }}>
             <ChevronsUp size={34} color={VERDE} />
-            <p className="imp-texto" style={{ fontSize: '17px', maxWidth: '280px' }}>Deslizá la tarjeta hacia arriba para ver tu palabra</p>
+            <p className="ui-texto" style={{ fontSize: '17px', maxWidth: '280px' }}>Deslizá la tarjeta hacia arriba para ver tu palabra</p>
             <p style={{ fontSize: '13px', color: 'rgba(180,255,205,0.55)' }}>Que nadie más mire la pantalla</p>
           </div>
           <Hinchas chico />
@@ -402,11 +383,11 @@ function Rol({ secreto }: { secreto: Secreto }) {
           boxShadow: '0 0 18px rgba(248,113,113,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <VenetianMask size={34} color={ROJO} />
         </span>
-        <p className="imp-gigante imp-rojo">Impostor</p>
-        <p className="imp-texto" style={{ fontSize: '18px', color: '#eafff2' }}>No tenés palabra</p>
+        <p className="ui-gigante imp-rojo">Impostor</p>
+        <p className="ui-texto" style={{ fontSize: '18px', color: '#eafff2' }}>No tenés palabra</p>
         {secreto.categoria
-          ? <p className="imp-texto">Pista: <strong style={{ color: AMARILLO }}>{secreto.categoria}</strong></p>
-          : <p className="imp-texto" style={{ fontSize: '14px' }}>Sin pista: escuchá bien a los demás</p>}
+          ? <p className="ui-texto">Pista: <strong style={{ color: AMARILLO }}>{secreto.categoria}</strong></p>
+          : <p className="ui-texto" style={{ fontSize: '14px' }}>Sin pista: escuchá bien a los demás</p>}
         {secreto.companeros > 0 && (
           <p style={{ fontSize: '13px', color: 'rgba(255,200,200,0.75)' }}>
             Hay {secreto.companeros === 1 ? 'otro impostor' : `otros ${secreto.companeros} impostores`} (no sabés quién)
@@ -422,8 +403,8 @@ function Rol({ secreto }: { secreto: Secreto }) {
         <Users size={28} color={CELESTE} />
       </span>
       <p className="imp-celeste" style={{ fontFamily: "'Oswald', sans-serif", fontWeight: 700, fontSize: '22px', letterSpacing: '3px', textTransform: 'uppercase' }}>Hincha</p>
-      <p className="imp-texto" style={{ fontSize: '15px' }}>Tu palabra es:</p>
-      <p className="imp-gigante" style={{ fontSize: 'clamp(32px, 10vw, 48px)' }}>{secreto.palabra}</p>
+      <p className="ui-texto" style={{ fontSize: '15px' }}>Tu palabra es:</p>
+      <p className="ui-gigante" style={{ fontSize: 'clamp(32px, 10vw, 48px)' }}>{secreto.palabra}</p>
       <p style={{ fontSize: '14px', color: 'rgba(180,255,205,0.6)' }}>{secreto.categoria}</p>
     </>
   );
@@ -435,19 +416,19 @@ export function Pistas({ ronda, total, jugadores, salir, onVotar }: { ronda: Ron
   return (
     <PantallaImpostor
       salir={salir} ayuda={COMO_JUGAR_EN_PERSONA}
-      barra={<button type="button" className="imp-boton" data-testid="ep-a-votar" onClick={onVotar}><Megaphone size={22} /> ¡A votar!</button>}
+      barra={<button type="button" className="ui-boton" data-testid="ep-a-votar" onClick={onVotar}><Megaphone size={22} /> ¡A votar!</button>}
     >
       <RondaDe ronda={ronda} total={total} />
       <div style={{ textAlign: 'center' }}>
-        <p className="kicker imp-centro">Empieza</p>
-        <p className="imp-gigante" style={{ color: VERDE }} data-testid="ep-empieza">{jugadores[ronda.empieza]}</p>
+        <p className="kicker ui-centro">Empieza</p>
+        <p className="ui-gigante" style={{ color: VERDE }} data-testid="ep-empieza">{jugadores[ronda.empieza]}</p>
       </div>
-      <p className="imp-texto">Por turnos, cada uno dice una pista en voz alta. ¡Sin decir la palabra! Son {VUELTAS} vueltas.</p>
-      <ol className="card imp-filas" data-testid="ep-orden">
+      <p className="ui-texto">Por turnos, cada uno dice una pista en voz alta. ¡Sin decir la palabra! Son {VUELTAS} vueltas.</p>
+      <ol className="card ui-filas" data-testid="ep-orden">
         {vuelta.map((j, i) => (
-          <li key={j} className="imp-fila">
-            <span className="imp-fila-icono" style={i === 0 ? { background: VERDE, color: '#04210f', boxShadow: '0 0 16px rgba(57,255,140,0.6)' } : undefined}>{i + 1}</span>
-            <span className="imp-fila-nombre">{jugadores[j]}</span>
+          <li key={j} className="ui-fila">
+            <span className="ui-fila-icono" style={i === 0 ? { background: VERDE, color: '#04210f', boxShadow: '0 0 16px rgba(57,255,140,0.6)' } : undefined}>{i + 1}</span>
+            <span className="ui-fila-nombre">{jugadores[j]}</span>
           </li>
         ))}
       </ol>
@@ -463,7 +444,7 @@ export function Votar({ ronda, total, salir, onRevelar }: { ronda: RondaEnPerson
   return (
     <PantallaImpostor
       salir={salir} ayuda={COMO_JUGAR_EN_PERSONA}
-      barra={<button type="button" className="imp-boton" data-testid="ep-revelar" onClick={onRevelar}><Eye size={22} /> Revelar</button>}
+      barra={<button type="button" className="ui-boton" data-testid="ep-revelar" onClick={onRevelar}><Eye size={22} /> Revelar</button>}
     >
       <RondaDe ronda={ronda} total={total} />
       <div className="card" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', padding: '28px 20px' }}>
@@ -471,18 +452,18 @@ export function Votar({ ronda, total, salir, onRevelar }: { ronda: RondaEnPerson
           boxShadow: '0 0 18px rgba(251,191,36,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <Megaphone size={38} color={AMARILLO} />
         </span>
-        <p className="neon-title imp-titulo">Voten en voz alta</p>
-        <p className="imp-texto">
+        <p className="neon-title ui-titulo">Voten en voz alta</p>
+        <p className="ui-texto">
           {ronda.impostores.length > 1
             ? `A la cuenta de tres, todos señalan a quien creen que es impostor (hay ${ronda.impostores.length}). Si descubren a uno, puede intentar adivinar la palabra.`
             : 'A la cuenta de tres, todos señalan a quien creen que es el impostor. Si lo descubren, puede intentar adivinar la palabra.'}
         </p>
       </div>
       <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-        <p className="kicker imp-centro" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}><Timer size={14} /> Reloj (opcional)</p>
+        <p className="kicker ui-centro" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}><Timer size={14} /> Reloj (opcional)</p>
         <div style={{ display: 'flex', gap: '8px' }} role="radiogroup" aria-label="Reloj">
           {RELOJES.map((s) => (
-            <button key={s} type="button" role="radio" aria-checked={segundos === s} className={`imp-chico${segundos === s ? ' activo' : ''}`} style={{ flex: 1 }}
+            <button key={s} type="button" role="radio" aria-checked={segundos === s} className={`ui-chico${segundos === s ? ' activo' : ''}`} style={{ flex: 1 }}
               onClick={() => setSegundos(s)}>
               {s ? `${s} s` : 'Sin reloj'}
             </button>
@@ -525,22 +506,22 @@ export function Revelacion({ ronda, total, jugadores, ultima, salir, onSiguiente
     <PantallaImpostor
       salir={salir} ayuda={COMO_JUGAR_EN_PERSONA}
       barra={
-        <button type="button" className="imp-boton" data-testid="ep-siguiente" onClick={onSiguiente}>
+        <button type="button" className="ui-boton" data-testid="ep-siguiente" onClick={onSiguiente}>
           <Play size={22} fill="currentColor" /> {ultima ? 'Ver final' : 'Siguiente ronda'}
         </button>
       }
     >
       <RondaDe ronda={ronda} total={total} />
       <div className="card pulse" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px', textAlign: 'center', perspective: '700px', padding: '28px 20px' }} data-testid="ep-revelacion">
-        <p className="kicker imp-centro">{varios ? 'Los impostores eran' : 'El impostor era'}</p>
+        <p className="kicker ui-centro">{varios ? 'Los impostores eran' : 'El impostor era'}</p>
         <div className="imp-revela" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
           <VenetianMask size={46} color={ROJO} style={{ filter: 'drop-shadow(0 0 10px rgba(248,113,113,0.6))' }} />
-          {ronda.impostores.map((i) => <p key={i} className="imp-gigante imp-rojo">{jugadores[i]}</p>)}
+          {ronda.impostores.map((i) => <p key={i} className="ui-gigante imp-rojo">{jugadores[i]}</p>)}
         </div>
       </div>
       <div className="card imp-revela-2" style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-        <p className="kicker imp-centro">La palabra era</p>
-        <p className="imp-gigante imp-celeste" style={{ fontSize: 'clamp(30px, 9vw, 42px)' }}>{ronda.palabra}</p>
+        <p className="kicker ui-centro">La palabra era</p>
+        <p className="ui-gigante imp-celeste" style={{ fontSize: 'clamp(30px, 9vw, 42px)' }}>{ronda.palabra}</p>
         <p style={{ fontSize: '14px', color: 'rgba(180,255,205,0.6)' }}>{ronda.categoria}</p>
       </div>
     </PantallaImpostor>
@@ -562,7 +543,7 @@ export function Final({ rondas, jugadores, cargando, error, salir, onDeNuevo, on
       salir={salir} ayuda={COMO_JUGAR_EN_PERSONA}
       barra={
         <>
-          <button type="button" className="imp-boton" data-testid="ep-de-nuevo" disabled={cargando} onClick={onDeNuevo}>
+          <button type="button" className="ui-boton" data-testid="ep-de-nuevo" disabled={cargando} onClick={onDeNuevo}>
             <RotateCcw size={22} /> {cargando ? 'Preparando…' : 'Jugar de nuevo'}
           </button>
           <button type="button" className="ghost-btn" onClick={onCambiar} style={{ minHeight: '48px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
@@ -573,15 +554,15 @@ export function Final({ rondas, jugadores, cargando, error, salir, onDeNuevo, on
     >
       <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
         <Hinchas chico />
-        <h1 className="neon-title imp-titulo">¡Terminó la partida!</h1>
+        <h1 className="neon-title ui-titulo">¡Terminó la partida!</h1>
       </div>
-      <div className="card imp-filas" data-testid="ep-final">
+      <div className="card ui-filas" data-testid="ep-final">
         {rondas.map((r) => (
-          <div key={r.numero} className="imp-fila" style={{ alignItems: 'flex-start' }}>
-            <span className="imp-fila-icono">{r.numero}</span>
+          <div key={r.numero} className="ui-fila" style={{ alignItems: 'flex-start' }}>
+            <span className="ui-fila-icono">{r.numero}</span>
             <span style={{ flex: 1, minWidth: 0 }}>
               <strong className="imp-celeste" style={{ fontSize: '17px' }}>{r.palabra}</strong>
-              <span className="imp-fila-sub">{r.categoria}</span>
+              <span className="ui-fila-sub">{r.categoria}</span>
             </span>
             <span style={{ textAlign: 'right', color: ROJO, fontSize: '15px', display: 'flex', flexDirection: 'column', gap: '2px' }}>
               {r.impostores.map((i) => (

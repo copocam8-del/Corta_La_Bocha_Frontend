@@ -9,7 +9,8 @@ import { Countdown, MultiFinal, MultiHeader, Notices, Scoreboard } from '../Mult
 import { colorOf, nameOf } from '../players';
 import { avisoAntesDeEnviar } from './impostorAviso';
 import { AMARILLO, CELESTE, COMO_JUGAR_ONLINE, ROJO, VERDE } from '../../games/impostor/estilo';
-import { BarraFija, BotonAyuda, EstilosImpostor } from '../../games/impostor/ImpostorUI';
+import { EstilosImpostor } from '../../games/impostor/ImpostorUI';
+import { BarraFija, BotonAyuda } from '../../games/ui/JuegoUI';
 
 // El Impostor multijugador. Todos ven la palabra secreta menos el impostor (el servidor ni se la
 // manda). Por turnos se dan pistas (dos vueltas), después se vota y, si descubren al impostor,
@@ -131,7 +132,7 @@ function Secreto({ v }: { v: ImpostorView }) {
         <span className={impostor ? 'imp-rojo' : 'imp-celeste'} style={{ display: 'flex', alignItems: 'center', gap: '8px', fontFamily: "'Oswald', sans-serif", fontWeight: 700, fontSize: '18px', letterSpacing: '2px', textTransform: 'uppercase' }}>
           {impostor ? <VenetianMask size={22} /> : <Users size={22} />} {impostor ? 'Impostor' : 'Hincha'}
         </span>
-        <button className="imp-chico" onClick={() => setTapada(!tapada)} aria-label={tapada ? 'Mostrar' : 'Tapar'}>
+        <button className="ui-chico" onClick={() => setTapada(!tapada)} aria-label={tapada ? 'Mostrar' : 'Tapar'}>
           {tapada ? <Eye size={16} /> : <EyeOff size={16} />} {tapada ? 'Mostrar' : 'Tapar'}
         </button>
       </div>
@@ -139,15 +140,15 @@ function Secreto({ v }: { v: ImpostorView }) {
         {impostor ? (
           <>
             <p className="imp-palabra impostor" style={{ margin: '6px 0' }}>Sos el impostor</p>
-            <p className="imp-texto" style={{ fontSize: '15px' }}>
+            <p className="ui-texto" style={{ fontSize: '15px' }}>
               No tenés palabra. Categoría: <strong style={{ color: AMARILLO }}>{v.categoria}</strong>. Escuchá las pistas y que no te descubran.
             </p>
           </>
         ) : (
           <>
-            <p className="imp-texto" style={{ fontSize: '15px' }}>Tu palabra es:</p>
+            <p className="ui-texto" style={{ fontSize: '15px' }}>Tu palabra es:</p>
             <p className="imp-palabra" style={{ margin: '4px 0' }}>{v.palabra}</p>
-            <p className="imp-texto" style={{ fontSize: '14px' }}>{v.categoria} · Da pistas sin decirla. Uno de ustedes no la sabe…</p>
+            <p className="ui-texto" style={{ fontSize: '14px' }}>{v.categoria} · Da pistas sin decirla. Uno de ustedes no la sabe…</p>
           </>
         )}
       </div>
@@ -189,11 +190,11 @@ function DarPista({ max, jugar }: { max: number; jugar: (type: string, payload: 
   return (
     <form id="imp-pista-form" className="card" onSubmit={(e) => { e.preventDefault(); void enviar(); }} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
       <label className="kicker" htmlFor="imp-pista">Tu pista (una palabra o algo corto)</label>
-      <input id="imp-pista" className="imp-campo" autoFocus autoComplete="off" value={pista} maxLength={max}
+      <input id="imp-pista" className="ui-campo" autoFocus autoComplete="off" value={pista} maxLength={max}
         onChange={(e) => setPista(e.target.value)} placeholder="Ej.: zurdo" />
       <span style={{ fontSize: '12px', color: 'rgba(180,255,205,0.5)', textAlign: 'right' }}>{pista.length}/{max}</span>
       <BarraFija>
-        <button className="imp-boton" type="submit" form="imp-pista-form" disabled={!pista.trim()}>
+        <button className="ui-boton" type="submit" form="imp-pista-form" disabled={!pista.trim()}>
           <Send size={20} /> Mandar pista
         </button>
       </BarraFija>
@@ -257,7 +258,7 @@ function Adivinanza({ state, v, jugar }: { state: RoomSnapshot; v: ImpostorView;
     return (
       <div className="card imp-revela" style={{ textAlign: 'center', borderColor: 'rgba(248,113,113,0.45)' }}>
         <VenetianMask size={40} color={ROJO} style={{ margin: '0 auto', display: 'block' }} />
-        <p className="imp-texto" style={{ marginTop: '6px', color: '#eafff2' }}>
+        <p className="ui-texto" style={{ marginTop: '6px', color: '#eafff2' }}>
           <strong>{nameOf(state, v.descubierto)}</strong> era el impostor… pero si adivina la palabra, gana igual.
         </p>
       </div>
@@ -266,11 +267,11 @@ function Adivinanza({ state, v, jugar }: { state: RoomSnapshot; v: ImpostorView;
   return (
     <form id="imp-adivinar-form" className="card imp-revela" onSubmit={(e) => { e.preventDefault(); if (intento.trim()) void jugar('adivinar', { respuesta: intento }); }}
       style={{ display: 'flex', flexDirection: 'column', gap: '10px', borderColor: 'rgba(248,113,113,0.55)' }}>
-      <p className="imp-texto" style={{ color: '#eafff2' }}><strong className="imp-rojo">¡Te descubrieron!</strong> Adiviná la palabra y ganás igual (un solo intento).</p>
-      <input className="imp-campo" autoFocus autoComplete="off" value={intento} maxLength={60} placeholder={`${v.categoria ?? ''}…`}
+      <p className="ui-texto" style={{ color: '#eafff2' }}><strong className="imp-rojo">¡Te descubrieron!</strong> Adiviná la palabra y ganás igual (un solo intento).</p>
+      <input className="ui-campo" autoFocus autoComplete="off" value={intento} maxLength={60} placeholder={`${v.categoria ?? ''}…`}
         onChange={(e) => setIntento(e.target.value)} aria-label="Tu respuesta" />
       <BarraFija>
-        <button className="imp-boton" type="submit" form="imp-adivinar-form" disabled={!intento.trim()}>
+        <button className="ui-boton" type="submit" form="imp-adivinar-form" disabled={!intento.trim()}>
           <Send size={20} /> Arriesgar
         </button>
       </BarraFija>
@@ -299,7 +300,7 @@ function Revelacion({ state, v, siguienteEn }: { state: RoomSnapshot; v: Imposto
         <p className="imp-palabra impostor" style={{ fontSize: 'clamp(28px, 9vw, 42px)' }}>{yoEra ? '¡Vos!' : nameOf(state, r.impostor)}</p>
       </div>
       <div className="imp-revela-2">
-        <p className="imp-texto" style={{ fontSize: '15px' }}>
+        <p className="ui-texto" style={{ fontSize: '15px' }}>
           La palabra era <strong className="imp-celeste">{r.palabra}</strong> ({r.categoria})
           {r.adivinanza && <> · arriesgó “{r.adivinanza}”</>}
         </p>
