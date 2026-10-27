@@ -1,5 +1,5 @@
 import { gameName } from '../games/gameIcons';
-import type { AdminContenido, AdminIa, AdminPartidas, AdminUsuarios } from '../api/admin';
+import type { AdminContenido, AdminIa, AdminNombres, AdminPartidas, AdminUsuarios } from '../api/admin';
 import { BarrasHorizontales, BarrasPorDia, Grilla, Leyenda, Seccion, SinDatos, Tabla, Tarjeta } from './AdminParts';
 import { numero, plata } from './adminFormat';
 
@@ -138,6 +138,24 @@ export function TabContenido({ d }: { d: AdminContenido }) {
           </ul>
         </div>
       )}
+    </>
+  );
+}
+
+// Nombres a revisar: usuarios que ya existen y cuyo nombre no pasaría el filtro de malas palabras de hoy.
+// Sólo lectura: nada se cambia solo (si hace falta, se habla con el usuario o se cambia a mano).
+export function TabNombres({ d }: { d: AdminNombres }) {
+  return (
+    <>
+      <Grilla>
+        <Tarjeta titulo="A revisar" valor={numero(d.nombres.length)} detalle={`de ${numero(d.revisados)} usuarios`} color={d.nombres.length ? '#f87171' : undefined} />
+      </Grilla>
+      <Seccion titulo="Nombres a revisar" nota="Nombres de usuario que hoy no se permitirían (ofensivos o que se hacen pasar por el equipo). No depende del período y nada se cambia solo.">
+        <Tabla
+          columnas={['Usuario', 'Alta', 'Motivo']}
+          filas={d.nombres.map((u) => [u.username, fecha(u.creado), u.motivo === 'ofensivo' ? 'Ofensivo' : 'Reservado'])}
+        />
+      </Seccion>
     </>
   );
 }

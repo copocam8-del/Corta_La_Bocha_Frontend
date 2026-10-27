@@ -1,5 +1,6 @@
 import { Crown, Handshake, Medal, User } from 'lucide-react';
 import { STATUS_COLOR, STATUS_LABEL, recognizedName } from '../game/answerStatus';
+import { TEXTO_OCULTO } from '../moderacion/filtro';
 import type { RoundResult, Standing } from './types';
 
 // Resultados de una ronda del multijugador: por categoría, qué puso cada uno, si valió y los puntos
@@ -26,7 +27,9 @@ export function MultiRoundResults({ result, me }: { result: RoundResult; me: str
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'baseline', gap: '6px' }}>
                     <span style={{ fontSize: '11px', color: 'rgba(180,255,205,0.6)' }}>{e.userId === me ? 'Vos' : e.username}:</span>
-                    <span style={{ color: '#ecfff3', fontSize: '13px', fontWeight: 500 }}>{e.answer || '—'}</span>
+                    {e.answer === TEXTO_OCULTO
+                      ? <span style={{ color: 'rgba(180,255,205,0.6)', fontSize: '13px', fontWeight: 500 }} title="Respuesta no permitida" aria-label="Respuesta no permitida">{TEXTO_OCULTO}</span>
+                      : <span style={{ color: '#ecfff3', fontSize: '13px', fontWeight: 500 }}>{e.answer || '—'}</span>}
                     <span style={{
                       fontSize: '10px', fontWeight: 600, letterSpacing: '0.5px', textTransform: 'uppercase',
                       color: STATUS_COLOR[e.status], border: `1px solid ${STATUS_COLOR[e.status]}`, borderRadius: '999px', padding: '0 6px',
