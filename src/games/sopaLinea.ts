@@ -31,3 +31,8 @@ export function celdasEntre(desde: Celda, hasta: Celda): Celda[] {
   const n = Math.max(Math.abs(hasta.f - desde.f), Math.abs(hasta.c - desde.c)) + 1;
   return Array.from({ length: n }, (_, i) => ({ f: desde.f + pasoF * i, c: desde.c + pasoC * i }));
 }
+
+// Medidas de la grilla en pantalla (solo y multijugador): en la compu llega a SOPA_ANCHO px (más ancha que la columna
+// de 480, .ui-ancho); en el celular ocupa el ancho de la columna. La letra crece con la celda (--n = letras por fila).
+export const SOPA_ANCHO = 600;
+export const SOPA_LETRA = 'clamp(12px, calc(min(var(--ancho), 100vw - 40px) / var(--n) * 0.48), 22px)';
