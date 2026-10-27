@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
 import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { Search, Users, X } from 'lucide-react';
-import BackButton from '../components/BackButton';
-import { gameName } from '../games/gameIcons';
+import { gameIcon, gameName } from '../games/gameIcons';
 import { publicaPath } from '../games/multiConfig';
-import MultiShell from '../multi/MultiShell';
+import { comoJugarDe } from '../games/comoJugar';
+import { Encabezado, PantallaJuego } from '../games/ui/JuegoUI';
 import { emitAck, getSocket } from '../multi/socket';
 import { clockOffset, secondsUntil } from '../multi/clock';
 import { useNow } from '../multi/useNow';
@@ -54,43 +54,38 @@ export default function PublicQueue() {
   const faltan = queue ? Math.max(0, queue.min - queue.players.length) : null;
 
   return (
-    <MultiShell maxWidth={460}>
-      {/* Volver = salir de la cola (al desmontar se avisa queue:leave) */}
-      <BackButton to={publicaPath(game)} />
-      <div style={{ textAlign: 'center' }}>
-        <p className="kicker">Partida pública · {game === 'tutti_frutti' ? temaLabel(tematica) : gameName(game)}</p>
-        <h1 className="neon-title" style={{ fontSize: '26px', marginTop: '6px' }}>Buscando rivales</h1>
-      </div>
+    // Volver = salir de la cola (al desmontar se avisa queue:leave)
+    <PantallaJuego salir={{ to: publicaPath(game) }} ayuda={comoJugarDe(game)}>
+      <Encabezado icono={gameIcon(game)} kicker={`Partida pública · ${game === 'tutti_frutti' ? temaLabel(tematica) : gameName(game)}`}
+        titulo="Buscando rivales" />
 
       <div className="card pulse" style={{ textAlign: 'center' }} data-testid="cola">
-        <Search size={26} color="#39ff8c" style={{ animation: 'pulse 1.4s ease-in-out infinite' }} />
+        <Search size={30} color="#39ff8c" style={{ display: 'block', margin: '0 auto', animation: 'pulse 1.4s ease-in-out infinite', filter: 'drop-shadow(0 0 10px rgba(57,255,140,0.6))' }} />
         {queue?.startsAt ? (
-          <p style={{ marginTop: '10px', fontSize: '14px' }}>
+          <p className="ui-texto" style={{ marginTop: '10px', color: '#eafff2' }}>
             ¡Ya hay partida! Arranca en <strong style={{ color: '#39ff8c' }}>{secondsUntil(queue.startsAt, offset, now)} s</strong> (pueden sumarse más)
           </p>
         ) : (
-          <p style={{ marginTop: '10px', fontSize: '14px', color: 'rgba(180,255,205,0.8)' }}>
+          <p className="ui-texto" style={{ marginTop: '10px' }}>
             {faltan === null ? 'Entrando a la cola…' : `Esperando ${faltan === 1 ? '1 jugador más' : `${faltan} jugadores más`}…`}
           </p>
         )}
         {queue && (
-          <p style={{ marginTop: '4px', fontSize: '12px', color: 'rgba(180,255,205,0.5)' }}>
+          <p className="ui-fila-sub" style={{ marginTop: '4px' }}>
             Partidas de {queue.min} a {queue.max} jugadores
           </p>
         )}
       </div>
 
       {queue && (
-        <div className="card">
-          <p className="section-label"><Users size={12} /> En la cola ({queue.players.length})</p>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            {queue.players.map((name, i) => (
-              <div key={`${name}-${i}`} className="player-row">
-                <div className="avatar">{name.charAt(0).toUpperCase()}</div>
-                <span style={{ fontFamily: "'Oswald', sans-serif", fontSize: '14px' }}>{name}</span>
-              </div>
-            ))}
-          </div>
+        <div className="card ui-filas">
+          <p className="kicker" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Users size={13} /> En la cola ({queue.players.length})</p>
+          {queue.players.map((name, i) => (
+            <div key={`${name}-${i}`} className="ui-fila">
+              <span className="ui-fila-icono">{name.charAt(0).toUpperCase()}</span>
+              <span className="ui-fila-nombre">{name}</span>
+            </div>
+          ))}
         </div>
       )}
 
@@ -98,6 +93,6 @@ export default function PublicQueue() {
       <button className="ghost-btn" onClick={() => navigate(publicaPath(game))}>
         <X size={13} style={{ display: 'inline', verticalAlign: 'middle', marginRight: 6 }} /> Cancelar
       </button>
-    </MultiShell>
+    </PantallaJuego>
   );
 }
