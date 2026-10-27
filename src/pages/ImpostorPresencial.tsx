@@ -117,7 +117,7 @@ export default function ImpostorPresencial() {
 type Salir = { to: string; confirm: typeof SALIR_EN_PERSONA | null };
 
 const RondaDe = ({ ronda, total }: { ronda: RondaEnPersona; total: number }) => (
-  <p className="imp-chiquito">Ronda {ronda.numero} de {total}</p>
+  <p className="kicker imp-centro">Ronda {ronda.numero} de {total}</p>
 );
 
 // ── 1. Configuración: lista de ajustes ──
@@ -146,34 +146,34 @@ export function Configuracion({ jugadores, setJugadores, ajustes, setAjustes, te
       salir={{ to: SALIR }} ayuda={COMO_JUGAR_EN_PERSONA}
       barra={
         <>
-          {faltan > 0 && <p className="imp-barra-nota">Faltan {faltan} {faltan === 1 ? 'jugador' : 'jugadores'} (mínimo {MIN_JUGADORES}).</p>}
+          {faltan > 0 && <p className="imp-barra-nota">{faltan === 1 ? 'Falta 1 jugador' : `Faltan ${faltan} jugadores`} (mínimo {MIN_JUGADORES}).</p>}
           <button type="button" className="imp-boton" data-testid="ep-jugar" disabled={faltan > 0 || cargando} onClick={onJugar}>
             <Play size={22} fill="currentColor" /> {cargando ? 'Preparando…' : 'Iniciar juego'}
           </button>
         </>
       }
     >
-      <div className="imp-entra" style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
         <Hinchas />
-        <h1 className="imp-titulo">El Impostor</h1>
-        <p className="imp-texto" style={{ fontSize: '15px' }}>En persona · un solo celular que se van pasando</p>
+        <h1 className="neon-title imp-titulo">El Impostor</h1>
+        <p className="imp-texto">En persona · un solo celular que se van pasando</p>
       </div>
 
-      <div className="imp-lista imp-entra" data-testid="ep-ajustes">
+      <div className="card imp-filas" data-testid="ep-ajustes">
         <button type="button" className="imp-fila" onClick={() => setHoja('jugadores')} data-testid="ep-fila-jugadores">
-          <span className="imp-fila-icono" style={{ background: 'rgba(57,255,140,0.14)', color: VERDE }}><Users size={22} /></span>
+          <span className="imp-fila-icono"><Users size={19} /></span>
           <span className="imp-fila-nombre">Jugadores</span>
           <span className="imp-fila-valor">{jugadores.length} <ChevronRight size={20} /></span>
         </button>
 
         <div className="imp-fila">
-          <span className="imp-fila-icono" style={{ background: 'rgba(248,113,113,0.16)', color: ROJO }}><VenetianMask size={22} /></span>
+          <span className="imp-fila-icono"><VenetianMask size={19} /></span>
           <span className="imp-fila-nombre">Impostores</span>
           <span style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <button type="button" className="imp-chico" aria-label="Menos impostores" disabled={impostores <= 1} onClick={() => cambiarImpostores(impostores - 1)}>
               <Minus size={18} />
             </button>
-            <span style={{ fontFamily: "'Oswald', sans-serif", fontSize: '22px', minWidth: '18px', textAlign: 'center' }} data-testid="ep-impostores" aria-live="polite">
+            <span style={{ fontFamily: "'Oswald', sans-serif", fontSize: '22px', minWidth: '18px', textAlign: 'center', color: '#eafff2' }} data-testid="ep-impostores" aria-live="polite">
               {impostores}
             </span>
             <button type="button" className="imp-chico" aria-label="Más impostores" disabled={impostores >= maximo} onClick={() => cambiarImpostores(impostores + 1)}>
@@ -184,10 +184,10 @@ export function Configuracion({ jugadores, setJugadores, ajustes, setAjustes, te
 
         <button type="button" className="imp-fila" role="switch" aria-checked={ajustes.pista} data-testid="ep-pista"
           onClick={() => setAjustes({ ...ajustes, pista: !ajustes.pista })}>
-          <span className="imp-fila-icono" style={{ background: 'rgba(251,191,36,0.16)', color: AMARILLO }}><Lightbulb size={22} /></span>
+          <span className="imp-fila-icono"><Lightbulb size={19} /></span>
           <span className="imp-fila-nombre">
             Pista para el impostor
-            <span style={{ display: 'block', fontSize: '13px', fontWeight: 400, color: 'rgba(200,255,220,0.6)' }}>
+            <span className="imp-fila-sub">
               {ajustes.pista ? 'Ve la categoría' : 'No ve nada'}
             </span>
           </span>
@@ -195,13 +195,13 @@ export function Configuracion({ jugadores, setJugadores, ajustes, setAjustes, te
         </button>
 
         <button type="button" className="imp-fila" onClick={() => setHoja('tematica')}>
-          <span className="imp-fila-icono" style={{ background: 'rgba(94,203,255,0.16)', color: CELESTE }}><Shapes size={22} /></span>
+          <span className="imp-fila-icono"><Shapes size={19} /></span>
           <span className="imp-fila-nombre">Temática</span>
           <span className="imp-fila-valor">{tematicaLabel} <ChevronRight size={20} /></span>
         </button>
 
         <button type="button" className="imp-fila" onClick={() => setHoja('rondas')}>
-          <span className="imp-fila-icono" style={{ background: 'rgba(57,255,140,0.14)', color: VERDE }}><Repeat size={22} /></span>
+          <span className="imp-fila-icono"><Repeat size={19} /></span>
           <span className="imp-fila-nombre">Rondas</span>
           <span className="imp-fila-valor">{rondas} <ChevronRight size={20} /></span>
         </button>
@@ -244,22 +244,20 @@ export function HojaJugadores({ jugadores, setJugadores, onCerrar }: { jugadores
         <form onSubmit={agregar} style={{ display: 'flex', gap: '8px' }}>
           <input
             id="ep-nuevo" aria-label="Nombre del jugador" placeholder="Nombre del jugador" maxLength={NOMBRE_MAX} autoComplete="off"
-            value={nuevo} onChange={(e) => { setNuevo(e.target.value); setAviso(null); }}
-            style={{ flex: 1, minWidth: 0, minHeight: '54px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.14)',
-              background: 'rgba(255,255,255,0.06)', color: '#eefff4', padding: '0 16px', fontSize: '17px', outline: 'none' }}
+            value={nuevo} onChange={(e) => { setNuevo(e.target.value); setAviso(null); }} className="imp-campo" style={{ flex: 1 }}
           />
-          <button type="submit" className="imp-chico" aria-label="Agregar jugador" disabled={!nuevo.trim()} style={{ minWidth: '54px', borderRadius: '16px' }}>
+          <button type="submit" className="imp-chico" aria-label="Agregar jugador" disabled={!nuevo.trim()} style={{ minWidth: '50px' }}>
             <Plus size={22} />
           </button>
         </form>
       )}
       {aviso && <p className="error" role="alert">{aviso}</p>}
       {jugadores.length > 0 && (
-        <ol className="imp-lista" style={{ listStyle: 'none', margin: 0, padding: 0 }} data-testid="ep-jugadores">
+        <ol className="imp-filas" data-testid="ep-jugadores">
           {jugadores.map((j, i) => (
-            <li key={j} className="imp-fila" style={{ minHeight: '56px' }}>
-              <span style={{ width: '28px', color: 'rgba(200,255,220,0.5)', fontFamily: "'Oswald', sans-serif", fontSize: '18px' }}>{i + 1}</span>
-              <span className="imp-fila-nombre" style={{ overflowWrap: 'anywhere' }}>{j}</span>
+            <li key={j} className="imp-fila">
+              <span className="imp-fila-icono">{i + 1}</span>
+              <span className="imp-fila-nombre">{j}</span>
               <button type="button" className="imp-chico" aria-label={`Sacar a ${j}`} onClick={() => setJugadores(jugadores.filter((x) => x !== j))}>
                 <X size={18} />
               </button>
@@ -352,18 +350,20 @@ export function PasarCelu({ ronda, total, nombre, secreto, viendo, ultimo, salir
           </button>
         </>
       ) : (
-        <button type="button" className="imp-boton secundario" data-testid="ep-ver" disabled={tapando} onClick={onVer}>
+        <button type="button" className="ghost-btn" data-testid="ep-ver" disabled={tapando} onClick={onVer}
+          style={{ minHeight: '50px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
           <Eye size={20} /> Ver mi palabra
         </button>
       )}
     >
       <RondaDe ronda={ronda} total={total} />
       <div style={{ textAlign: 'center' }}>
-        <p className="imp-chiquito">Jugador</p>
+        <p className="kicker imp-centro">Jugador</p>
         <p className="imp-gigante" data-testid="ep-pasar-a">{nombre}</p>
       </div>
 
-      <div style={{ position: 'relative', height: `${ALTO}px`, overflow: 'hidden', borderRadius: '24px' }}>
+      <div style={{ position: 'relative', height: `${ALTO}px`, overflow: 'hidden', borderRadius: '16px', background: 'rgba(4,20,11,0.62)',
+        backdropFilter: 'blur(18px)', WebkitBackdropFilter: 'blur(18px)', border: '1px solid rgba(57,255,140,0.22)' }}>
         {/* El rol, debajo de la tarjeta */}
         {muestraSecreto && (
           <div data-testid="ep-secreto" aria-hidden={!abierta} aria-live="polite"
@@ -374,19 +374,17 @@ export function PasarCelu({ ronda, total, nombre, secreto, viendo, ultimo, salir
         )}
         {/* La tarjeta: se desliza hacia arriba */}
         <div
-          className="imp-tarjeta" data-testid="ep-tarjeta" onPointerDown={bajar} onPointerMove={mover} onPointerUp={soltar} onPointerCancel={soltar}
+          className="card pulse imp-tarjeta" data-testid="ep-tarjeta" onPointerDown={bajar} onPointerMove={mover} onPointerUp={soltar} onPointerCancel={soltar}
           style={{
-            position: 'absolute', inset: 0, borderRadius: '24px', touchAction: 'none', userSelect: 'none', cursor: viendo ? 'default' : 'grab',
-            background: 'linear-gradient(180deg, #123a24 0%, #0b2416 100%)', border: '1px solid rgba(57,255,140,0.28)',
-            boxShadow: '0 24px 50px -18px rgba(0,0,0,0.9)', display: 'flex', flexDirection: 'column', alignItems: 'center',
-            justifyContent: 'space-between', padding: '28px 20px 22px',
+            position: 'absolute', inset: 0, touchAction: 'none', userSelect: 'none', cursor: viendo ? 'default' : 'grab',
+            display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'space-between', padding: '28px 20px 22px',
             transform: `translateY(-${sube}px)`, transition: arrastrando ? 'none' : 'transform 0.32s cubic-bezier(.2,.9,.3,1)',
           }}
         >
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px' }}>
             <ChevronsUp size={34} color={VERDE} />
             <p className="imp-texto" style={{ fontSize: '17px', maxWidth: '280px' }}>Deslizá la tarjeta hacia arriba para ver tu palabra</p>
-            <p style={{ fontSize: '13px', color: 'rgba(200,255,220,0.5)' }}>Que nadie más mire la pantalla</p>
+            <p style={{ fontSize: '13px', color: 'rgba(180,255,205,0.55)' }}>Que nadie más mire la pantalla</p>
           </div>
           <Hinchas chico />
         </div>
@@ -400,11 +398,12 @@ function Rol({ secreto }: { secreto: Secreto }) {
   if (secreto.rol === 'impostor') {
     return (
       <>
-        <span style={{ width: 64, height: 64, borderRadius: '50%', background: 'rgba(248,113,113,0.16)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <VenetianMask size={36} color={ROJO} />
+        <span style={{ width: 60, height: 60, borderRadius: '50%', background: 'rgba(248,113,113,0.14)', border: '1px solid rgba(248,113,113,0.5)',
+          boxShadow: '0 0 18px rgba(248,113,113,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <VenetianMask size={34} color={ROJO} />
         </span>
-        <p className="imp-gigante" style={{ color: ROJO }}>Impostor</p>
-        <p className="imp-texto" style={{ fontSize: '18px', color: '#eefff4' }}>No tenés palabra</p>
+        <p className="imp-gigante imp-rojo">Impostor</p>
+        <p className="imp-texto" style={{ fontSize: '18px', color: '#eafff2' }}>No tenés palabra</p>
         {secreto.categoria
           ? <p className="imp-texto">Pista: <strong style={{ color: AMARILLO }}>{secreto.categoria}</strong></p>
           : <p className="imp-texto" style={{ fontSize: '14px' }}>Sin pista: escuchá bien a los demás</p>}
@@ -418,13 +417,14 @@ function Rol({ secreto }: { secreto: Secreto }) {
   }
   return (
     <>
-      <span style={{ width: 52, height: 52, borderRadius: '50%', background: 'rgba(94,203,255,0.16)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <span style={{ width: 52, height: 52, borderRadius: '50%', background: 'rgba(94,203,255,0.14)', border: '1px solid rgba(94,203,255,0.5)',
+        boxShadow: '0 0 16px rgba(94,203,255,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <Users size={28} color={CELESTE} />
       </span>
-      <p style={{ fontFamily: "'Oswald', sans-serif", fontWeight: 700, fontSize: '22px', letterSpacing: '3px', color: CELESTE, textTransform: 'uppercase' }}>Hincha</p>
+      <p className="imp-celeste" style={{ fontFamily: "'Oswald', sans-serif", fontWeight: 700, fontSize: '22px', letterSpacing: '3px', textTransform: 'uppercase' }}>Hincha</p>
       <p className="imp-texto" style={{ fontSize: '15px' }}>Tu palabra es:</p>
-      <p className="imp-gigante" style={{ color: '#eefff4', fontSize: 'clamp(32px, 10vw, 48px)' }}>{secreto.palabra}</p>
-      <p style={{ fontSize: '14px', color: 'rgba(200,255,220,0.6)' }}>{secreto.categoria}</p>
+      <p className="imp-gigante" style={{ fontSize: 'clamp(32px, 10vw, 48px)' }}>{secreto.palabra}</p>
+      <p style={{ fontSize: '14px', color: 'rgba(180,255,205,0.6)' }}>{secreto.categoria}</p>
     </>
   );
 }
@@ -438,19 +438,16 @@ export function Pistas({ ronda, total, jugadores, salir, onVotar }: { ronda: Ron
       barra={<button type="button" className="imp-boton" data-testid="ep-a-votar" onClick={onVotar}><Megaphone size={22} /> ¡A votar!</button>}
     >
       <RondaDe ronda={ronda} total={total} />
-      <div className="imp-entra" style={{ textAlign: 'center' }}>
-        <p className="imp-chiquito">Empieza</p>
+      <div style={{ textAlign: 'center' }}>
+        <p className="kicker imp-centro">Empieza</p>
         <p className="imp-gigante" style={{ color: VERDE }} data-testid="ep-empieza">{jugadores[ronda.empieza]}</p>
       </div>
       <p className="imp-texto">Por turnos, cada uno dice una pista en voz alta. ¡Sin decir la palabra! Son {VUELTAS} vueltas.</p>
-      <ol className="imp-lista imp-entra" style={{ listStyle: 'none', margin: 0, padding: 0 }} data-testid="ep-orden">
+      <ol className="card imp-filas" data-testid="ep-orden">
         {vuelta.map((j, i) => (
-          <li key={j} className="imp-fila" style={{ minHeight: '56px' }}>
-            <span className="imp-fila-icono" style={{
-              background: i === 0 ? VERDE : 'rgba(255,255,255,0.08)', color: i === 0 ? '#03200f' : '#eefff4',
-              fontFamily: "'Oswald', sans-serif", fontSize: '18px', fontWeight: 700,
-            }}>{i + 1}</span>
-            <span className="imp-fila-nombre" style={{ overflowWrap: 'anywhere' }}>{jugadores[j]}</span>
+          <li key={j} className="imp-fila">
+            <span className="imp-fila-icono" style={i === 0 ? { background: VERDE, color: '#04210f', boxShadow: '0 0 16px rgba(57,255,140,0.6)' } : undefined}>{i + 1}</span>
+            <span className="imp-fila-nombre">{jugadores[j]}</span>
           </li>
         ))}
       </ol>
@@ -469,19 +466,20 @@ export function Votar({ ronda, total, salir, onRevelar }: { ronda: RondaEnPerson
       barra={<button type="button" className="imp-boton" data-testid="ep-revelar" onClick={onRevelar}><Eye size={22} /> Revelar</button>}
     >
       <RondaDe ronda={ronda} total={total} />
-      <div className="imp-bloque imp-entra" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', padding: '28px 20px' }}>
-        <span style={{ width: 72, height: 72, borderRadius: '50%', background: 'rgba(251,191,36,0.16)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div className="card" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', padding: '28px 20px' }}>
+        <span style={{ width: 72, height: 72, borderRadius: '50%', background: 'rgba(251,191,36,0.12)', border: '1px solid rgba(251,191,36,0.45)',
+          boxShadow: '0 0 18px rgba(251,191,36,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <Megaphone size={38} color={AMARILLO} />
         </span>
-        <p className="imp-titulo">Voten en voz alta</p>
+        <p className="neon-title imp-titulo">Voten en voz alta</p>
         <p className="imp-texto">
           {ronda.impostores.length > 1
             ? `A la cuenta de tres, todos señalan a quien creen que es impostor (hay ${ronda.impostores.length}). Si descubren a uno, puede intentar adivinar la palabra.`
             : 'A la cuenta de tres, todos señalan a quien creen que es el impostor. Si lo descubren, puede intentar adivinar la palabra.'}
         </p>
       </div>
-      <div className="imp-bloque imp-entra" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-        <p className="imp-chiquito" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}><Timer size={15} /> Reloj (opcional)</p>
+      <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+        <p className="kicker imp-centro" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}><Timer size={14} /> Reloj (opcional)</p>
         <div style={{ display: 'flex', gap: '8px' }} role="radiogroup" aria-label="Reloj">
           {RELOJES.map((s) => (
             <button key={s} type="button" role="radio" aria-checked={segundos === s} className={`imp-chico${segundos === s ? ' activo' : ''}`} style={{ flex: 1 }}
@@ -508,7 +506,7 @@ function Reloj({ segundos }: { segundos: number }) {
   return (
     <p data-testid="ep-reloj" role="timer" aria-live="off" style={{
       fontFamily: "'Oswald', sans-serif", fontSize: '64px', fontWeight: 700, textAlign: 'center', lineHeight: 1,
-      color: quedan <= 5 ? ROJO : '#eefff4',
+      color: quedan <= 5 ? ROJO : '#eafff2', textShadow: quedan <= 5 ? '0 0 18px rgba(248,113,113,0.55)' : '0 0 18px rgba(57,255,140,0.45)',
     }}>{quedan === 0 ? '¡Tiempo!' : quedan}</p>
   );
 }
@@ -533,17 +531,17 @@ export function Revelacion({ ronda, total, jugadores, ultima, salir, onSiguiente
       }
     >
       <RondaDe ronda={ronda} total={total} />
-      <div className="imp-bloque" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px', textAlign: 'center', perspective: '700px', padding: '28px 20px' }} data-testid="ep-revelacion">
-        <p className="imp-chiquito">{varios ? 'Los impostores eran' : 'El impostor era'}</p>
+      <div className="card pulse" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px', textAlign: 'center', perspective: '700px', padding: '28px 20px' }} data-testid="ep-revelacion">
+        <p className="kicker imp-centro">{varios ? 'Los impostores eran' : 'El impostor era'}</p>
         <div className="imp-revela" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
-          <VenetianMask size={46} color={ROJO} />
-          {ronda.impostores.map((i) => <p key={i} className="imp-gigante" style={{ color: ROJO }}>{jugadores[i]}</p>)}
+          <VenetianMask size={46} color={ROJO} style={{ filter: 'drop-shadow(0 0 10px rgba(248,113,113,0.6))' }} />
+          {ronda.impostores.map((i) => <p key={i} className="imp-gigante imp-rojo">{jugadores[i]}</p>)}
         </div>
       </div>
-      <div className="imp-bloque imp-revela-2" style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-        <p className="imp-chiquito">La palabra era</p>
-        <p className="imp-titulo" style={{ color: CELESTE }}>{ronda.palabra}</p>
-        <p style={{ fontSize: '14px', color: 'rgba(200,255,220,0.6)' }}>{ronda.categoria}</p>
+      <div className="card imp-revela-2" style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+        <p className="kicker imp-centro">La palabra era</p>
+        <p className="imp-gigante imp-celeste" style={{ fontSize: 'clamp(30px, 9vw, 42px)' }}>{ronda.palabra}</p>
+        <p style={{ fontSize: '14px', color: 'rgba(180,255,205,0.6)' }}>{ronda.categoria}</p>
       </div>
     </PantallaImpostor>
   );
@@ -567,21 +565,23 @@ export function Final({ rondas, jugadores, cargando, error, salir, onDeNuevo, on
           <button type="button" className="imp-boton" data-testid="ep-de-nuevo" disabled={cargando} onClick={onDeNuevo}>
             <RotateCcw size={22} /> {cargando ? 'Preparando…' : 'Jugar de nuevo'}
           </button>
-          <button type="button" className="imp-boton secundario" onClick={onCambiar}><SlidersHorizontal size={18} /> Cambiar ajustes</button>
+          <button type="button" className="ghost-btn" onClick={onCambiar} style={{ minHeight: '48px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+            <SlidersHorizontal size={16} /> Cambiar ajustes
+          </button>
         </>
       }
     >
-      <div className="imp-entra" style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
         <Hinchas chico />
-        <h1 className="imp-titulo">¡Terminó la partida!</h1>
+        <h1 className="neon-title imp-titulo">¡Terminó la partida!</h1>
       </div>
-      <div className="imp-lista" data-testid="ep-final">
+      <div className="card imp-filas" data-testid="ep-final">
         {rondas.map((r) => (
           <div key={r.numero} className="imp-fila" style={{ alignItems: 'flex-start' }}>
-            <span className="imp-fila-icono" style={{ background: 'rgba(255,255,255,0.08)', fontFamily: "'Oswald', sans-serif", fontSize: '18px', fontWeight: 700 }}>{r.numero}</span>
+            <span className="imp-fila-icono">{r.numero}</span>
             <span style={{ flex: 1, minWidth: 0 }}>
-              <strong style={{ fontSize: '17px', color: CELESTE }}>{r.palabra}</strong>
-              <span style={{ display: 'block', fontSize: '13px', color: 'rgba(200,255,220,0.55)' }}>{r.categoria}</span>
+              <strong className="imp-celeste" style={{ fontSize: '17px' }}>{r.palabra}</strong>
+              <span className="imp-fila-sub">{r.categoria}</span>
             </span>
             <span style={{ textAlign: 'right', color: ROJO, fontSize: '15px', display: 'flex', flexDirection: 'column', gap: '2px' }}>
               {r.impostores.map((i) => (
