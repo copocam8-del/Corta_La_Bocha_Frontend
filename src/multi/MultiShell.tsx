@@ -78,6 +78,7 @@ const CSS = `
 
 export default function MultiShell({ children, maxWidth = 520 }: { children: ReactNode; maxWidth?: number }) {
   const [entered, setEntered] = useState(false);
+  const [animado, setAnimado] = useState(false);
   useEffect(() => {
     const t = setTimeout(() => setEntered(true), 60);
     return () => clearTimeout(t);
@@ -120,9 +121,11 @@ export default function MultiShell({ children, maxWidth = 520 }: { children: Rea
         // Arriba queda lugar para el botón "Volver" (fijo arriba a la izquierda)
         padding: '52px 16px 24px', fontFamily: "'Inter', sans-serif", color: '#eafff2',
       }}>
-        <div style={{
+        {/* Cuando termina la animación de entrada se la saca: mientras está puesta, este contenedor no deja que el
+            vidrio de las tarjetas (.card, backdrop-filter) difumine la cancha de atrás */}
+        <div onAnimationEnd={(e) => { if (e.target === e.currentTarget) setAnimado(true); }} style={{
           width: '100%', maxWidth: `${maxWidth}px`, display: 'flex', flexDirection: 'column', gap: '12px', paddingTop: '12px',
-          opacity: entered ? 1 : 0, animation: entered ? 'riseIn 0.5s ease both' : 'none',
+          opacity: entered ? 1 : 0, animation: entered && !animado ? 'riseIn 0.5s ease both' : 'none',
         }}>
           {children}
         </div>

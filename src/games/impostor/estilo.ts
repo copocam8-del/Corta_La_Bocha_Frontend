@@ -1,14 +1,17 @@
-// Estilo de las pantallas de El Impostor (en persona, online y su menú): app de celular limpia.
-// Una columna de 480 px como máximo, fondo oscuro, bloques muy redondeados, letra grande y el botón
-// principal verde fijo abajo. Los componentes que lo usan están en ImpostorUI.tsx.
+// Estilo de las pantallas de El Impostor (en persona, online y su menú): el de Corta La Bocha. El fondo de
+// cancha, los bloques de vidrio verde (.card), los títulos con brillo (.neon-title), los rótulos (.kicker) y el
+// botón secundario (.ghost-btn) son los de la app (multi/MultiShell.tsx); el botón "Volver" es el de siempre.
+// Acá queda sólo lo propio del Impostor. Los componentes que lo usan están en ImpostorUI.tsx.
 
 export const VERDE = '#39ff8c';
 export const ROJO = '#f87171'; // el impostor
 export const CELESTE = '#5ecbff'; // los demás ("Hinchas")
 export const AMARILLO = '#fbbf24';
 
-// Tres hinchas de clubes distintos para las ilustraciones (nuestros avatares; el del medio va adelante)
+// Tres hinchas de clubes distintos para las ilustraciones (nuestros avatares, recortados sin el fondo gris en
+// public/avatars/impostor/; el del medio va adelante)
 export const HINCHAS_PORTADA = ['hincha_racing', 'hincha_boca_2', 'hincha_river'] as const;
+export const hinchaRecortado = (id: string) => `/avatars/impostor/${id}.webp`;
 
 export interface PasoComoJugar {
   icono: 'users' | 'mask' | 'smartphone' | 'megaphone' | 'vote' | 'trophy';
@@ -34,98 +37,108 @@ export const COMO_JUGAR_ONLINE: PasoComoJugar[] = [
 ];
 
 export const IMPOSTOR_CSS = `
-  .imp-fondo { position: fixed; inset: 0; z-index: 0; background:
-    radial-gradient(ellipse 80% 45% at 50% -5%, rgba(57,255,140,0.16) 0%, transparent 70%),
-    linear-gradient(180deg, #04130b 0%, #020a06 100%); }
-  .imp-col { position: relative; z-index: 1; width: 100%; max-width: 480px; margin: 0 auto; min-height: 100vh;
-    padding: calc(76px + env(safe-area-inset-top, 0px)) 16px calc(124px + env(safe-area-inset-bottom, 0px));
-    display: flex; flex-direction: column; gap: 18px; color: #eefff4; font-family: 'Inter', sans-serif; }
-  .imp-col * { box-sizing: border-box; }
-  .imp-entra { animation: impEntra 0.35s ease both; }
-  @keyframes impEntra { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
-
-  /* Botones redondos de arriba: X (salir) y ? (cómo jugar) */
-  .imp-redondo { position: fixed; z-index: 40; top: calc(14px + env(safe-area-inset-top, 0px)); width: 48px; height: 48px;
-    border-radius: 50%; border: 1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.07); color: #eefff4;
-    display: flex; align-items: center; justify-content: center; cursor: pointer; backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px); transition: background 0.2s ease; }
-  .imp-redondo:hover { background: rgba(255,255,255,0.14); }
-  .imp-redondo:focus-visible, .imp-boton:focus-visible, .imp-fila:focus-visible, .imp-chico:focus-visible { outline: 2px solid ${VERDE}; outline-offset: 2px; }
-  .imp-redondo.izq { left: max(14px, calc(50% - 226px)); }
-  .imp-redondo.der { right: max(14px, calc(50% - 226px)); }
-
-  /* Textos */
-  .imp-chiquito { font-size: 13px; letter-spacing: 2px; text-transform: uppercase; color: rgba(200,255,220,0.6); text-align: center; font-weight: 600; }
-  .imp-titulo { font-family: 'Oswald', sans-serif; font-weight: 700; text-transform: uppercase; text-align: center; line-height: 1.05;
-    font-size: clamp(30px, 9vw, 42px); overflow-wrap: anywhere; }
+  /* Tamaños de título (el estilo es .neon-title de la app) */
+  .imp-titulo { font-size: clamp(28px, 8vw, 36px); text-align: center; line-height: 1.08; overflow-wrap: anywhere; text-wrap: balance; }
   .imp-gigante { font-family: 'Oswald', sans-serif; font-weight: 700; text-transform: uppercase; text-align: center; line-height: 1.02;
-    font-size: clamp(38px, 12vw, 58px); overflow-wrap: anywhere; }
-  .imp-texto { font-size: 16px; line-height: 1.5; color: rgba(225,255,236,0.8); text-align: center; }
+    font-size: clamp(38px, 12vw, 56px); color: #eafff2; overflow-wrap: anywhere; text-shadow: 0 0 18px rgba(57,255,140,0.45); }
+  .imp-texto { font-size: 15px; line-height: 1.5; color: rgba(180,255,205,0.75); text-align: center; }
+  .imp-centro { text-align: center; }
+  /* Colores de rol, con el mismo brillo suave que el resto de la app */
+  .imp-rojo { color: ${ROJO}; text-shadow: 0 0 18px rgba(248,113,113,0.55); }
+  .imp-celeste { color: ${CELESTE}; text-shadow: 0 0 18px rgba(94,203,255,0.5); }
 
-  /* Bloques */
-  .imp-bloque { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); border-radius: 22px; padding: 20px; }
-  .imp-lista { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); border-radius: 22px; overflow: hidden; }
-  .imp-fila { display: flex; align-items: center; gap: 14px; width: 100%; min-height: 64px; padding: 12px 16px; background: none; border: none;
-    color: inherit; font: inherit; text-align: left; cursor: pointer; }
-  .imp-fila + .imp-fila { border-top: 1px solid rgba(255,255,255,0.07); }
-  div.imp-fila { cursor: default; }
-  .imp-fila-icono { width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-  .imp-fila-nombre { flex: 1; font-size: 17px; font-weight: 600; }
-  .imp-fila-valor { font-size: 16px; color: rgba(200,255,220,0.7); display: flex; align-items: center; gap: 4px; }
+  /* "?" de Cómo jugar: arriba a la derecha, igual que el botón Volver (que va a la izquierda) */
+  .imp-ayuda { position: fixed; z-index: 50; top: calc(12px + env(safe-area-inset-top, 0px)); right: calc(12px + env(safe-area-inset-right, 0px));
+    width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer;
+    background: rgba(4,20,11,0.72); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid rgba(57,255,140,0.3);
+    color: #7CFFB2; box-shadow: 0 6px 20px -8px rgba(0,0,0,0.7); transition: all 0.2s ease; }
 
-  /* Botones */
-  .imp-boton { width: 100%; min-height: 58px; border-radius: 18px; border: none; cursor: pointer; font-family: 'Oswald', sans-serif;
-    font-weight: 700; font-size: 19px; letter-spacing: 1.5px; text-transform: uppercase; display: flex; align-items: center;
-    justify-content: center; gap: 10px; background: ${VERDE}; color: #03200f; box-shadow: 0 10px 30px -8px rgba(57,255,140,0.55);
-    transition: transform 0.15s ease, filter 0.15s ease; }
+  /* Tarjetas del menú (son .card de la app): se iluminan al pasar */
+  .imp-modo { transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s; }
+  .imp-modo:focus-visible { border-color: #39ff8c; box-shadow: 0 0 24px rgba(57,255,140,0.35), 0 30px 60px -20px rgba(0,0,0,0.75); outline: none; }
+  .imp-modo:active { transform: scale(0.99); }
+
+  /* Filas de ajustes: como los campos del login, con el ícono en un circulito verde */
+  .imp-filas { display: flex; flex-direction: column; gap: 10px; list-style: none; }
+  .imp-fila { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 58px; padding: 9px 14px; border-radius: 10px;
+    background: rgba(10,30,18,0.5); border: 1px solid rgba(57,255,140,0.22); color: #ecfff3; font: inherit; text-align: left;
+    transition: border-color 0.2s, background 0.2s, box-shadow 0.2s; }
+  button.imp-fila { cursor: pointer; }
+  button.imp-fila:focus-visible { border-color: #39ff8c; background: rgba(57,255,140,0.08);
+    box-shadow: 0 0 0 3px rgba(57,255,140,0.18), 0 0 18px rgba(57,255,140,0.3); outline: none; }
+  .imp-fila-icono { width: 38px; height: 38px; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+    background: rgba(57,255,140,0.12); border: 1px solid rgba(57,255,140,0.4); color: ${VERDE}; box-shadow: 0 0 12px rgba(57,255,140,0.2);
+    font-family: 'Oswald', sans-serif; font-weight: 700; font-size: 17px; }
+  .imp-fila-nombre { flex: 1; min-width: 0; font-size: 16px; font-weight: 600; overflow-wrap: anywhere; }
+  .imp-fila-sub { display: block; font-size: 13px; font-weight: 400; color: rgba(180,255,205,0.6); }
+  .imp-fila-valor { font-size: 15px; color: #7CFFB2; display: flex; align-items: center; gap: 2px; }
+
+  /* Campo de texto: el .field del login */
+  .imp-campo { width: 100%; min-width: 0; min-height: 50px; background: rgba(10,30,18,0.5); border: 1px solid rgba(57,255,140,0.22); color: #ecfff3;
+    padding: 0 16px; border-radius: 10px; font-size: 16px; font-family: 'Inter', sans-serif; outline: none;
+    transition: border-color 0.2s, background 0.2s, box-shadow 0.2s; }
+  .imp-campo::placeholder { color: rgba(190,255,210,0.4); }
+  .imp-campo:focus { border-color: #39ff8c; background: rgba(57,255,140,0.08); box-shadow: 0 0 0 3px rgba(57,255,140,0.18), 0 0 18px rgba(57,255,140,0.3); }
+
+  /* Botón principal: el "Entrar" del login (degradé verde brillante). Desactivado: el mismo verde, apagado */
+  .imp-boton { width: 100%; min-height: 54px; display: flex; align-items: center; justify-content: center; gap: 8px; border: none; border-radius: 10px;
+    background: linear-gradient(135deg, #0fae5d, #39ff8c); color: #04210f; font-family: 'Inter', sans-serif; font-weight: 600; font-size: 16px;
+    letter-spacing: 0.3px; cursor: pointer; box-shadow: 0 0 20px rgba(57,255,140,0.45), 0 10px 24px -8px rgba(15,174,93,0.5);
+    transition: transform 0.18s ease, box-shadow 0.18s ease, filter 0.18s ease; }
   .imp-boton:active:not(:disabled) { transform: scale(0.98); }
-  .imp-boton:hover:not(:disabled) { filter: brightness(1.08); }
-  .imp-boton:disabled { background: #18241d; color: rgba(255,255,255,0.35); box-shadow: none; cursor: not-allowed; }
-  .imp-boton.secundario { background: #1b2a22; color: #eefff4; box-shadow: none; font-size: 16px; min-height: 52px; }
-  .imp-chico { min-width: 44px; min-height: 44px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.07);
-    color: #eefff4; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; font-size: 15px; gap: 6px; padding: 0 12px; }
-  .imp-chico:disabled { opacity: 0.35; cursor: default; }
-  .imp-chico.activo { border-color: ${VERDE}; background: rgba(57,255,140,0.14); color: ${VERDE}; }
+  .imp-boton:disabled { opacity: 0.45; cursor: not-allowed; box-shadow: none; }
+  .imp-boton:focus-visible, .imp-chico:focus-visible, .imp-ayuda:focus-visible, .imp-opcion:focus-visible { outline: 2px solid ${VERDE}; outline-offset: 2px; }
 
-  /* Barra fija de abajo con el botón principal */
+  /* Botones chicos (− / +, reloj, tapar, sacar): verde neón */
+  .imp-chico { min-width: 44px; min-height: 44px; padding: 0 12px; border-radius: 10px; display: inline-flex; align-items: center; justify-content: center;
+    gap: 6px; border: 1px solid rgba(57,255,140,0.45); background: rgba(57,255,140,0.08); color: ${VERDE}; font-size: 15px; cursor: pointer;
+    transition: all 0.18s ease; }
+  .imp-chico:disabled { opacity: 0.3; cursor: default; }
+  .imp-chico.activo { border-color: ${VERDE}; background: rgba(57,255,140,0.2); color: #eafff2; box-shadow: 0 0 14px rgba(57,255,140,0.4); }
+
+  /* Interruptor verde neón */
+  .imp-switch { width: 52px; height: 30px; border-radius: 999px; position: relative; flex-shrink: 0; transition: all 0.2s ease;
+    background: rgba(57,255,140,0.08); border: 1px solid rgba(57,255,140,0.4); }
+  .imp-switch::after { content: ''; position: absolute; top: 3px; left: 3px; width: 22px; height: 22px; border-radius: 50%;
+    background: rgba(160,255,195,0.55); transition: transform 0.2s ease, background 0.2s ease; }
+  .imp-switch.on { background: ${VERDE}; border-color: ${VERDE}; box-shadow: 0 0 14px rgba(57,255,140,0.6); }
+  .imp-switch.on::after { transform: translateX(22px); background: #04210f; }
+
+  /* Barra fija de abajo con el botón principal (y el aviso justo arriba del botón) */
   .imp-barra { position: fixed; z-index: 30; left: 0; right: 0; bottom: 0;
-    padding: 16px 16px calc(16px + env(safe-area-inset-bottom, 0px));
-    background: linear-gradient(180deg, rgba(2,10,6,0) 0%, rgba(2,10,6,0.92) 28%, #020a06 100%); }
-  .imp-barra > div { max-width: 448px; margin: 0 auto; display: flex; flex-direction: column; gap: 10px; }
-  .imp-barra-nota { text-align: center; font-size: 14px; color: rgba(200,255,220,0.65); }
+    padding: 18px max(16px, env(safe-area-inset-right, 0px)) calc(16px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));
+    background: linear-gradient(180deg, rgba(1,8,5,0) 0%, rgba(1,8,5,0.88) 26%, rgba(1,8,5,0.96) 100%); }
+  .imp-barra > div { max-width: 480px; margin: 0 auto; display: flex; flex-direction: column; gap: 10px; }
+  .imp-barra-nota { text-align: center; font-size: 13px; color: #bbf7d0; }
 
-  /* Interruptor */
-  .imp-switch { width: 52px; height: 32px; border-radius: 999px; background: rgba(255,255,255,0.16); position: relative; transition: background 0.2s ease; flex-shrink: 0; }
-  .imp-switch::after { content: ''; position: absolute; top: 3px; left: 3px; width: 26px; height: 26px; border-radius: 50%; background: #fff;
-    transition: transform 0.2s ease; box-shadow: 0 2px 6px rgba(0,0,0,0.4); }
-  .imp-switch.on { background: ${VERDE}; }
-  .imp-switch.on::after { transform: translateX(20px); }
-
-  /* Ilustración: tres hinchas, el del medio adelante */
-  .imp-hinchas { display: flex; justify-content: center; align-items: flex-end; height: 150px; }
-  .imp-hinchas img { width: 112px; height: 112px; border-radius: 50%; object-fit: cover; border: 3px solid #04130b; background: #26332c; }
-  .imp-hinchas img:nth-child(1) { transform: translateX(22px) rotate(-6deg); }
-  .imp-hinchas img:nth-child(3) { transform: translateX(-22px) rotate(6deg); }
-  .imp-hinchas img:nth-child(2) { width: 140px; height: 140px; position: relative; z-index: 1; box-shadow: 0 12px 30px -10px rgba(0,0,0,0.8); }
+  /* Ilustración: tres hinchas recortados (sin círculo), el del medio adelante, con brillo verde */
+  .imp-hinchas { display: flex; justify-content: center; align-items: flex-end; height: 150px; filter: drop-shadow(0 0 14px rgba(57,255,140,0.35)); }
+  .imp-hinchas img { height: 128px; width: auto; }
+  .imp-hinchas img:nth-child(1) { transform: translateX(24px); }
+  .imp-hinchas img:nth-child(3) { transform: translateX(-24px); }
+  .imp-hinchas img:nth-child(2) { height: 150px; position: relative; z-index: 1; }
   .imp-hinchas.chico { height: 104px; }
-  .imp-hinchas.chico img { width: 78px; height: 78px; }
-  .imp-hinchas.chico img:nth-child(2) { width: 98px; height: 98px; }
+  .imp-hinchas.chico img { height: 88px; }
+  .imp-hinchas.chico img:nth-child(2) { height: 104px; }
 
-  /* Hoja que sube desde abajo (Cómo jugar, selectores) */
-  .imp-velo { position: fixed; inset: 0; z-index: 60; background: rgba(0,0,0,0.6); display: flex; align-items: flex-end; justify-content: center;
-    animation: impVelo 0.25s ease both; }
-  .imp-hoja { width: 100%; max-width: 480px; max-height: 88vh; overflow-y: auto; background: #0a1a11; border-radius: 24px 24px 0 0;
-    border: 1px solid rgba(255,255,255,0.08); padding: 10px 20px calc(20px + env(safe-area-inset-bottom, 0px)); color: #eefff4;
-    font-family: 'Inter', sans-serif; animation: impHoja 0.32s cubic-bezier(.2,.9,.3,1) both; display: flex; flex-direction: column; gap: 16px; }
+  /* Hoja que sube desde abajo (Cómo jugar, selectores): el mismo vidrio verde de las tarjetas */
+  .imp-velo { position: fixed; inset: 0; z-index: 60; background: rgba(0,4,2,0.72); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
+    display: flex; align-items: flex-end; justify-content: center; animation: impVelo 0.25s ease both; }
+  .imp-hoja { width: 100%; max-width: 480px; max-height: 88vh; overflow-y: auto; color: #eafff2; font-family: 'Inter', sans-serif;
+    background: rgba(4,20,11,0.94); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
+    border: 1px solid rgba(57,255,140,0.3); border-top: 2px solid rgba(57,255,140,0.7); border-bottom: none; border-radius: 18px 18px 0 0;
+    box-shadow: 0 -10px 40px -10px rgba(57,255,140,0.25); padding: 10px 20px calc(20px + env(safe-area-inset-bottom, 0px));
+    display: flex; flex-direction: column; gap: 16px; animation: impHoja 0.32s cubic-bezier(.2,.9,.3,1) both; }
   .imp-hoja:focus { outline: none; }
+  .imp-hoja-manija { width: 44px; height: 4px; border-radius: 999px; background: rgba(57,255,140,0.45); margin: 0 auto 2px; }
   .imp-hoja-pie { position: sticky; bottom: calc(-20px - env(safe-area-inset-bottom, 0px)); margin: 0 -20px calc(-20px - env(safe-area-inset-bottom, 0px));
-    padding: 12px 20px calc(20px + env(safe-area-inset-bottom, 0px)); background: linear-gradient(180deg, rgba(10,26,17,0) 0%, #0a1a11 30%); }
-  .imp-hoja-manija { width: 44px; height: 5px; border-radius: 999px; background: rgba(255,255,255,0.2); margin: 0 auto 4px; }
+    padding: 12px 20px calc(20px + env(safe-area-inset-bottom, 0px)); background: linear-gradient(180deg, rgba(4,20,11,0) 0%, rgba(4,20,11,0.96) 30%); }
   .imp-paso { display: flex; gap: 14px; align-items: flex-start; }
-  .imp-paso-icono { width: 46px; height: 46px; border-radius: 14px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-  .imp-opcion { display: flex; align-items: center; justify-content: space-between; width: 100%; min-height: 56px; padding: 0 16px; border-radius: 16px;
-    border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.04); color: inherit; font-size: 17px; cursor: pointer; }
-  .imp-opcion.activo { border-color: ${VERDE}; background: rgba(57,255,140,0.12); color: ${VERDE}; font-weight: 600; }
+  .imp-paso-icono { width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .imp-opcion { display: flex; align-items: center; width: 100%; min-height: 54px; padding: 0 16px; border-radius: 10px; cursor: pointer;
+    background: rgba(10,30,18,0.5); border: 1px solid rgba(57,255,140,0.22); color: #ecfff3; font-size: 16px; font-family: 'Inter', sans-serif;
+    transition: all 0.2s ease; }
+  .imp-opcion.activo { border-color: ${VERDE}; background: rgba(57,255,140,0.12); color: ${VERDE}; font-weight: 600; box-shadow: 0 0 14px rgba(57,255,140,0.25); }
   @keyframes impVelo { from { opacity: 0; } to { opacity: 1; } }
   @keyframes impHoja { from { transform: translateY(100%); } to { transform: none; } }
 
@@ -134,8 +147,19 @@ export const IMPOSTOR_CSS = `
   .imp-revela-2 { animation: impRevela 0.6s ease 0.6s both; }
   @keyframes impRevela { from { opacity: 0; transform: scale(0.6) rotateX(70deg); } to { opacity: 1; transform: none; } }
 
+  /* Efectos al pasar el mouse, sólo con mouse: en el celular el :hover queda "pegado" donde se tocó */
+  @media (hover: hover) {
+    .imp-ayuda:hover { border-color: #39ff8c; background: rgba(57,255,140,0.1); box-shadow: 0 0 14px rgba(57,255,140,0.25); color: #eafff2; }
+    .imp-modo:hover { border-color: #39ff8c; box-shadow: 0 0 24px rgba(57,255,140,0.35), 0 30px 60px -20px rgba(0,0,0,0.75); }
+    button.imp-fila:hover { border-color: #39ff8c; background: rgba(57,255,140,0.08); box-shadow: 0 0 0 3px rgba(57,255,140,0.18), 0 0 18px rgba(57,255,140,0.3); }
+    .imp-boton:hover:not(:disabled) { transform: translateY(-1px); filter: brightness(1.1); box-shadow: 0 0 32px rgba(57,255,140,0.7), 0 14px 28px -8px rgba(15,174,93,0.6); }
+    .imp-chico:hover:not(:disabled) { border-color: ${VERDE}; background: rgba(57,255,140,0.14); box-shadow: 0 0 14px rgba(57,255,140,0.35); }
+    .imp-opcion:hover { border-color: rgba(57,255,140,0.6); }
+    .imp-voto:hover:not(:disabled) { border-color: #39ff8c; background: rgba(57,255,140,0.08); box-shadow: 0 0 18px rgba(57,255,140,0.3); }
+  }
+
   @media (prefers-reduced-motion: reduce) {
-    .imp-entra, .imp-revela, .imp-revela-2, .imp-velo, .imp-hoja { animation: none; }
-    .imp-switch, .imp-switch::after, .imp-boton, .imp-tarjeta { transition: none; }
+    .imp-revela, .imp-revela-2, .imp-velo, .imp-hoja { animation: none; }
+    .imp-switch, .imp-switch::after, .imp-boton, .imp-chico, .imp-tarjeta, .imp-modo { transition: none; }
   }
 `;

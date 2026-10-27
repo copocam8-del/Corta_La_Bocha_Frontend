@@ -178,15 +178,21 @@ Checklist pre-producción (rama `feat/seguridad`, octubre 2026; el detalle compl
     (girar el celular, achicar la ventana) y saca los listeners al desmontar. En la PC la mesa llega a 960 px
     (`MESA_PC`; en la sala, `Room.tsx`) y las cartas son apaisadas (4/3); en el celular, paradas (3/4). Letra e ícono
     según `medidasCarta`; columnas con `minmax(0, 1fr)` y el texto corta palabras largas, así nunca hay scroll horizontal.
-- **Estilo de El Impostor** (todas sus pantallas: menú, "En persona" y online). App de celular limpia: una columna de 480 px
-  como máximo, fondo oscuro liso (no la cancha), bloques con esquinas de 20-24 px (`imp-bloque`, `imp-lista` + `imp-fila`),
-  letra grande y el botón principal verde de ancho completo **fijo abajo** (`BarraFija`). Arriba, botones redondos: "X" para
-  salir (`BotonSalir`, con la ventana "¿Seguro?" en plena partida) a la izquierda y "?" (`BotonAyuda` → hoja "Cómo jugar" que
-  sube desde abajo, pasos con ícono y título de color) a la derecha. Colores en `games/impostor/estilo.ts`: verde de la app,
-  **impostor en ROJO** (`VenetianMask`) y los demás, **"Hinchas", en CELESTE** (`Users`). Ilustración: tres de NUESTROS hinchas
-  (`HINCHAS_PORTADA`, `public/avatars/hinchas/*.webp`, el del medio adelante); nada de imágenes de otras apps, escudos ni
-  logos. Animaciones suaves y ninguna con `prefers-reduced-motion`. Lo que es `fixed` va con portal al `<body>` (como el
-  botón Volver). Si cambiás el estilo, cambialo en `estilo.ts` (sirve para todas).
+- **Estilo de El Impostor** (todas sus pantallas: menú, "En persona" y online): **el de Corta La Bocha**, como el login. Usa
+  `MultiShell` (la cancha con franjas y líneas que brillan) y sus clases: `.card` (vidrio verde oscuro, borde verde y el de
+  arriba iluminado), `.neon-title` (Oswald en mayúsculas con brillo), `.kicker` y `.ghost-btn`; arriba a la izquierda el
+  `BackButton` de siempre y a la derecha el "?" (`BotonAyuda` → hoja "Cómo jugar" que sube desde abajo, del mismo vidrio).
+  En `games/impostor/estilo.ts` queda sólo lo propio: filas de ajustes como los campos del login con el ícono en un
+  circulito verde (`imp-fila`), el campo de texto (`imp-campo`, el `.field` del login), el botón principal **fijo abajo** igual
+  al "Entrar" del login (`imp-boton`; desactivado = el mismo verde apagado), interruptor y − / + en verde neón, la hoja y los
+  colores de rol: **impostor en ROJO** (`VenetianMask`, `imp-rojo`) y los demás, **"Hinchas", en CELESTE** (`Users`,
+  `imp-celeste`), con brillo suave. Los efectos de pasar el mouse van en `@media (hover: hover)` (en el celular el `:hover`
+  queda "pegado" donde se tocó). Ilustración: tres de NUESTROS hinchas **recortados sin el fondo gris** en
+  `public/avatars/impostor/` (`HINCHAS_PORTADA`, el del medio adelante, con brillo verde y sin círculo); salen de
+  `public/avatars/hinchas/` con un recorte del fondo (si cambian esas imágenes, hay que recortarlas de nuevo). Nada de
+  imágenes de otras apps, escudos ni logos. Lo que es `fixed` va con portal al `<body>` (como el botón Volver). Abajo de
+  cada pantalla queda un espacio del alto de la barra fija (`PantallaImpostor` la mide), así haciendo scroll se ve todo y el
+  aviso ("Falta 1 jugador…") va justo arriba del botón sin pisar nada.
 - **Menú del Impostor** (`/juego/impostor`, `games/impostor/ImpostorMenu.tsx`, lo abre `GameMenu`): dos tarjetas grandes,
   "En persona" y "Online" (este último sigue siendo el menú de siempre en `/juego/impostor/online`).
 - **El Impostor** (sólo multijugador, de 3 a 8; `multi/juegos/ImpostorMulti.tsx`, tipos en `multi/gameViews.ts` → `ImpostorView`):
@@ -220,7 +226,7 @@ Checklist pre-producción (rama `feat/seguridad`, octubre 2026; el detalle compl
   6. **Final**: palabra e impostores de cada ronda, "Jugar de nuevo" y "Cambiar ajustes".
   Los impostores de cada ronda rotan (`armarRondas(jugadores, palabras, impostores)` + `elegirImpostores`: siempre distintos
   en la ronda, primero los que menos veces lo fueron). "¡Jugar!" pide las palabras a `POST /impostor/local` (una por ronda) y
-  **todo lo demás pasa en el navegador**. **No cuenta** para estadísticas, ELO, ligas ni logros. Salir ("X") en plena partida
+  **todo lo demás pasa en el navegador**. **No cuenta** para estadísticas, ELO, ligas ni logros. Volver en plena partida
   pregunta antes (`SALIR_EN_PERSONA`). Tests en `games/impostor/impostorPresencial.test.tsx` (rotación con varios
   impostores, pista prendida/apagada, que nunca se vea la palabra del anterior, cada pantalla).
 - Ojo en Windows: no puede haber dos archivos que sólo difieren en mayúsculas (`Pelota.tsx` y `pelota.ts` chocan).
@@ -291,7 +297,9 @@ Checklist pre-producción (rama `feat/seguridad`, octubre 2026; el detalle compl
   - Pública: `/juego/:game/publica` (tamaño; temática sólo en Tutti Frutti) → `/juego/:game/buscando` (cola) →
     `queue:matched` → `/room/:code`.
   - Partes comunes (encabezado, marcador, cuenta regresiva y final con logros) en `multi/MultiParts.tsx`; colores y
-    nombres de los jugadores en `multi/players.ts`; estilos en `multi/MultiShell.tsx`.
+    nombres de los jugadores en `multi/players.ts`; estilos en `multi/MultiShell.tsx`. `MultiShell` le saca la animación de
+    entrada a su contenedor cuando termina: mientras está puesta, el vidrio de las `.card` (`backdrop-filter`) no difumina la
+    cancha de atrás y se ven las líneas nítidas a través de las tarjetas.
   - **Empate en el primer puesto** (el backend manda `final.empate` y `final.empatados`, y `result: 'draw'` en cada
     posición): nadie gana. Los que empataron ven "¡Empate!" con `Handshake` en amarillo (como el empate contra la
     máquina) y abajo "Empataron X e Y"; los demás ven "Empataron X, Y y Z" en vez de "Ganó…". En las posiciones, los

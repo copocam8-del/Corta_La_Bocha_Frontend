@@ -32,8 +32,8 @@ describe('menú del Impostor: "¿Cómo juegan?"', () => {
     expect(html).toContain('Un solo celular que se pasan');
     expect(html).toContain('data-testid="modo-online"');
     expect(html).toContain('Cada uno desde su casa');
-    expect(html).toContain('/avatars/hinchas/'); // ilustración con nuestros hinchas
-    expect(html).toContain('aria-label="Salir"');
+    expect(html).toContain('/avatars/impostor/hincha_'); // ilustración con nuestros hinchas (recortados)
+    expect(html).toContain('data-testid="volver"'); // el botón Volver de siempre
     expect(html).toContain('aria-label="Cómo jugar"');
     expect(html).not.toContain('Crear sala privada');
   });
@@ -193,9 +193,23 @@ describe('pantallas en persona', () => {
     }
     expect(html).toMatch(/data-testid="ep-jugar"[^>]*disabled/);
     expect(html).toMatch(/role="switch" aria-checked="true"/);
-    expect(html).toContain('aria-label="Salir"');
+    expect(html).toContain('data-testid="volver"');
     expect(html).toContain('aria-label="Cómo jugar"');
-    expect(html).toContain('/avatars/hinchas/');
+    expect(html).toContain('/avatars/impostor/hincha_');
+  });
+
+  it('el aviso "Faltan…" va justo arriba del botón y abajo queda el lugar de la barra (nada queda tapado)', () => {
+    const html = conRouter(<ImpostorPresencial />);
+    // La barra fija tiene el aviso y después el botón
+    expect(html).toMatch(/data-testid="imp-barra"[\s\S]*Faltan 3 jugadores[\s\S]*data-testid="ep-jugar"/);
+    // El espacio del alto de la barra va después de la última fila (Rondas), así haciendo scroll se ve todo
+    expect(html).toMatch(/Rondas[\s\S]*data-testid="imp-espacio-barra"[\s\S]*data-testid="imp-barra"/);
+    // Con uno solo de menos, en singular
+    const dos = conRouter(
+      <Configuracion jugadores={['Ana', 'Beto']} setJugadores={nada} ajustes={{ impostores: 1, pista: true }} setAjustes={nada}
+        tematica="mezcla" setTematica={nada} rondas={3} setRondas={nada} cargando={false} error={null} onJugar={nada} />,
+    );
+    expect(dos).toContain('Falta 1 jugador (mínimo 3).');
   });
 
   it('impostores: − y + según la cantidad de jugadores; la pista apagada dice "No ve nada"', () => {
