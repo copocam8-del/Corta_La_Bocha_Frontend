@@ -191,6 +191,8 @@ Checklist pre-producción (rama `feat/seguridad`, octubre 2026; el detalle compl
   `explicacion` (opcional) es el resumen del backend (en la pantalla, "Cómo jugar" sale de `games/comoJugar.ts`); `publica.rangos`
   cambia el "2 a 4 jugadores".
 - Íconos y nombres de cada juego en `games/gameIcons.ts` (íconos de lucide, sin logos de terceros).
+- **Rosco Futbolero** (`rosco`): en el catálogo como "Próximamente" (`available: false`) desde el 28/10/2026; la tarjeta
+  aparece desactivada en el Dashboard. Todavía no tiene pantalla ni ruta.
 - El ranking tiene filtro por juego (el ELO es general); el perfil muestra estadísticas por juego y los logros
   agrupados (generales y de cada juego).
 

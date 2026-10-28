@@ -1,4 +1,4 @@
-import { CalendarCheck, CircleDot, Grid3x3, HelpCircle, Layers, Type, VenetianMask, type LucideIcon } from 'lucide-react';
+import { CalendarCheck, CircleDashed, CircleDot, Grid3x3, HelpCircle, Layers, Type, VenetianMask, type LucideIcon } from 'lucide-react';
 import type { GameId } from '../api/games';
 
 // Ícono de cada juego (íconos propios de lucide, sin logos de terceros)
@@ -10,6 +10,7 @@ export const GAME_ICONS: Record<GameId, LucideIcon> = {
   sopa_de_letras: Grid3x3,
   memotest: Layers,
   impostor: VenetianMask,
+  rosco: CircleDashed,
 };
 
 // Nombres para mostrar (los mismos del catálogo del backend, para no esperar a /games)
@@ -21,6 +22,7 @@ export const GAME_NAMES: Record<GameId, string> = {
   sopa_de_letras: 'Sopa de letras',
   memotest: 'Memotest',
   impostor: 'El Impostor',
+  rosco: 'Rosco Futbolero',
 };
 export const gameName = (id: string) => GAME_NAMES[id as GameId] ?? id;
 
